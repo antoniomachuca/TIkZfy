@@ -8,17 +8,18 @@ skinparam ranksep 80
 package "core.models" {
     class ImageTensor <<Immutable>> {
         + raw_tensor : Tensor
-        + validate_shape() : bool
+        + __init__(tensor_data: Tensor) <<Throws DomainException>>
     }
 
     class TikzTokens <<Immutable>> {
         + markup : str
-        + validate_syntax() : bool
+        + __init__(markup_string: str) <<Throws DomainException>>
     }
 
     class CompilationResult <<Immutable>> {
         + pdf_data : bytes
         + is_successful : bool
+        + __init__(data: bytes, success: bool)
     }
 }
 
@@ -48,11 +49,18 @@ package "core" {
 }
 
 package "adapters.inbound" {
+    class GenerateRequestDTO <<DTO>> {
+        + image_bytes : bytes
+    }
+
     class FastAPIController {
         - use_case : GenerateTikzUseCase
         + __init__(use_case: GenerateTikzUseCase)
-        + handle_generate_request(payload: bytes) : bytes
+        + handle_generate_request(payload: GenerateRequestDTO) : bytes
     }
+    
+    FastAPIController ..> GenerateRequestDTO : "Deserializes"
+    FastAPIController ..> ImageTensor : "Instantiates"
 }
 
 package "adapters.outbound" {
