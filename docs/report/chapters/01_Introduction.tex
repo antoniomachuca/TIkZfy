@@ -1,51 +1,7 @@
 \chapter{Introduction}
 
-\section{Context and Motivation}
-The financial industry heavily relies on derivative products for risk management and investment strategies. While analytical formulas like the Black-Scholes model exist for standard European options, pricing more complex or path-dependent derivatives often requires numerical methods. The Monte Carlo simulation is a highly flexible and robust approach for option pricing, but its computational intensity can be a significant bottleneck, especially when implemented purely in interpreted languages like Python. This project is motivated by the need to solve this computational inefficiency without sacrificing usability.
+\section{System Objectives}
+% TODO: Define the mathematical and architectural goals of the Image-to-TikZ engine.
 
-\section{Project Objectives}
-
-\subsection{Analytical Objective}
-The primary analytical goal is to accurately model financial asset price dynamics using stochastic calculus. Specifically, the project implements Stochastic Differential Equations (SDEs), such as the Geometric Brownian Motion (GBM), to simulate underlying asset paths and compute the expected discounted payoff of various options under a risk-neutral measure.
-
-\subsection{Engineering Objective}
-The main engineering goal is to design a high-performance hybrid software architecture. By delegating the computationally intensive Monte Carlo simulation loops to a compiled C++ backend and exposing a user-friendly Python API via Pybind11, the system overcomes the latency limitations of Python. This approach ensures raw execution speed while maintaining ease of use for end-users and data scientists.
-
-\section{Definitions, Acronyms, and Abbreviations}
-
-\begin{itemize}
-    \item \textbf{SDE}: Stochastic Differential Equation
-    \item \textbf{GBM}: Geometric Brownian Motion
-    \item \textbf{PDE}: Partial Differential Equation
-    \item \textbf{BS / BSM}: Black-Scholes / Black-Scholes-Merton
-    \item \textbf{ITM}: In-The-Money
-    \item \textbf{OTM}: Out-of-The-Money
-    \item \textbf{ATM}: At-The-Money
-    \item \textbf{API}: Application Programming Interface
-    \item \textbf{OOP}: Object-Oriented Programming
-    \item \textbf{SOLID}: Single responsibility, Open-closed, Liskov substitution, Interface segregation and Dependency inversion
-    \item \textbf{SRP}: Single Responsibility Principle
-    \item \textbf{OCP}: Open/Closed Principle
-    \item \textbf{DIP}: Dependency Inversion Principle
-    \item \textbf{LSP}: Liskov Substitution Principle
-    \item \textbf{OOM}: Out of Memory
-    \item \textbf{RAM}: Random Access Memory
-    \item \textbf{CPU}: Central Processing Unit
-    \item \textbf{OS}: Operating System
-    \item \textbf{RNG}: Random Number Generator
-    \item \textbf{GIL}: Global Interpreter Lock
-    \item \textbf{SIMD}: Single Instruction, Multiple Data
-    \item \textbf{AVX}: Advanced Vector Extensions
-    \item \textbf{NaN}: Not a Number
-    \item \textbf{Inf}: Infinity
-    \item \textbf{IEEE}: Institute of Electrical and Electronics Engineers
-\end{itemize}
-
-\section{Source Code and Reproducibility}
-
-In the spirit of open science and academic transparency, the complete source code developed for this project is publicly available. The repository contains the C++ pricing engine, the Python bindings, the CMake build configuration, and the Jupyter notebooks used for the validation and benchmarking presented in this report.
-
-The repository can be accessed at the following GitHub link:
-\begin{center}
-    \url{https://github.com/antoniomachuca/Option-Pricing-Monte-Carlo}
-\end{center}
+\section{Scope and Constraints}
+% TODO: Outline the O(1) memory complexity constraints and Hexagonal boundaries.

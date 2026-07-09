@@ -92,7 +92,7 @@ wandb/
 *.out
 *.toc
 *.synctex.gz
+*.log
 # Las salidas de compilación transitorias del motor
-*.pdf
 outputs/
 temp_tex/

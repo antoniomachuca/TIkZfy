@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2026.1.6)  4 JUL 2026 14:48
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2026.1.6)  9 JUL 2026 22:17
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**"/Users/antoniomachuca/Library/CloudStorage/GoogleDrive-71117kb@gmail.com/Mi unidad/CUARTO/VERANO/REPO 2/Option-Pricing-Monte-Carlo/docs/report/main.tex"
-(/Users/antoniomachuca/Library/CloudStorage/GoogleDrive-71117kb@gmail.com/Mi unidad/CUARTO/VERANO/REPO 2/Option-Pricing-Monte-Carlo/docs/report/main.tex
+**"/Users/antoniomachuca/Library/CloudStorage/GoogleDrive-71117kb@gmail.com/Mi unidad/CUARTO/VERANO/REPO 5/image-to-tikz-engine/docs/report/main.tex"
+(/Users/antoniomachuca/Library/CloudStorage/GoogleDrive-71117kb@gmail.com/Mi unidad/CUARTO/VERANO/REPO 5/image-to-tikz-engine/docs/report/main.tex
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-29>
 (./srsdocument.cls (/usr/local/texlive/2025/texmf-dist/tex/latex/fmtcount/fmtcount.sty
@@ -905,24 +905,24 @@ Package csquotes Info: Redefining alias 'default' -> 'english'.
 (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 24.
+LaTeX Font Info:    ... okay on input line 24.
  (/usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count502
@@ -942,8 +942,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 48
  (/usr/local/texlive/2025/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
 ))
-Package hyperref Info: Link coloring OFF on input line 26.
- (./main.out) (./main.out)
+Package hyperref Info: Link coloring OFF on input line 24.
 \@outlinefile=\write5
 \openout5 = `main.out'.
 
@@ -993,165 +992,83 @@ Package biblatex Info: Automatic encoding selection.
 \openout4 = `main.bcf'.
 
 Package biblatex Info: Trying to load bibliographic data...
-Package biblatex Info: ... file 'main.bbl' found.
- (./main.bbl)
-Package biblatex Info: Reference section=0 on input line 26.
-Package biblatex Info: Reference segment=0 on input line 26.
+Package biblatex Info: ... file 'main.bbl' not found.
+
+No file main.bbl.
+Package biblatex Info: Reference section=0 on input line 24.
+Package biblatex Info: Reference segment=0 on input line 24.
 \c@lstlisting=\count508
-Package hyperref Info: Option `pageanchor' set `false' on input line 29.
- [1
+Package hyperref Info: Option `pageanchor' set `false' on input line 27.
+[1
 
 {/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-Package hyperref Info: Option `pageanchor' set `true' on input line 29.
- (./main.toc
-LaTeX Font Info:    Trying to load font information for U+msa on input line 3.
- (/usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/umsa.fd
-File: umsa.fd 2013/01/14 v3.01 AMS symbols A
-)
-LaTeX Font Info:    Trying to load font information for U+msb on input line 3.
- (/usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/umsb.fd
-File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-))
+Package hyperref Info: Option `pageanchor' set `true' on input line 27.
+
+No file main.toc.
 \tf@toc=\write6
 \openout6 = `main.toc'.
 
- [1
+[1
 
 ] (./chapters/01_Introduction.tex
 Chapter 1.
-[2
-
-{/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}] [3]) (./chapters/02_Stochastic_Foundations.tex [4]
-Chapter 2.
-[5
-
-] [6] [7]) (./chapters/03_Hybrid_Architecture.tex [8]
-Chapter 3.
-[9
+) (./chapters/02_Architecture.tex [2
 
 ]
-<../architecture/component_diagram.pdf, id=266, 596.98032pt x 341.02406pt>
-File: ../architecture/component_diagram.pdf Graphic file (type pdf)
-<use ../architecture/component_diagram.pdf>
-Package pdftex.def Info: ../architecture/component_diagram.pdf  used on input line 46.
-(pdftex.def)             Requested size: 361.06186pt x 206.25514pt.
+Chapter 2.
+) (./chapters/03_Implementation.tex [3
 
-Overfull \hbox (24.24988pt too wide) in paragraph at lines 50--51
-\OT1/cmr/m/n/12 ex-am-ple, the \OT1/cmtt/m/n/12 MarketData \OT1/cmr/m/n/12 struct acts as an im-mutable data con-tainer, while \OT1/cmtt/m/n/12 MonteCarloPricer
- []
+]
+Chapter 3.
+) (./chapters/04_Conclusions.tex [4
 
-[10
-
- <../architecture/component_diagram.pdf>]
-<../architecture/class_diagram.pdf, id=300, 1181.16281pt x 488.57532pt>
-File: ../architecture/class_diagram.pdf Graphic file (type pdf)
-<use ../architecture/class_diagram.pdf>
-Package pdftex.def Info: ../architecture/class_diagram.pdf  used on input line 64.
-(pdftex.def)             Requested size: 627.09677pt x 259.39844pt.
- [11
-
-
- <../architecture/class_diagram.pdf>]
-<../architecture/sequence_diagram.pdf, id=369, 921.4425pt x 395.22656pt>
-File: ../architecture/sequence_diagram.pdf Graphic file (type pdf)
-<use ../architecture/sequence_diagram.pdf>
-Package pdftex.def Info: ../architecture/sequence_diagram.pdf  used on input line 80.
-(pdftex.def)             Requested size: 349.02687pt x 149.70518pt.
- [12
-
- <../architecture/sequence_diagram.pdf>]) (./chapters/04_Engine_Implementation.tex [13
-
-] [14]
+]
 Chapter 4.
+) [5
 
-Overfull \hbox (6.14656pt too wide) in paragraph at lines 7--8
-[]\OT1/cmr/m/n/12 While this vec-tor-ized ap-proach achieves max-i-mum pos-si-ble per-for-mance in pure Python,
- []
+]
 
+LaTeX Warning: Empty bibliography on input line 37.
 
-Overfull \hbox (54.7853pt too wide) in paragraph at lines 13--14
-[]\OT1/cmr/m/n/12 The core of the nu-mer-i-cal in-te-gra-tion re-sides in the hot loop of the \OT1/cmtt/m/n/12 MonteCarloPricer::simulate
- []
-
-[15
-
-] (/usr/local/texlive/2025/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2025/11/14 1.11b listings language file
-) (/usr/local/texlive/2025/texmf-dist/tex/latex/listings/lstlang2.sty
-File: lstlang2.sty 2025/11/14 1.11b listings language file
-)
-Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on input line 34.
- [16]) (./chapters/05_Validation_and_Benchmarking.tex [17]
-Chapter 5.
-<../assets/convergence_test.pdf, id=425, 736.11143pt x 394.39824pt>
-File: ../assets/convergence_test.pdf Graphic file (type pdf)
-<use ../assets/convergence_test.pdf>
-Package pdftex.def Info: ../assets/convergence_test.pdf  used on input line 8.
-(pdftex.def)             Requested size: 381.12221pt x 204.2036pt.
-[18
-
- <../assets/convergence_test.pdf>]
-<../assets/performance_analysis.pdf, id=518, 490.64867pt x 320.42406pt>
-File: ../assets/performance_analysis.pdf Graphic file (type pdf)
-<use ../assets/performance_analysis.pdf>
-Package pdftex.def Info: ../assets/performance_analysis.pdf  used on input line 21.
-(pdftex.def)             Requested size: 381.12221pt x 248.90302pt.
-
-Overfull \hbox (14.06575pt too wide) in paragraph at lines 27--27
-|[]\OT1/cmr/bx/n/17.28 Sensitivity Anal-y-sis (Greeks via Fi-nite Dif-fer-ences)| 
- []
-
-[19 <../assets/performance_analysis.pdf>]
-<../assets/option_greeks.pdf, id=586, 1114.58485pt x 502.6476pt>
-File: ../assets/option_greeks.pdf Graphic file (type pdf)
-<use ../assets/option_greeks.pdf>
-Package pdftex.def Info: ../assets/option_greeks.pdf  used on input line 41.
-(pdftex.def)             Requested size: 381.12221pt x 171.87198pt.
- [20 <../assets/option_greeks.pdf>]
-<../assets/volatility_smile.pdf, id=687, 625.83188pt x 394.39824pt>
-File: ../assets/volatility_smile.pdf Graphic file (type pdf)
-<use ../assets/volatility_smile.pdf>
-Package pdftex.def Info: ../assets/volatility_smile.pdf  used on input line 50.
-(pdftex.def)             Requested size: 381.12221pt x 240.18538pt.
- (/usr/local/texlive/2025/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2025/11/14 1.11b listings language file
-) (/usr/local/texlive/2025/texmf-dist/tex/latex/listings/lstlang1.sty
-File: lstlang1.sty 2025/11/14 1.11b listings language file
-) [21 <../assets/volatility_smile.pdf>]
-Overfull \hbox (136.95486pt too wide) in paragraph at lines 65--66
-[][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
- []
-
-) (./chapters/06_Conclusions.tex [22]
-Chapter 6.
-) [23
-
-] [24
-
-] (./main.aux)
+(./main.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-29>
  ***********
-Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 7E82A13F7BEDB7245AF38FAC492D7430;6271.
+
+
+LaTeX Warning: There were undefined references.
+
+
+Package rerunfilecheck Warning: File `main.out' has changed.
+(rerunfilecheck)                Rerun to get outlines right
+(rerunfilecheck)                or use package `bookmark'.
+
+Package rerunfilecheck Info: Checksums for `main.out':
+(rerunfilecheck)             Before: <no file>
+(rerunfilecheck)             After:  B3C7A92E90709AE4253C07CDF0B3C973;1709.
+
+Package biblatex Warning: Please (re)run Biber on the file:
+(biblatex)                main
+(biblatex)                and rerun LaTeX afterwards.
+
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 37945 strings out of 467538
- 748371 string characters out of 5419547
- 1617810 words of memory out of 5000000
- 66173 multiletter control sequences out of 15000+600000
- 636959 words of font info for 73 fonts, out of 8000000 for 9000
+ 36171 strings out of 467538
+ 715586 string characters out of 5419547
+ 1605992 words of memory out of 5000000
+ 64550 multiletter control sequences out of 15000+600000
+ 629845 words of font info for 47 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 131i,10n,135p,1342b,2706s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb>
-Output written on main.pdf (25 pages, 581692 bytes).
+ 131i,5n,135p,1336b,1779s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb>
+Output written on main.pdf (6 pages, 40152 bytes).
 PDF statistics:
- 919 PDF objects out of 1000 (max. 8388607)
- 549 compressed objects within 6 object streams
- 119 named destinations out of 1000 (max. 500000)
- 304 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 65 PDF objects out of 1000 (max. 8388607)
+ 50 compressed objects within 1 object stream
+ 18 named destinations out of 1000 (max. 500000)
+ 13 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -2373,15 +2373,7 @@
     <bcf:datasource type="file" datatype="bibtex" glob="false">references.bib</bcf:datasource>
   </bcf:bibdata>
   <bcf:section number="0">
-    <bcf:citekey order="1" intorder="1">lalley_wiener</bcf:citekey>
-    <bcf:citekey order="2" intorder="1">goodman2018ito</bcf:citekey>
-    <bcf:citekey order="3" intorder="1">gautam_girsanov</bcf:citekey>
-    <bcf:citekey order="4" intorder="1">glasserman2004monte</bcf:citekey>
-    <bcf:citekey order="5" intorder="1">hilpisch2018python</bcf:citekey>
-    <bcf:citekey order="6" intorder="1">matsumoto1998mersenne</bcf:citekey>
-    <bcf:citekey order="7" intorder="1">hennessy2011computer</bcf:citekey>
-    <bcf:citekey order="8" intorder="1">glasserman2004monte</bcf:citekey>
-    <bcf:citekey order="9" intorder="1" nocite="1">*</bcf:citekey>
+    <bcf:citekey order="1" intorder="1" nocite="1">*</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">

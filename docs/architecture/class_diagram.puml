@@ -1,0 +1,87 @@
+@startuml class_diagram
+
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 80
+skinparam ranksep 80
+
+package "core.models" {
+    class ImageTensor <<Immutable>> {
+        + raw_tensor : Tensor
+        + validate_shape() : bool
+    }
+
+    class TikzTokens <<Immutable>> {
+        + markup : str
+        + validate_syntax() : bool
+    }
+
+    class CompilationResult <<Immutable>> {
+        + pdf_data : bytes
+        + is_successful : bool
+    }
+}
+
+package "ports.inbound" {
+    interface GenerateTikzUseCase {
+        + execute(image: ImageTensor) : CompilationResult
+    }
+}
+
+package "ports.outbound" {
+    interface VLMInferencePort {
+        + predict_markup(image: ImageTensor) : TikzTokens
+    }
+
+    interface TikZCompilerPort {
+        + compile_to_pdf(tokens: TikzTokens) : CompilationResult
+    }
+}
+
+package "core" {
+    class ImageToTikZOrchestrator {
+        - vlm_port : VLMInferencePort
+        - compiler_port : TikZCompilerPort
+        + __init__(vlm: VLMInferencePort, compiler: TikZCompilerPort)
+        + execute(image: ImageTensor) : CompilationResult
+    }
+}
+
+package "adapters.inbound" {
+    class FastAPIController {
+        - use_case : GenerateTikzUseCase
+        + __init__(use_case: GenerateTikzUseCase)
+        + handle_generate_request(payload: bytes) : bytes
+    }
+}
+
+package "adapters.outbound" {
+    class HuggingFaceVLMAdapter {
+        - model_weights : Tensor
+        + __init__(model_id: str)
+        + predict_markup(image: ImageTensor) : TikzTokens
+    }
+
+    class TeXLiveCompilerAdapter {
+        - timeout_seconds : int
+        + __init__(timeout_seconds: int)
+        + compile_to_pdf(tokens: TikzTokens) : CompilationResult
+    }
+}
+
+' Architectural Flow & DIP Relationships
+FastAPIController o-- GenerateTikzUseCase
+ImageToTikZOrchestrator ..|> GenerateTikzUseCase
+
+ImageToTikZOrchestrator o-- VLMInferencePort
+ImageToTikZOrchestrator o-- TikZCompilerPort
+
+HuggingFaceVLMAdapter ..|> VLMInferencePort
+TeXLiveCompilerAdapter ..|> TikZCompilerPort
+
+' Domain Model Dependencies
+ImageToTikZOrchestrator ..> ImageTensor
+ImageToTikZOrchestrator ..> TikzTokens
+ImageToTikZOrchestrator ..> CompilationResult
+
+@enduml
