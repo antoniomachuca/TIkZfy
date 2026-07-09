@@ -1,0 +1,17 @@
+\chapter{Conclusions and Future Work}
+
+\section{Degree of Completion}
+The primary objective of developing a hybrid numerical integration engine for option pricing was achieved. The architectural separation restricts Python to a high-level orchestration role, delegating the computationally intensive $\mathcal{O}(N)$ simulation loops to an optimized C++ core. This division resulted in an $\mathcal{O}(1)$ spatial complexity per thread, verified empirically by Valgrind Memcheck. 
+
+The data transfer latency at the language boundary was minimized by implementing a zero-copy architecture via the \texttt{pybind11::array\_t} buffer protocol. Throughput was maintained by enabling \texttt{-ffast-math} alongside SSE/AVX Flush-to-Zero (FTZ) and Denormals-Are-Zero (DAZ) flags, preventing microcode execution penalties caused by subnormal trajectories in Out-of-The-Money integrations.
+
+Mathematically, the numerical estimator converges to the analytical Black-Scholes solution at a rate of $\mathcal{O}(1/\sqrt{N})$. The variance reduction was achieved by exploiting the negative covariance intrinsic to the antithetic variates method. 
+
+\section{Future Work}
+The existing architecture provides a foundation for the following extensions:
+
+\begin{enumerate}
+    \item \textbf{Path-Dependent Derivatives:} The \texttt{MonteCarloPricer} abstraction can be extended to evaluate path-dependent exotic options (e.g., Asian, Barrier, and Lookback options). This requires tracking intermediate discrete time steps rather than solely computing the terminal price \(S_T\).
+    \item \textbf{Stochastic Volatility Models:} The geometric Brownian motion assumes constant volatility. Implementing the Heston or SABR models via systems of coupled Stochastic Differential Equations (SDEs) would allow the engine to capture the volatility smile dynamics natively without post-hoc calibration.
+    \item \textbf{Hardware Acceleration:} While the current multithreaded CPU architecture scales across available physical cores, porting the independent simulation trajectories to a GPU computing framework (e.g., CUDA or Apple Metal Compute) would leverage Single Instruction, Multiple Threads (SIMT) execution models for further latency reduction.
+\end{enumerate}

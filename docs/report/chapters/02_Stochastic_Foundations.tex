@@ -1,0 +1,140 @@
+\chapter{Stochastic and Mathematical Foundations}
+
+\section{Underlying Asset Dynamics}
+
+The foundational assumption in modern financial mathematics is that asset prices exhibit random, unpredictable behavior over time, while still following a general trend. This is modeled using stochastic processes on a probability space \((\Omega, \mathcal{F}, \mathbb{P})\).
+
+\begin{definition}[Standard Brownian Motion \cite{lalley_wiener}]
+A standard Brownian (or a standard Wiener process) is a stochastic process \(\{W_t\}_{t \geq 0}\) (that is, a family of random variables \(W_t\), indexed by nonnegative real numbers \(t\), defined on a common probability space \((\Omega, \mathcal{F}, \mathbb{P})\)) with the following properties:
+\begin{enumerate}
+    \item \(W_0 = 0\).
+    \item With probability 1, the function \(t \to W_t\) is continuous in \(t\).
+    \item The process \(\{W_t\}_{t \geq 0}\) has stationary, independent increments.
+    \item The increment \(W_{t+s} - W_{s}\) has the \(\mathcal{N}(0, t)\) distribution.
+\end{enumerate}
+\end{definition}
+
+\begin{definition}[Geometric Brownian Motion]
+A stochastic process \(S = \{S_t\}_{t \geq 0}\) is said to follow a Geometric Brownian Motion (GBM) if it satisfies the following Stochastic Differential Equation (SDE):
+\begin{equation}
+    dS_t = \mu S_t dt + \sigma S_t dW_t
+\end{equation}
+where \(\mu \in \mathbb{R}\) is the expected return (drift coefficient) and \(\sigma > 0\) is the volatility (diffusion coefficient).
+\end{definition}
+
+\begin{remark}
+    This model ensures that the asset price is strictly positive (\(S_t > 0\)).
+\end{remark}
+
+
+\section{Itô's Lemma and Risk-Neutral Valuation}
+
+\begin{theorem}[Itô's Lemma \cite{goodman2018ito}]
+If \(X_t\) is a diffusion process with infinitesimal mean \(a(x, t)\) and infinitesimal variance \(v(x, t)\), and if \(u(x, t)\) is a function with enough derivatives, then \(Y_t = u(X_t, t)\) is another stochastic process that satisfies:
+\begin{equation}
+    du(X_t, t) = \partial_t u(X_t, t) dt + \partial_x u(X_t, t) dX_t + \frac{1}{2} \partial^2_x u(X_t, t) v(X_t) dt
+\end{equation}
+\end{theorem}
+
+\begin{proposition}[Solution to the GBM Equation]
+The analytical solution to the Geometric Brownian Motion SDE \(dS_t = \mu S_t dt + \sigma S_t dW_t\) is given by:
+\begin{equation}
+    S_T = S_0 e^{\left( \mu - \frac{\sigma^2}{2} \right) T + \sigma W_T}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Let us apply Itô's Lemma by defining the function \(f(S, t) = \ln(S_t)\). Computing its partial derivatives:
+\[
+    \frac{\partial f}{\partial t} = 0 
+\]
+\[
+    \frac{\partial f}{\partial S} = \frac{1}{S_t} 
+\]
+\[
+    \frac{\partial^2 f}{\partial S^2} = -\frac{1}{S_t^2}
+\]
+Substituting these into Itô's formula alongside \(dS_t = \mu S_t dt + \sigma S_t dW_t\):
+\[
+    d(\ln S_t) = 0 \cdot dt + \frac{1}{S_t} (\mu S_t dt + \sigma S_t dW_t) + \frac{1}{2} \left(-\frac{1}{S_t^2}\right) \sigma^2 S_t^2 dt \\
+    = \left( \mu - \frac{\sigma^2}{2} \right) dt + \sigma dW_t
+\]
+Integrating this equation from \(0\) to \(T\):
+\[
+    \int_0^T d(\ln S_t) = \int_0^T \left( \mu - \frac{\sigma^2}{2} \right) dt + \int_0^T \sigma dW_t
+\]
+which yields:
+\[
+    \ln S_T - \ln S_0 = \left( \mu - \frac{\sigma^2}{2} \right) T + \sigma W_T
+\]
+Taking the exponential on both sides gives the desired result:
+\[
+    S_T = S_0 e^{\left( \mu - \frac{\sigma^2}{2} \right) T + \sigma W_T}
+\]
+\end{proof}
+
+\begin{theorem}[Girsanov's Theorem \cite{gautam_girsanov}]
+Let \(W(t)\) be a Brownian motion under the measure \(\mathbb{P}\). If we define a martingale process \(Z(t) = e^{\left( - \int_0^t \theta(s) dW(s) - \frac{1}{2} \int_0^t \theta(s)^2 ds \right)}\), we can define a new equivalent measure \(\tilde{\mathbb{P}}\). Under this new measure \(\tilde{\mathbb{P}}\), the process
+\[
+    \tilde{W}(t) = W(t) + \int_0^t \theta(s) ds
+\]
+is a Brownian motion.
+\end{theorem}
+
+\begin{definition}[Risk-Neutral Measure]
+A risk-neutral measure \(\tilde{\mathbb{P}}\), often denoted \(\mathbb{Q}\), is a measure equivalent to \(\mathbb{P}\) under which the discounted stock price process \(D(t)S_t\) is a martingale. By Girsanov's Theorem, this allows us to shift the real-world drift \(\mu\) to the risk-free rate \(r\) by changing the probability measure.
+\end{definition}
+
+Under \(\mathbb{Q}\), the terminal price using a standard normal variable \(Z \sim \mathcal{N}(0,1)\) (since \(W_T = \sqrt{T} Z\)) becomes:
+\begin{equation}
+    S_T = S_0 e^{\left( r - \frac{\sigma^2}{2} \right) T + \sigma \sqrt{T} Z}
+    \label{eq:gbm_solution}
+\end{equation}
+Equation \ref{eq:gbm_solution} forms the core of our Monte Carlo engine.
+
+\section{The Black-Scholes-Merton Formula}
+
+\begin{theorem}[Black-Scholes-Merton Formula]
+Under the risk-neutral measure \(\mathbb{Q}\), the no-arbitrage price of a European Call option \(C\) and a European Put option \(P\) with strike price \(K\) and time to maturity \(T\) is given by:
+\begin{align}
+    C &= S_0 \Phi(d_1) - K e^{-rT} \Phi(d_2) \\
+    P &= K e^{-rT} \Phi(-d_2) - S_0 \Phi(-d_1)
+\end{align}
+where \(\Phi(\cdot)\) is the cumulative distribution function of the standard normal distribution, and:
+\begin{align}
+    d_1 &= \frac{\ln(S_0 / K) + \left( r + \frac{\sigma^2}{2} \right) T}{\sigma \sqrt{T}} \\
+    d_2 &= d_1 - \sigma \sqrt{T}
+\end{align}
+\end{theorem}
+
+\begin{remark}
+    In our architecture, this formula acts as the "Oracle" (ground truth) against which we benchmark the accuracy and convergence of our Monte Carlo simulations.
+\end{remark}
+
+\section{Monte Carlo Numerical Integration}
+
+\begin{theorem}[Fundamental Theorem of Asset Pricing]
+The present value of any derivative with payoff \(V(S_T)\) at maturity \(T\) is the discounted expected value of its payoff under the risk-neutral measure \(\mathbb{Q}\):
+\begin{equation}
+    V_0 = e^{-rT} \mathbb{E}^{\mathbb{Q}}[ V(S_T) ]
+\end{equation}
+\end{theorem}
+
+\begin{proposition}[Monte Carlo Estimator \cite{glasserman2004monte}]
+By the Strong Law of Large Numbers, the expectation can be approximated numerically by simulating \(N\) independent paths. For a Call option payoff \(V(S_T) = \max(S_T - K, 0)\):
+\begin{equation}
+    C \approx \hat{C}_N = e^{-rT} \frac{1}{N} \sum_{i=1}^{N} \max(S_{T, i} - K, 0)
+\end{equation}
+\end{proposition}
+
+\begin{proposition}[Error Convergence]
+By the Central Limit Theorem, the standard error of the Monte Carlo estimator converges at a rate of \(\mathcal{O}(1/\sqrt{N})\):
+\begin{equation}
+    \text{SE}(\hat{C}_N) = \frac{s_V}{\sqrt{N}}
+\end{equation}
+where \(s_V\) is the sample standard deviation of the simulated payoffs.
+\end{proposition}
+
+\begin{remark}
+    The \(\mathcal{O}(1/\sqrt{N})\) convergence rate is the primary bottleneck of Monte Carlo methods. To reduce the numerical error by one order of magnitude, the number of simulations \(N\) must increase by a factor of 100. This computational intensity makes interpreted languages like Python prohibitively slow, motivating our hybrid architecture: delegating the \(\mathcal{O}(N)\) simulation loops to an optimized C++ backend capable of handling millions of paths in milliseconds.
+\end{remark}
