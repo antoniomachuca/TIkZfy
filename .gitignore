@@ -1,0 +1,98 @@
+# =========================================================================
+# Motor Image-to-TikZ - Gitignore Global
+# Basado en la Arquitectura Hexagonal y Stack Tecnológico
+# =========================================================================
+
+# -------------------------------------------------------------------------
+# 1. Sistema Operativo y Editores
+# -------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+.vscode/
+.idea/
+*.swp
+*.swo
+.env
+.env.*
+!.env.example
+
+# -------------------------------------------------------------------------
+# 2. Frontend (Astro + Tailwind CSS)
+# -------------------------------------------------------------------------
+# El frontend reside en /frontend, pero estas reglas globales aplican
+node_modules/
+dist/
+.astro/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# -------------------------------------------------------------------------
+# 3. Python / FastAPI / Pydantic (Capa de Adaptadores y Backend)
+# -------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# -------------------------------------------------------------------------
+# 4. PyTorch / Machine Learning / Hugging Face (Dominio Matemático - Core)
+# -------------------------------------------------------------------------
+# Archivos binarios masivos de entrenamiento y datasets
+*.pth
+*.pt
+*.ckpt
+*.safetensors
+models/
+checkpoints/
+data/
+datasets/
+logs/
+tensorboard_logs/
+.huggingface/
+.cache/
+wandb/
+
+# -------------------------------------------------------------------------
+# 5. LaTeX / TeX Live (Validación y Memoria Científica)
+# -------------------------------------------------------------------------
+*.aux
+*.bbl
+*.blg
+*.brf
+*.fdb_latexmk
+*.fls
+*.ilg
+*.ind
+*.lof
+*.lot
+*.out
+*.toc
+*.synctex.gz
+# Las salidas de compilación transitorias del motor
+*.pdf
+outputs/
+temp_tex/

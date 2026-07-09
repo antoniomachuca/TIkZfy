@@ -1,0 +1,1 @@
+# 🧠 Núcleo matemático inmutable
