@@ -1,9 +1,10 @@
-import pytest
-import torch
 from dataclasses import FrozenInstanceError
 
-from core.models import ImageTensor, TikzTokens, CompilationResult
-from core.exceptions import TensorTopologyError, SyntaxTopologicalError
+import pytest
+import torch
+
+from core.exceptions import SyntaxTopologicalError, TensorTopologyError
+from core.models import CompilationResult, ImageTensor, TikzTokens
 
 
 def test_image_tensor_valid_topology():
@@ -32,7 +33,7 @@ def test_image_tensor_immutability():
     """Verify state immutability mapping to @dataclass(frozen=True)."""
     valid_tensor = torch.zeros(1, 3, 256, 256)
     image = ImageTensor(raw_tensor=valid_tensor)
-    
+
     with pytest.raises(FrozenInstanceError):
         image.raw_tensor = torch.zeros(1, 3, 512, 512)  # type: ignore
 

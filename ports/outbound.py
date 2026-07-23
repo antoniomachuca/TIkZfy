@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
-from core.models import ImageTensor, TikzTokens, CompilationResult
+
+from core.models import CompilationResult, ImageTensor, RawLatexDocument, TikzTokens
+
 
 class ModelInferencePort(ABC):
     """
     Outbound port defining the mathematical contract for Neural Network inference.
-    
+
     This interface ensures that the central Use Case orchestrator is isolated from
     the specific VLM topology (e.g., Vision Transformers, Auto-regressive Decoders).
     """
@@ -26,11 +28,35 @@ class ModelInferencePort(ABC):
         """
         pass
 
+class LatexSourcePort(ABC):
+    """
+    Outbound port defining the infrastructural contract for fetching LaTeX sources.
+
+    This interface ensures that data ingestion pipelines can collect string primitives
+    from remote sources and reliably parse them into the pure structural domain representation
+    without leaking I/O constructs into the mathematical core.
+    """
+
+    @abstractmethod
+    async def fetch_sources(self, source_identifiers: list[str]) -> list[RawLatexDocument]:
+        """
+        Asynchronously retrieves raw LaTeX data and maps it to domain entities.
+
+        Args:
+            source_identifiers (list[str]): The URIs or path identifiers to retrieve.
+
+        Returns:
+            list[RawLatexDocument]: The sequence of retrieved unparsed sources.
+
+        Raises:
+            DomainError: If ingestion strictly fails or sources violate bounds.
+        """
+        pass
 
 class TexCompilerPort(ABC):
     """
     Outbound port defining the infrastructural contract for TeX Live compilation.
-    
+
     This interface ensures that the pure mathematical domain is isolated from
     subprocess execution, OS-level I/O operations, and binary payload generation.
     """

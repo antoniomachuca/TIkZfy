@@ -1,6 +1,8 @@
 import pytest
+
 from ports.inbound import ImageToTikzUseCase
 from ports.outbound import ModelInferencePort, TexCompilerPort
+
 
 def test_cannot_instantiate_usecase():
     """Verify ImageToTikzUseCase is purely abstract."""
