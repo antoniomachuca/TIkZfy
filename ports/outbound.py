@@ -62,7 +62,7 @@ class TexCompilerPort(ABC):
     """
 
     @abstractmethod
-    def compile_tikz(self, tokens: TikzTokens) -> CompilationResult:
+    async def compile_tikz(self, tokens: TikzTokens) -> CompilationResult: #async: if it´s not async the compiler it will block the main thread
         """
         Compiles the bounded syntactic sequence into a binary artifact (e.g., PDF).
 
