@@ -1,0 +1,151 @@
+<div id="cyclic-animation-container" class="fixed inset-0 pointer-events-none z-10 overflow-hidden hidden lg:block">
+  <!-- Anchor at center of screen -->
+  <div class="absolute left-1/2 top-1/2 w-0 h-0">
+    <!-- Animated wrapper for position -->
+    <div id="animated-wrapper" class="absolute">
+      <!-- Centered ASCII content vertically, left aligned horizontally -->
+      <pre id="animated-ascii" class="absolute -translate-y-1/2 font-mono text-[7px] md:text-[9px] font-bold leading-[1.1] tracking-tighter whitespace-pre text-gray-400 opacity-60 mix-blend-multiply mask-fade-left">
+      </pre>
+    </div>
+  </div>
+</div>
+
+<style>
+  .mask-fade-left {
+    mask-image: linear-gradient(to left, black 80%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to left, black 80%, transparent 100%);
+  }
+</style>
+
+<script>
+  import anime from 'animejs';
+  import { mathFigures } from '../data/mathFigures.js';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const wrapper = document.getElementById('animated-wrapper');
+    const asciiEl = document.getElementById('animated-ascii');
+    if (!wrapper || !asciiEl) return;
+    
+    const data = mathFigures;
+
+    const chars = '!<>-_\\[]{}—=+*^?#_01';
+    const randomCharPool = new Array(100000);
+    for(let i=0; i<100000; i++) {
+      randomCharPool[i] = chars[Math.floor(Math.random() * chars.length)];
+    }
+
+    function formText(text, progress) {
+      const len = text.length;
+      const activeIndex = Math.floor(progress * len);
+      let poolIndex = Math.floor(Math.random() * 50000);
+      
+      const arr = new Array(len);
+      for(let i = 0; i < len; i++) {
+        const c = text[i];
+        if (c === '\n') {
+          arr[i] = '\n';
+        } else {
+          if (i < activeIndex) {
+            arr[i] = c;
+          } else {
+            arr[i] = randomCharPool[poolIndex];
+            poolIndex = (poolIndex + 1) % 100000;
+          }
+        }
+      }
+      return arr.join('');
+    }
+
+    function deformText(text, progress) {
+      const len = text.length;
+      const activeIndex = Math.floor(progress * len);
+      let poolIndex = Math.floor(Math.random() * 50000);
+      
+      const arr = new Array(len);
+      for(let i = 0; i < len; i++) {
+        const c = text[i];
+        if (c === '\n') {
+          arr[i] = '\n';
+        } else {
+          if (i >= len - activeIndex) {
+            arr[i] = randomCharPool[poolIndex];
+            poolIndex = (poolIndex + 1) % 100000;
+          } else {
+            arr[i] = c;
+          }
+        }
+      }
+      return arr.join('');
+    }
+
+    let currentIndex = 0;
+
+    function runCycle() {
+      if (currentIndex >= data.length) currentIndex = 0;
+      const figure = data[currentIndex];
+      const targetText = figure.ascii;
+      
+      const posX = 0; 
+      const posY = 0;
+
+      const dummy = { in: 0, out: 0 };
+
+      anime.set(wrapper, {
+        translateX: posX,
+        translateY: posY,
+        scale: 1.0
+      });
+
+      const timeline = anime.timeline({
+        complete: () => {
+          currentIndex++;
+          runCycle();
+        }
+      });
+
+      timeline.add({
+        targets: dummy,
+        in: [0, 100],
+        duration: 8000,
+        easing: 'easeOutBack',
+        update: function() {
+          const p = dummy.in / 100;
+          asciiEl.textContent = formText(targetText, p); 
+        }
+      });
+
+      timeline.add({
+        targets: dummy,
+        duration: 1500,
+        update: function() {
+          asciiEl.textContent = targetText;
+        }
+      });
+
+      timeline.add({
+        targets: dummy,
+        out: [0, 100],
+        duration: 8000,
+        easing: 'easeOutBack',
+        update: function() {
+          const p = dummy.out / 100;
+          asciiEl.textContent = deformText(targetText, p);
+        }
+      });
+    }
+
+    const startDelayed = () => setTimeout(runCycle, 3100);
+
+    if (window.isTikzFilled) {
+      startDelayed();
+    } else {
+      window.addEventListener('tikzFilled', startDelayed, { once: true });
+      setTimeout(() => {
+        if (!window.isTikzFilled) {
+          window.isTikzFilled = true;
+          startDelayed();
+        }
+      }, 6500);
+    }
+  });
+</script>

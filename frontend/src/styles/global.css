@@ -1,1 +1,58 @@
 @import "tailwindcss";
+
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --font-sans: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.math-font {
+  font-family: 'Latin Modern Math', 'Computer Modern', serif;
+}
+
+/* Custom scrollbar for brutalist look */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: #ffffff;
+  border-left: 1px solid #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #000;
+}
+
+.border-brutal {
+  border: 1px solid #000;
+}
+
+.bg-brutal-hover:hover {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Massive typography tracking */
+.tracking-tighter-massive {
+  letter-spacing: -0.05em;
+}
+
+.text-massive {
+  font-size: clamp(4rem, 15vw, 15rem);
+  line-height: 0.8;
+  font-weight: 900;
+}
+
+.brutal-shadow {
+  box-shadow: 4px 4px 0px 0px #000000;
+}

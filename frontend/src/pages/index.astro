@@ -1,11 +1,212 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import BackgroundTikZ from '../components/BackgroundTikZ.astro';
+import UploadCard from '../components/UploadCard.astro';
+import InteractiveGeometry from '../components/InteractiveGeometry.astro';
 ---
 
 <Layout>
-	<Welcome />
+  <div class="fixed inset-0 pointer-events-none flex flex-col justify-between p-4 overflow-hidden z-20 mix-blend-difference text-white">
+    <h1 class="text-massive tracking-tighter-massive leading-none translate-y-8 md:translate-y-16 reveal-title">Tikzfy</h1>
+  </div>
+
+  <InteractiveGeometry />
+
+  <main class="relative z-30 min-h-screen flex flex-col items-center justify-center p-4">
+    
+    <div id="landing-view" class="flex flex-col items-center max-w-3xl w-full mt-48 md:mt-64">
+      
+      <div class="w-full bg-white border-2 border-black p-8 md:p-10 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative z-20 transition-transform duration-300">
+      <div class="text-center">
+        <h2 class="text-2xl font-bold uppercase tracking-tight mb-2">Image to LaTeX Compiler</h2>
+        <p class="text-sm font-mono text-black/70">Drag & Drop or Select an image</p>
+      </div>
+
+      <div id="drop-zone" class="w-full border-2 border-dashed border-black p-12 text-center cursor-pointer hover:bg-black hover:text-white transition-colors duration-300 group">
+        <span class="font-mono uppercase text-xs tracking-widest group-hover:text-white">Drop Zone</span>
+      </div>
+
+      <div class="flex items-center w-full gap-4 opacity-70 my-6">
+        <div class="h-px bg-black flex-1"></div>
+        <span class="text-[10px] uppercase font-mono tracking-widest font-bold">OR</span>
+        <div class="h-px bg-black flex-1"></div>
+      </div>
+
+      <label for="file-upload" class="w-full block text-center px-8 py-4 bg-white border-2 border-black hover:bg-black hover:text-white font-bold uppercase tracking-wider transition-colors duration-300 cursor-pointer text-sm">
+        Upload Image
+      </label>
+      <input id="file-upload" type="file" class="hidden" accept="image/*" />
+      </div>
+    </div>
+
+    <div id="results-view" class="hidden flex-col items-center w-full max-w-7xl opacity-0 transition-opacity duration-500 bg-white border-brutal brutal-shadow p-2 sm:p-4 relative z-20">
+      
+      <div class="w-full flex justify-between items-center mb-4 pb-4 border-b border-black">
+        <button id="btn-back" class="font-mono uppercase text-xs font-bold hover:underline px-4 py-2 border-brutal hover:bg-black hover:text-white transition-colors">
+          ← Back
+        </button>
+        <div class="flex items-center gap-2">
+          <button id="btn-copy" class="font-mono uppercase text-xs font-bold px-4 py-2 border-brutal hover:bg-black hover:text-white transition-colors">
+            Copy Code
+          </button>
+          <button id="btn-save" class="font-mono uppercase text-xs font-bold px-4 py-2 border-brutal bg-black text-white hover:bg-white hover:text-black transition-colors">
+            Save .tex
+          </button>
+        </div>
+      </div>
+
+      <div class="relative w-full aspect-video max-h-[75vh] border-brutal overflow-hidden select-none bg-gray-100">
+        <div class="absolute inset-0 w-full h-full flex items-center justify-center">
+          <img id="original-image" src="" class="w-full h-full object-contain mix-blend-multiply" alt="Original" />
+        </div>
+
+        <div id="render-layer" class="absolute inset-0 w-full h-full bg-white flex items-center justify-center border-l border-black pointer-events-none" style="clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);">
+          <svg class="w-1/2 h-1/2" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="10" width="180" height="180" stroke="black" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
+            <circle cx="100" cy="100" r="50" stroke="black" stroke-width="4" fill="none" />
+            <path d="M100 50 L150 150 L50 150 Z" stroke="black" stroke-width="2" fill="none"/>
+            <text x="90" y="105" fill="black" font-family="monospace" font-size="14" font-weight="bold">TikZ</text>
+          </svg>
+        </div>
+
+        <div id="slider-handle" class="absolute inset-y-0 left-1/2 w-0.5 bg-black cursor-ew-resize flex items-center justify-center z-10 -ml-[1px]">
+          <div class="w-8 h-8 bg-white border-2 border-black rounded-full flex items-center justify-center pointer-events-none text-black font-bold text-xs shadow-[2px_2px_0px_0px_#000]">
+            &lt;&gt;
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 </Layout>
+
+<script>
+  import anime from 'animejs';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    anime({
+      targets: '.reveal-title',
+      opacity: [0, 1],
+      translateX: [-50, 0],
+      duration: 1500,
+      easing: 'easeOutExpo',
+      delay: anime.stagger(200)
+    });
+
+    const dropZone = document.getElementById('drop-zone');
+    const fileUpload = document.getElementById('file-upload');
+    const landingView = document.getElementById('landing-view');
+    const resultsView = document.getElementById('results-view');
+    const btnBack = document.getElementById('btn-back');
+    const originalImage = document.getElementById('original-image');
+    
+    const sliderContainer = resultsView.querySelector('.aspect-video');
+    const sliderHandle = document.getElementById('slider-handle');
+    const renderLayer = document.getElementById('render-layer');
+
+    let isDragging = false;
+
+    const showResults = (file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        originalImage.src = e.target.result;
+        
+        // Hide landing smoothly
+        landingView.style.transform = 'scale(0.95)';
+        landingView.style.opacity = '0';
+        setTimeout(() => {
+          landingView.classList.add('hidden');
+          resultsView.classList.remove('hidden');
+          setTimeout(() => {
+            resultsView.classList.remove('opacity-0');
+            updateSlider(50);
+          }, 50);
+        }, 500);
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const showLanding = () => {
+      resultsView.classList.add('opacity-0');
+      setTimeout(() => {
+        resultsView.classList.add('hidden');
+        landingView.classList.remove('hidden');
+        setTimeout(() => {
+          landingView.style.transform = 'scale(1)';
+          landingView.style.opacity = '1';
+        }, 50);
+      }, 500);
+    };
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('bg-black', 'text-white');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('bg-black', 'text-white');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('bg-black', 'text-white');
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        showResults(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileUpload.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        showResults(e.target.files[0]);
+      }
+    });
+
+    btnBack.addEventListener('click', showLanding);
+
+    const updateSlider = (percentage) => {
+      const p = Math.max(0, Math.min(percentage, 100));
+      sliderHandle.style.left = `${p}%`;
+      renderLayer.style.clipPath = `polygon(${p}% 0, 100% 0, 100% 100%, ${p}% 100%)`;
+    };
+
+    const onMouseMove = (e) => {
+      if (!isDragging) return;
+      const rect = sliderContainer.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      let percentage = (x / rect.width) * 100;
+      updateSlider(percentage);
+    };
+
+    const onMouseUp = () => {
+      isDragging = false;
+      document.body.style.cursor = 'default';
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    sliderHandle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      isDragging = true;
+      document.body.style.cursor = 'ew-resize';
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+
+    sliderHandle.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      const onTouchMove = (e) => {
+        if (!isDragging) return;
+        const rect = sliderContainer.getBoundingClientRect();
+        let x = e.touches[0].clientX - rect.left;
+        let percentage = (x / rect.width) * 100;
+        updateSlider(percentage);
+      };
+      const onTouchEnd = () => {
+        isDragging = false;
+        window.removeEventListener('touchmove', onTouchMove);
+        window.removeEventListener('touchend', onTouchEnd);
+      };
+      window.addEventListener('touchmove', onTouchMove, { passive: false });
+      window.addEventListener('touchend', onTouchEnd);
+    }, { passive: true });
+  });
+</script>
