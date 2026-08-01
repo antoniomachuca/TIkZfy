@@ -14,7 +14,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
 
   <main class="relative z-30 min-h-screen flex flex-col items-center justify-center p-4">
     
-    <div id="landing-view" class="flex flex-col items-center max-w-3xl w-full mt-48 md:mt-64">
+    <section id="landing-view" class="flex flex-col items-center max-w-3xl w-full mt-48 md:mt-64">
       
       <div class="w-full bg-white border-2 border-black p-8 md:p-10 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative z-20 transition-transform duration-300">
       <div class="text-center">
@@ -37,9 +37,9 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
       </label>
       <input id="file-upload" type="file" class="hidden" accept="image/*" />
       </div>
-    </div>
+    </section>
 
-    <div id="results-view" class="hidden flex-col items-center w-full max-w-7xl opacity-0 transition-opacity duration-500 bg-white border-brutal brutal-shadow p-2 sm:p-4 relative z-20">
+    <section id="results-view" class="hidden flex-col items-center w-full max-w-7xl opacity-0 transition-opacity duration-500 bg-white border-brutal brutal-shadow p-2 sm:p-4 relative z-20">
       
       <div class="w-full flex justify-between items-center mb-4 pb-4 border-b border-black">
         <button id="btn-back" class="font-mono uppercase text-xs font-bold hover:underline px-4 py-2 border-brutal hover:bg-black hover:text-white transition-colors">
@@ -75,7 +75,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
           </div>
         </div>
       </div>
-    </div>
+    </section>
   </main>
 </Layout>
 
