@@ -4,9 +4,10 @@ import BackgroundTikZ from '../components/BackgroundTikZ.astro';
 
 interface Props {
 	title?: string;
+  hideBackground?: boolean;
 }
 
-const { title = "Tikzfy - Code Driven Design" } = Astro.props;
+const { title = "Tikzfy - Code Driven Design", hideBackground = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -25,16 +26,17 @@ const { title = "Tikzfy - Code Driven Design" } = Astro.props;
 		<title>{title}</title>
 	</head>
 	<body class="relative min-h-screen text-black bg-white">
-		<BackgroundTikZ />
+		{!hideBackground && <BackgroundTikZ />}
 		
     <nav class="fixed top-0 left-0 w-full p-4 flex justify-between items-start z-50 mix-blend-difference text-white font-mono text-xs uppercase tracking-widest pointer-events-none">
-      <div class="flex gap-12">
-        <span>Tikzfy v1.0</span>
+      <div class="flex gap-6 md:gap-12">
+        <a href="/" class="pointer-events-auto hover:underline">Tikzfy v1.0</a>
         <span class="hidden md:inline">Algorithmic Vectorization</span>
       </div>
-      <div class="flex gap-12">
-        <a href="#" class="pointer-events-auto hover:underline">About</a>
-        <a href="#" class="pointer-events-auto hover:underline">GitHub</a>
+      <div class="flex gap-6 md:gap-12">
+        <a href="/about" class="pointer-events-auto hover:underline">About</a>
+        <a href="https://github.com/antoniomachuca/image-to-tikz-engine" target="_blank" class="pointer-events-auto hover:underline">GitHub</a>
+        <a href="https://ko-fi.com/antoniomachuca" target="_blank" class="pointer-events-auto hover:underline">Ko-fi</a>
       </div>
     </nav>
 

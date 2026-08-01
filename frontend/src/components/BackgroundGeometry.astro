@@ -1,0 +1,76 @@
+---
+---
+<div id="brutal-geometry-background" class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none select-none bg-white opacity-20 mix-blend-multiply">
+  <svg id="geometry-svg" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+  </svg>
+</div>
+
+<script>
+  import anime from 'animejs';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const svg = document.getElementById('geometry-svg');
+    if (!svg) return;
+
+    function createShape() {
+      // Pick random shape: 0 = circle, 1 = polygon, 2 = line
+      const typeRand = Math.random();
+      let type = 'polygon';
+      if (typeRand < 0.33) type = 'circle';
+      else if (typeRand < 0.66) type = 'line';
+
+      const el = document.createElementNS('http://www.w3.org/2000/svg', type);
+      
+      const cx = Math.random() * window.innerWidth;
+      const cy = Math.random() * window.innerHeight;
+      const size = 50 + Math.random() * 250;
+
+      el.setAttribute('stroke', '#000000');
+      el.setAttribute('stroke-width', Math.floor(1 + Math.random() * 4).toString());
+      el.setAttribute('fill', 'none');
+
+      if (type === 'circle') {
+        el.setAttribute('cx', cx.toString());
+        el.setAttribute('cy', cy.toString());
+        el.setAttribute('r', size.toString());
+      } else if (type === 'line') {
+        const angle = Math.random() * Math.PI * 2;
+        el.setAttribute('x1', cx.toString());
+        el.setAttribute('y1', cy.toString());
+        el.setAttribute('x2', (cx + size * Math.cos(angle)).toString());
+        el.setAttribute('y2', (cy + size * Math.sin(angle)).toString());
+      } else {
+        const sides = 3 + Math.floor(Math.random() * 4); // 3 to 6 sides (triangle to hexagon)
+        let points = [];
+        for(let i=0; i<sides; i++) {
+          const angle = (i / sides) * Math.PI * 2 + Math.random();
+          points.push(`${cx + size * Math.cos(angle)},${cy + size * Math.sin(angle)}`);
+        }
+        el.setAttribute('points', points.join(' '));
+      }
+
+      svg.appendChild(el);
+
+      // Animate drawing and erasing
+      anime({
+        targets: el,
+        strokeDashoffset: [anime.setDashoffset, 0],
+        easing: 'easeInOutSine',
+        duration: 3000 + Math.random() * 4000,
+        direction: 'alternate',
+        loop: 1,
+        complete: () => {
+          if (el.parentNode === svg) {
+            svg.removeChild(el);
+          }
+          createShape();
+        }
+      });
+    }
+
+    // Start concurrent continuous vector tracing agents
+    for(let i=0; i<15; i++) {
+      setTimeout(createShape, Math.random() * 5000);
+    }
+  });
+</script>
