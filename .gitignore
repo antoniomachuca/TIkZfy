@@ -68,10 +68,10 @@ env/
 *.safetensors
 models/
 checkpoints/
-data/
-datasets/
-logs/
-tensorboard_logs/
+/data/
+/datasets/
+/logs/
+/tensorboard_logs/
 .huggingface/
 .cache/
 wandb/
