@@ -7,7 +7,7 @@ interface Props {
   hideBackground?: boolean;
 }
 
-const { title = "Tikzfy - Code Driven Design", hideBackground = false } = Astro.props;
+const { title = "Tikzfy - Image to TikZ Engine", hideBackground = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -34,7 +34,7 @@ const { title = "Tikzfy - Code Driven Design", hideBackground = false } = Astro.
         <span class="hidden md:inline">Algorithmic Vectorization</span>
       </div>
       <div class="flex gap-6 md:gap-12">
-        <a href={`${import.meta.env.BASE_URL}about`} class="pointer-events-auto hover:underline">About</a>
+        <a href={`${import.meta.env.BASE_URL}/about`} class="pointer-events-auto hover:underline">About</a>
         <a href="https://github.com/antoniomachuca/image-to-tikz-engine" target="_blank" class="pointer-events-auto hover:underline">GitHub</a>
         <a href="https://ko-fi.com/antoniomachuca" target="_blank" class="pointer-events-auto hover:underline">Ko-fi</a>
       </div>
