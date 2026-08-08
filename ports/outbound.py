@@ -78,3 +78,29 @@ class TexCompilerPort(ABC):
                          geometric primitives during compilation.
         """
         pass
+
+
+class ImageLoaderPort(ABC):
+    """
+    Outbound port defining the infrastructural contract for generic image tensor ingestion.
+
+    This interface encapsulates file system or remote I/O, allowing the mathematical
+    core or Use Cases to fetch and validate spatial data without coupling to specific
+    decoding libraries.
+    """
+
+    @abstractmethod
+    def load_image(self, source_path: str) -> ImageTensor:
+        """
+        Loads an image from the given source identifier and transforms it into the domain tensor.
+
+        Args:
+            source_path (str): The absolute path or URI to the image resource.
+
+        Returns:
+            ImageTensor: The structurally validated tensor with shape (B, C, H, W).
+
+        Raises:
+            DomainError: If the source is inaccessible or cannot be strictly parsed into a tensor.
+        """
+        pass
