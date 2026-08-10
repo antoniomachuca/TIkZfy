@@ -7,8 +7,8 @@ from core.models.value_objects import ImageTensor
 
 def apply_affine_transformation(image: ImageTensor, theta: torch.Tensor) -> ImageTensor:
     """
-    Applies an affine transformation to the given image tensor without sequential
-    spatial iteration, ensuring O(1) logical time execution.
+    Applies an affine transformation to the given image tensor using
+    vectorized operations.
 
     Args:
         image (ImageTensor): The domain tensor constrained to shape (B, C, H, W).
@@ -39,7 +39,7 @@ def apply_affine_transformation(image: ImageTensor, theta: torch.Tensor) -> Imag
     # Shape: (B, C, H, W)
     batch_size, channels, height, width = image.raw_tensor.shape
 
-    # O(1) vectorized grid generation.
+    # Vectorized grid generation.
     grid = F.affine_grid(theta, size=[batch_size, channels, height, width], align_corners=False)
 
     # Parallel bilinear sampling.

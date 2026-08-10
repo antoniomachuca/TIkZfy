@@ -42,7 +42,7 @@ def preprocess_for_encoder(
     Raises:
         TensorTopologyError: If target dimensions are non-positive.
 
-    Temporal complexity: O(1) logical — two vectorized passes.
+    Temporal complexity: O(N) where N is the number of pixels (vectorized operations).
     """
     if target_height <= 0 or target_width <= 0:
         raise TensorTopologyError(

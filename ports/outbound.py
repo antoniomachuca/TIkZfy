@@ -1,6 +1,12 @@
 from abc import ABC, abstractmethod
 
-from core.models import CompilationResult, ImageTensor, RawLatexDocument, TikzTokens
+from core.models import (
+    CompilationResult,
+    ImageTensor,
+    RawLatexDocument,
+    TikzTokens,
+    TokenVocabulary,
+)
 
 
 class ModelInferencePort(ABC):
@@ -33,7 +39,7 @@ class LatexSourcePort(ABC):
     Outbound port defining the infrastructural contract for fetching LaTeX sources.
 
     This interface ensures that data ingestion pipelines can collect string primitives
-    from remote sources and reliably parse them into the pure structural domain representation
+    from remote sources and reliably parse them into the domain representation
     without leaking I/O constructs into the mathematical core.
     """
 
@@ -62,12 +68,13 @@ class TexCompilerPort(ABC):
     """
 
     @abstractmethod
-    async def compile_tikz(self, tokens: TikzTokens) -> CompilationResult: #async: if it´s not async the compiler it will block the main thread
+    async def compile_tikz(self, tokens: TikzTokens) -> CompilationResult:
+
         """
         Compiles the bounded syntactic sequence into a binary artifact (e.g., PDF).
 
         Args:
-            tokens (TikzTokens): The structurally validated LaTeX sequence.
+            tokens (TikzTokens): The validated LaTeX sequence.
 
         Returns:
             CompilationResult: The product of compilation encapsulating success status
@@ -98,9 +105,48 @@ class ImageLoaderPort(ABC):
             source_path (str): The absolute path or URI to the image resource.
 
         Returns:
-            ImageTensor: The structurally validated tensor with shape (B, C, H, W).
+            ImageTensor: The tensor with shape (B, C, H, W).
 
         Raises:
             DomainError: If the source is inaccessible or cannot be strictly parsed into a tensor.
         """
         pass
+
+
+class VocabularyPersistencePort(ABC):
+    """
+    Outbound port for serialization and deserialization of the TokenVocabulary entity.
+
+    Isolates the pure mathematical domain from filesystem, database, or network I/O.
+    """
+
+    @abstractmethod
+    def save_vocabulary(self, vocabulary: TokenVocabulary, destination_path: str) -> None:
+        """
+        Serializes the vocabulary mapping to a target destination.
+
+        Args:
+            vocabulary (TokenVocabulary): TokenVocabulary entity.
+            destination_path (str): File path or URI identifier for storage.
+
+        Raises:
+            DomainError: If serialization or write operation fails.
+        """
+        pass
+
+    @abstractmethod
+    def load_vocabulary(self, source_path: str) -> TokenVocabulary:
+        """
+        Deserializes a stored payload back into a validated TokenVocabulary entity.
+
+        Args:
+            source_path (str): File path or URI identifier for retrieval.
+
+        Returns:
+            TokenVocabulary: Reconstructed TokenVocabulary entity.
+
+        Raises:
+            DomainError: If retrieval fails or the payload violates constraints.
+        """
+        pass
+

@@ -3,11 +3,11 @@ Declarative spatial transformation primitives using einops.
 
 Each function is a single-responsibility, side-effect-free mathematical
 operation on tensors. Functions whose output violates the (B, C, H, W)
-invariant return raw torch.Tensor to preserve Liskov compliance of
+shape requirements return raw torch.Tensor to preserve Liskov compliance of
 ImageTensor.
 
 Reference: Golub & Van Loan, Matrix Computations — vectorized axis
-permutation via stride manipulation in O(1) logical time.
+permutation via stride manipulation in O(1) physical time.
 """
 import torch
 import torch.nn.functional as F
@@ -28,7 +28,7 @@ def normalize_channels(image: ImageTensor) -> ImageTensor:
     Returns:
         ImageTensor with identical shape, dtype float32, values in [0, 1].
 
-    Temporal complexity: O(1) logical — single vectorized division.
+    Temporal complexity: O(N) where N is tensor size (vectorized division).
     """
     if not isinstance(image, ImageTensor):
         raise TypeError("Input must be an ImageTensor instance.")
@@ -59,7 +59,7 @@ def resize_spatial_dimensions(
     Raises:
         TensorTopologyError: If target dimensions are non-positive.
 
-    Temporal complexity: O(1) logical — single vectorized interpolation.
+    Temporal complexity: O(N) (vectorized interpolation).
     """
     if target_height <= 0 or target_width <= 0:
         raise TensorTopologyError(
@@ -86,7 +86,7 @@ def rearrange_channels_last(image: ImageTensor) -> torch.Tensor:
     Declarative axis transposition: (B, C, H, W) → (B, H, W, C).
 
     Returns raw torch.Tensor because the output violates the (B, C, H, W)
-    structural invariant of ImageTensor.
+    shape of ImageTensor.
 
     Args:
         image: Domain tensor constrained to shape (B, C, H, W).
@@ -94,7 +94,7 @@ def rearrange_channels_last(image: ImageTensor) -> torch.Tensor:
     Returns:
         torch.Tensor with shape (B, H, W, C).
 
-    Temporal complexity: O(1) logical — stride permutation, zero copy.
+    Temporal complexity: O(1) (stride permutation, zero copy).
     """
     if not isinstance(image, ImageTensor):
         raise TypeError("Input must be an ImageTensor instance.")
@@ -119,7 +119,7 @@ def tile_batch_dimension(image: ImageTensor, repeats: int) -> ImageTensor:
     Raises:
         TensorTopologyError: If repeats is non-positive.
 
-    Temporal complexity: O(1) logical — einops repeat with stride expansion.
+    Temporal complexity: O(N) where N is the output size (memory allocation).
     """
     if repeats <= 0:
         raise TensorTopologyError(
@@ -143,7 +143,7 @@ def flatten_spatial_grid(image: ImageTensor) -> torch.Tensor:
     (B, C, H, W) → (B, C, H*W).
 
     Returns raw torch.Tensor because the output violates the 4D (B, C, H, W)
-    structural invariant of ImageTensor.
+    shape of ImageTensor.
 
     Args:
         image: Domain tensor constrained to shape (B, C, H, W).
@@ -151,7 +151,7 @@ def flatten_spatial_grid(image: ImageTensor) -> torch.Tensor:
     Returns:
         torch.Tensor with shape (B, C, H * W).
 
-    Temporal complexity: O(1) logical — contiguous view reshape.
+    Temporal complexity: O(1) if memory is contiguous, else O(N).
     """
     if not isinstance(image, ImageTensor):
         raise TypeError("Input must be an ImageTensor instance.")

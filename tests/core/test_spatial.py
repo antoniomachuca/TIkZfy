@@ -1,7 +1,7 @@
 """
-Loop invariant validation for declarative spatial transformation primitives.
+Validation for declarative spatial transformation primitives.
 
-Each test enforces a specific mathematical or structural invariant:
+Each test enforces a specific mathematical property:
 - Topological shape contracts (B, C, H, W)
 - Value range bounds after normalization
 - Idempotence of normalization
