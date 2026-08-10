@@ -1,8 +1,8 @@
 import torch
 import torch.nn.functional as F
 
-from core.models.value_objects import ImageTensor
 from core.exceptions import TensorTopologyError
+from core.models.value_objects import ImageTensor
 
 
 def apply_affine_transformation(image: ImageTensor, theta: torch.Tensor) -> ImageTensor:
@@ -24,12 +24,12 @@ def apply_affine_transformation(image: ImageTensor, theta: torch.Tensor) -> Imag
     """
     if not isinstance(theta, torch.Tensor):
         raise TensorTopologyError("Transformation matrix must be a torch.Tensor.")
-    
+
     if theta.ndim != 3 or theta.shape[1:] != (2, 3):
         raise TensorTopologyError(
             f"Invalid affine matrix topology. Expected shape (B, 2, 3), got {tuple(theta.shape)}."
         )
-    
+
     if theta.shape[0] != image.raw_tensor.shape[0]:
         raise TensorTopologyError(
             f"Batch size mismatch. Image batch: {image.raw_tensor.shape[0]}, "
@@ -43,6 +43,12 @@ def apply_affine_transformation(image: ImageTensor, theta: torch.Tensor) -> Imag
     grid = F.affine_grid(theta, size=[batch_size, channels, height, width], align_corners=False)
 
     # Parallel bilinear sampling.
-    transformed_raw = F.grid_sample(image.raw_tensor, grid, mode='bilinear', padding_mode='zeros', align_corners=False)
+    transformed_raw = F.grid_sample(
+        image.raw_tensor,
+        grid,
+        mode='bilinear',
+        padding_mode='zeros',
+        align_corners=False,
+    )
 
     return ImageTensor(raw_tensor=transformed_raw)
