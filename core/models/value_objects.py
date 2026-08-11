@@ -1,6 +1,9 @@
 from dataclasses import dataclass
+
 import torch
-from core.exceptions import TensorTopologyError, SyntaxTopologicalError
+
+from core.exceptions import SyntaxTopologicalError, TensorTopologyError
+
 
 @dataclass(frozen=True)
 class ImageTensor:
@@ -12,11 +15,11 @@ class ImageTensor:
     def __post_init__(self) -> None:
         if not isinstance(self.raw_tensor, torch.Tensor):
             raise TensorTopologyError("Input must be a torch.Tensor instance.")
-        
+
         # Shape verification: (B, C, H, W)
         if self.raw_tensor.ndim != 4:
             raise TensorTopologyError(
-                f"Invalid tensor topology. Expected 4 dimensions (B, C, H, W), got {self.raw_tensor.ndim}."
+                f"Invalid tensor topology: expected 4D (B,C,H,W), got {self.raw_tensor.ndim}D"
             )
 
 @dataclass(frozen=True)
@@ -29,13 +32,15 @@ class TikzTokens:
     def __post_init__(self) -> None:
         if not isinstance(self.markup, str):
             raise SyntaxTopologicalError("Markup must be a string sequence.")
-        
+
         stripped_markup = self.markup.strip()
         if not stripped_markup:
             raise SyntaxTopologicalError("Generative markup cannot be an empty sequence.")
-        
+
         if r"\begin{tikzpicture}" not in stripped_markup:
-            raise SyntaxTopologicalError("Markup sequence lacks topological bounding environment (tikzpicture).")
+            raise SyntaxTopologicalError(
+                "Markup sequence lacks tikzpicture environment"
+            )
 
 @dataclass(frozen=True)
 class CompilationResult:
