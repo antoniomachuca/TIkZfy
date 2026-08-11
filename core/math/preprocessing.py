@@ -1,12 +1,11 @@
 """
-Composable preprocessing pipeline for vision encoder consumption.
+Preprocessing pipeline for the vision encoder.
 
-Chains the spatial primitives from core.math.spatial into a canonical
-preprocessing sequence. Pure function: zero I/O, zero side effects,
-zero global state mutation.
+Chains the spatial primitives from core.math.spatial into a single call.
+Pure function: no I/O, no side effects, no global state.
 
 Reference: Goodfellow et al., Deep Learning, Ch. 8 — input normalization
-for stable gradient propagation through the encoder layers.
+for stable training of neural networks.
 """
 from core.exceptions import TensorTopologyError
 from core.math.spatial import normalize_channels, resize_spatial_dimensions
@@ -19,24 +18,23 @@ def preprocess_for_encoder(
     target_width: int,
 ) -> ImageTensor:
     """
-    Canonical preprocessing composition for the vision encoder.
+    Prepares an image for the vision encoder.
 
     Pipeline:
         1. normalize_channels: [0, 255] → [0.0, 1.0]
         2. resize_spatial_dimensions: (H, W) → (target_height, target_width)
 
-    The output preserves the (B, C, H, W) invariant and is ready for
-    direct encoder consumption. Per-channel ImageNet standardization
-    (μ, σ) is deferred to Phase 3 model instantiation (27 Jul) when
-    the specific encoder architecture is selected.
+    The result keeps the (B, C, H, W) shape required by ImageTensor.
+    Per-channel ImageNet standardization (μ, σ) is deferred to Phase 3,
+    once the encoder architecture is chosen.
 
     Args:
-        image: Domain tensor constrained to shape (B, C, H, W).
-        target_height: Encoder-expected spatial height. Must be > 0.
-        target_width: Encoder-expected spatial width. Must be > 0.
+        image: Image tensor of shape (B, C, H, W).
+        target_height: Output height. Must be > 0.
+        target_width: Output width. Must be > 0.
 
     Returns:
-        ImageTensor with shape (B, C, target_height, target_width),
+        ImageTensor of shape (B, C, target_height, target_width),
         values in [0.0, 1.0].
 
     Raises:
@@ -53,10 +51,10 @@ def preprocess_for_encoder(
     if not isinstance(image, ImageTensor):
         raise TypeError("Input must be an ImageTensor instance.")
 
-    # Step 1: Pixel lattice normalization. Shape preserved: (B, C, H, W).
+    # Step 1: normalize pixel values. Shape stays (B, C, H, W).
     normalized: ImageTensor = normalize_channels(image)
 
-    # Step 2: Spatial resampling. Shape: (B, C, H, W) → (B, C, tH, tW).
+    # Step 2: resize. Shape: (B, C, H, W) → (B, C, tH, tW).
     resized: ImageTensor = resize_spatial_dimensions(
         normalized, target_height, target_width
     )

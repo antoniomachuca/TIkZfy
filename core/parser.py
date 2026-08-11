@@ -8,25 +8,26 @@ from core.models.value_objects import RawLatexDocument, TikzTokens
 
 def extract_tikz_graphs(document: RawLatexDocument) -> list[TikzTokens]:
     """
-    Extracts all TikZ geometric graphs from a raw LaTeX document.
-    Employs deterministic regular expressions to avoid explicit scalar iterations
-    and guarantees O(1) logical temporal complexity on substring localization.
+    Extracts every `tikzpicture` block from a raw LaTeX document.
+
+    Uses a single compiled regex over the whole document.
 
     Args:
-        document (RawLatexDocument): The immutable raw string document.
+        document (RawLatexDocument): The raw document text.
 
     Returns:
-        List[TikzTokens]: Sequence of extracted geometric graphs mapping to
-        the topological subspace.
+        list[TikzTokens]: One TikzTokens entry per matched block.
+
+    Temporal complexity: O(D) where D is the document length.
     """
     if not isinstance(document, RawLatexDocument):
         raise TypeError("Input must be a RawLatexDocument instance.")
 
-    # Formal bounding box for the geometric topology.
+    # Match each tikzpicture block (non-greedy, DOTALL).
     pattern = re.compile(r"\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}", re.DOTALL)
 
-    # Vectorized C-level extraction bypassing sequential loops.
+    # findall runs in C; no Python loop needed.
     matches: list[str] = pattern.findall(document.raw_text)
 
-    # Deterministic functional mapping to the output domain.
+    # Wrap each match as a TikzTokens value object.
     return [TikzTokens(markup=match) for match in matches]

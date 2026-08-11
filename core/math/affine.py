@@ -7,20 +7,17 @@ from core.models.value_objects import ImageTensor
 
 def apply_affine_transformation(image: ImageTensor, theta: torch.Tensor) -> ImageTensor:
     """
-    Applies an affine transformation to the given image tensor using
-    vectorized operations.
+    Applies an affine transformation to the image tensor.
 
     Args:
-        image (ImageTensor): The domain tensor constrained to shape (B, C, H, W).
-        theta (torch.Tensor): The affine transformation matrix.
-                              Shape: (B, 2, 3).
+        image (ImageTensor): Image tensor of shape (B, C, H, W).
+        theta (torch.Tensor): Affine transformation matrix. Shape: (B, 2, 3).
 
     Returns:
-        ImageTensor: The transformed tensor with identical topological constraints.
-                     Shape: (B, C, H, W).
+        ImageTensor: The transformed tensor, shape (B, C, H, W).
 
     Raises:
-        TensorTopologyError: If the affine matrix dimensionality is violated.
+        TensorTopologyError: If theta has the wrong shape or batch size.
     """
     if not isinstance(theta, torch.Tensor):
         raise TensorTopologyError("Transformation matrix must be a torch.Tensor.")
@@ -39,10 +36,10 @@ def apply_affine_transformation(image: ImageTensor, theta: torch.Tensor) -> Imag
     # Shape: (B, C, H, W)
     batch_size, channels, height, width = image.raw_tensor.shape
 
-    # Vectorized grid generation.
+    # Build the sampling grid.
     grid = F.affine_grid(theta, size=[batch_size, channels, height, width], align_corners=False)
 
-    # Parallel bilinear sampling.
+    # Sample the image at the grid points.
     transformed_raw = F.grid_sample(
         image.raw_tensor,
         grid,

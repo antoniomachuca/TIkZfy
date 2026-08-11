@@ -1,13 +1,9 @@
 """
-Declarative spatial transformation primitives using einops.
+Spatial transformation primitives using einops.
 
-Each function is a single-responsibility, side-effect-free mathematical
-operation on tensors. Functions whose output violates the (B, C, H, W)
-shape requirements return raw torch.Tensor to preserve Liskov compliance of
-ImageTensor.
-
-Reference: Golub & Van Loan, Matrix Computations — vectorized axis
-permutation via stride manipulation in O(1) physical time.
+Each function is a pure, side-effect-free operation on tensors. Functions
+whose output does not have the (B, C, H, W) shape required by ImageTensor
+return a raw torch.Tensor instead.
 """
 import torch
 import torch.nn.functional as F
@@ -19,21 +15,20 @@ from core.models.value_objects import ImageTensor
 
 def normalize_channels(image: ImageTensor) -> ImageTensor:
     """
-    Maps the integer pixel lattice [0, 255] to the continuous float
-    manifold [0.0, 1.0] via scalar division over the full tensor.
+    Normalizes pixel values from [0, 255] to [0.0, 1.0].
 
     Args:
-        image: Domain tensor constrained to shape (B, C, H, W).
+        image: Image tensor of shape (B, C, H, W).
 
     Returns:
-        ImageTensor with identical shape, dtype float32, values in [0, 1].
+        ImageTensor with the same shape, float32 dtype, values in [0, 1].
 
     Temporal complexity: O(N) where N is tensor size (vectorized division).
     """
     if not isinstance(image, ImageTensor):
         raise TypeError("Input must be an ImageTensor instance.")
 
-    # Shape: (B, C, H, W) — vectorized element-wise division.
+    # Shape: (B, C, H, W) — element-wise division.
     normalized: torch.Tensor = image.raw_tensor.to(dtype=torch.float32) / 255.0
 
     return ImageTensor(raw_tensor=normalized)
@@ -45,16 +40,15 @@ def resize_spatial_dimensions(
     target_width: int,
 ) -> ImageTensor:
     """
-    Resamples spatial axes (H, W) via bilinear interpolation without
-    sequential pixel iteration.
+    Resizes spatial dimensions (H, W) via bilinear interpolation.
 
     Args:
-        image: Domain tensor constrained to shape (B, C, H, W).
-        target_height: Desired output height. Must be > 0.
-        target_width: Desired output width. Must be > 0.
+        image: Image tensor of shape (B, C, H, W).
+        target_height: Output height. Must be > 0.
+        target_width: Output width. Must be > 0.
 
     Returns:
-        ImageTensor with shape (B, C, target_height, target_width).
+        ImageTensor of shape (B, C, target_height, target_width).
 
     Raises:
         TensorTopologyError: If target dimensions are non-positive.
@@ -83,23 +77,23 @@ def resize_spatial_dimensions(
 
 def rearrange_channels_last(image: ImageTensor) -> torch.Tensor:
     """
-    Declarative axis transposition: (B, C, H, W) → (B, H, W, C).
+    Transposes axes: (B, C, H, W) → (B, H, W, C).
 
-    Returns raw torch.Tensor because the output violates the (B, C, H, W)
-    shape of ImageTensor.
+    Returns a raw torch.Tensor because the output does not have the (B, C, H, W)
+    shape required by ImageTensor.
 
     Args:
-        image: Domain tensor constrained to shape (B, C, H, W).
+        image: Image tensor of shape (B, C, H, W).
 
     Returns:
-        torch.Tensor with shape (B, H, W, C).
+        torch.Tensor of shape (B, H, W, C).
 
-    Temporal complexity: O(1) (stride permutation, zero copy).
+    Temporal complexity: O(1) (stride permutation, view; no copy).
     """
     if not isinstance(image, ImageTensor):
         raise TypeError("Input must be an ImageTensor instance.")
 
-    # Einops declarative rearrangement: (B, C, H, W) → (B, H, W, C)
+    # (B, C, H, W) → (B, H, W, C)
     result: torch.Tensor = rearrange(image.raw_tensor, "b c h w -> b h w c")
 
     return result
@@ -107,14 +101,14 @@ def rearrange_channels_last(image: ImageTensor) -> torch.Tensor:
 
 def tile_batch_dimension(image: ImageTensor, repeats: int) -> ImageTensor:
     """
-    Replicates the batch axis N times: (B, C, H, W) → (B*N, C, H, W).
+    Repeats the batch axis: (B, C, H, W) → (B*repeats, C, H, W).
 
     Args:
-        image: Domain tensor constrained to shape (B, C, H, W).
-        repeats: Number of times to replicate along the batch axis. Must be > 0.
+        image: Image tensor of shape (B, C, H, W).
+        repeats: Batch replication factor. Must be > 0.
 
     Returns:
-        ImageTensor with shape (B * repeats, C, H, W).
+        ImageTensor of shape (B * repeats, C, H, W).
 
     Raises:
         TensorTopologyError: If repeats is non-positive.
@@ -129,7 +123,7 @@ def tile_batch_dimension(image: ImageTensor, repeats: int) -> ImageTensor:
     if not isinstance(image, ImageTensor):
         raise TypeError("Input must be an ImageTensor instance.")
 
-    # Einops declarative repeat: (B, C, H, W) → (B*repeats, C, H, W)
+    # (B, C, H, W) → (B*repeats, C, H, W)
     tiled: torch.Tensor = repeat(
         image.raw_tensor, "b c h w -> (b repeat) c h w", repeat=repeats
     )
@@ -139,24 +133,23 @@ def tile_batch_dimension(image: ImageTensor, repeats: int) -> ImageTensor:
 
 def flatten_spatial_grid(image: ImageTensor) -> torch.Tensor:
     """
-    Collapses spatial dimensions into a single sequence axis:
-    (B, C, H, W) → (B, C, H*W).
+    Flattens spatial dimensions: (B, C, H, W) → (B, C, H*W).
 
-    Returns raw torch.Tensor because the output violates the 4D (B, C, H, W)
-    shape of ImageTensor.
+    Returns a raw torch.Tensor because the output does not have the 4D
+    (B, C, H, W) shape required by ImageTensor.
 
     Args:
-        image: Domain tensor constrained to shape (B, C, H, W).
+        image: Image tensor of shape (B, C, H, W).
 
     Returns:
-        torch.Tensor with shape (B, C, H * W).
+        torch.Tensor of shape (B, C, H * W).
 
-    Temporal complexity: O(1) if memory is contiguous, else O(N).
+    Temporal complexity: O(1) if the tensor is contiguous, else O(N).
     """
     if not isinstance(image, ImageTensor):
         raise TypeError("Input must be an ImageTensor instance.")
 
-    # Einops declarative flatten: (B, C, H, W) → (B, C, H*W)
+    # (B, C, H, W) → (B, C, H*W)
     result: torch.Tensor = rearrange(image.raw_tensor, "b c h w -> b c (h w)")
 
     return result

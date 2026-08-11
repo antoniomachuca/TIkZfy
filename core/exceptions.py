@@ -1,5 +1,5 @@
 class DomainError(Exception):
-    """Base exception for all logical invariant violations in the pure domain."""
+    """Base exception for domain errors."""
     pass
 
 class TensorTopologyError(DomainError):

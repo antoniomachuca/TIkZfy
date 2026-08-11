@@ -1,8 +1,8 @@
 """
-Bidirectional tokenization primitives.
+Bidirectional tokenization primitives (markup text <-> integer indices).
 
-Reference: Golub & Van Loan, Matrix Computations — deterministic integer indexing
-over finite syntactic subspaces; Goodfellow et al., Deep Learning — autoregressive sequence bounds.
+References: Golub & Van Loan, Matrix Computations (integer indexing);
+Goodfellow et al., Deep Learning (autoregressive sequence modeling).
 """
 import re
 
@@ -38,15 +38,15 @@ TIKZ_TOKEN_PATTERN: re.Pattern[str] = re.compile(
 
 def tokenize_tikz_markup(tokens: TikzTokens) -> list[str]:
     """
-    Splits TikZ generative markup into atomic spatial-syntactic string tokens.
+    Splits TikZ markup into individual tokens.
 
     Args:
-        tokens (TikzTokens): Input domain value object containing raw TikZ string.
+        tokens (TikzTokens): Input markup.
 
     Returns:
-        list[str]: Sequence of extracted syntactic tokens.
+        list[str]: The extracted tokens.
 
-    Temporal complexity: O(N) where N is the length of the markup string.
+    Temporal complexity: O(N) where N is the length of the markup.
     """
     if not isinstance(tokens, TikzTokens):
         raise TypeError("Input must be a TikzTokens instance.")
@@ -105,15 +105,15 @@ def encode_to_tensor(
     max_length: int = 512,
 ) -> torch.Tensor:
     """
-    Encodes string tokens to an integer tensor.
+    Encodes markup tokens into an integer tensor.
 
     Args:
-        tokens (TikzTokens): Domain TikZ document entity.
+        tokens (TikzTokens): Input markup.
         vocabulary (TokenVocabulary): Token vocabulary.
-        max_length (int): Target sequence length boundary. Default: 512.
+        max_length (int): Fixed output sequence length. Default: 512.
 
     Returns:
-        torch.Tensor: Rank-1 tensor of token indices. Shape: (max_length,)
+        torch.Tensor: Rank-1 index tensor. Shape: (max_length,)
 
     Temporal complexity: O(T) where T is the sequence length.
     """
@@ -144,16 +144,16 @@ def encode_to_tensor(
 
 def decode_from_tensor(tensor: torch.Tensor, vocabulary: TokenVocabulary) -> TikzTokens:
     """
-    Decodes an integer tensor back to string tokens.
+    Decodes an integer index tensor back into markup.
 
     Args:
-        tensor (torch.Tensor): Rank-1 integer index tensor. Shape: (max_length,)
+        tensor (torch.Tensor): Rank-1 index tensor. Shape: (max_length,)
         vocabulary (TokenVocabulary): Token vocabulary.
 
     Returns:
-        TikzTokens: Reconstructed domain TikZ document entity.
+        TikzTokens: The reconstructed markup.
 
-    Temporal complexity: O(T) sequence extraction and token mapping.
+    Temporal complexity: O(T) where T is the sequence length.
     """
     if not isinstance(tensor, torch.Tensor):
         raise TypeError("Input must be a torch.Tensor instance.")
@@ -183,15 +183,15 @@ def batch_encode(
     max_length: int = 512,
 ) -> torch.Tensor:
     """
-    Vectorized batch encoding mapping a sequence of TikZ documents to a 2D tensor batch.
+    Encodes a batch of TikZ documents into a 2D index tensor.
 
     Args:
-        corpus (list[TikzTokens]): Sequence of domain TikZ documents.
+        corpus (list[TikzTokens]): Input documents.
         vocabulary (TokenVocabulary): Token vocabulary.
         max_length (int): Fixed sequence length per sample. Default: 512.
 
     Returns:
-        torch.Tensor: Rank-2 batch tensor. Shape: (N, max_length)
+        torch.Tensor: Batch tensor. Shape: (N, max_length)
 
     Temporal complexity: O(N * T) where N is batch size and T is max sequence length.
     """
