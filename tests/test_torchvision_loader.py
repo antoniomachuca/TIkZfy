@@ -7,7 +7,7 @@ from adapters.torchvision_loader import TorchVisionImageLoader
 from core.models.value_objects import ImageTensor
 
 
-def test_torchvision_loader_success():
+def test_torchvision_loader_success() -> None:
     """
     Validates that the infrastructural adapter successfully loads an image
     into the O(1) mathematical domain representation without sequential iteration.

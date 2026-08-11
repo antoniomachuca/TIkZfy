@@ -6,7 +6,7 @@ from core.math.affine import apply_affine_transformation
 from core.models.value_objects import ImageTensor
 
 
-def test_affine_transformation_valid():
+def test_affine_transformation_valid() -> None:
     """
     Validates that a correctly shaped affine transformation executes
     without spatial iteration logic and maintains topology.
@@ -29,7 +29,7 @@ def test_affine_transformation_valid():
     assert torch.allclose(raw, transformed_image.raw_tensor, atol=1e-4)
 
 
-def test_affine_transformation_invalid_theta_shape():
+def test_affine_transformation_invalid_theta_shape() -> None:
     """
     Validates that non-compliant affine matrices are rejected at O(1) boundaries.
     """
@@ -43,7 +43,7 @@ def test_affine_transformation_invalid_theta_shape():
         apply_affine_transformation(image, theta)
 
 
-def test_affine_transformation_batch_mismatch():
+def test_affine_transformation_batch_mismatch() -> None:
     """
     Validates that batch discrepancies between image and theta are structurally rejected.
     """

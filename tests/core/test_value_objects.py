@@ -7,7 +7,7 @@ from core.exceptions import SyntaxTopologicalError, TensorTopologyError
 from core.models import CompilationResult, ImageTensor, TikzTokens
 
 
-def test_image_tensor_valid_topology():
+def test_image_tensor_valid_topology() -> None:
     """Verify that a valid (B, C, H, W) tensor instantiates without O(N) iteration."""
     # Shape: (1, 3, 256, 256)
     valid_tensor = torch.zeros(1, 3, 256, 256)
@@ -15,13 +15,13 @@ def test_image_tensor_valid_topology():
     assert image.raw_tensor.shape == (1, 3, 256, 256)
 
 
-def test_image_tensor_invalid_type():
+def test_image_tensor_invalid_type() -> None:
     """Verify strict type constraints reject non-tensor structures."""
     with pytest.raises(TensorTopologyError):
         ImageTensor(raw_tensor=[0, 0, 0])  # type: ignore
 
 
-def test_image_tensor_invalid_dimensions():
+def test_image_tensor_invalid_dimensions() -> None:
     """Verify spatial dimensionality constraints in O(1)."""
     # Shape: (3, 256, 256) -> Missing Batch dimension
     invalid_tensor = torch.zeros(3, 256, 256)
@@ -29,7 +29,7 @@ def test_image_tensor_invalid_dimensions():
         ImageTensor(raw_tensor=invalid_tensor)
 
 
-def test_image_tensor_immutability():
+def test_image_tensor_immutability() -> None:
     """Verify state immutability mapping to @dataclass(frozen=True)."""
     valid_tensor = torch.zeros(1, 3, 256, 256)
     image = ImageTensor(raw_tensor=valid_tensor)
@@ -38,27 +38,27 @@ def test_image_tensor_immutability():
         image.raw_tensor = torch.zeros(1, 3, 512, 512)  # type: ignore
 
 
-def test_tikz_tokens_valid_syntax():
+def test_tikz_tokens_valid_syntax() -> None:
     """Verify that a syntactically bounded sequence instantiates successfully."""
     valid_markup = "\\begin{tikzpicture}\n\\draw (0,0) -- (1,1);\n\\end{tikzpicture}"
     tokens = TikzTokens(markup=valid_markup)
     assert tokens.markup == valid_markup
 
 
-def test_tikz_tokens_empty_sequence():
+def test_tikz_tokens_empty_sequence() -> None:
     """Verify empty sequences raise structural exceptions."""
     with pytest.raises(SyntaxTopologicalError):
         TikzTokens(markup="   \n  ")
 
 
-def test_tikz_tokens_missing_bounds():
+def test_tikz_tokens_missing_bounds() -> None:
     """Verify missing topological bounds (tikzpicture) raises exceptions."""
     invalid_markup = "\\draw (0,0) -- (1,1);"
     with pytest.raises(SyntaxTopologicalError):
         TikzTokens(markup=invalid_markup)
 
 
-def test_compilation_result_instantiation():
+def test_compilation_result_instantiation() -> None:
     """Verify payload mapping for compilation products."""
     payload = b"%PDF-1.4\n..."
     result = CompilationResult(pdf_data=payload, is_successful=True)
