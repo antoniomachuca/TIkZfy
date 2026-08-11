@@ -1,0 +1,3 @@
+# Exclude generated dataset TeX files from GitHub Linguist statistics
+dataset/** linguist-generated=true
+dataset/** linguist-vendored=true
