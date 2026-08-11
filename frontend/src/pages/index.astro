@@ -1,212 +1,264 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import BackgroundTikZ from '../components/BackgroundTikZ.astro';
-
 import InteractiveGeometry from '../components/InteractiveGeometry.astro';
 ---
 
 <Layout>
-  <div class="fixed inset-0 pointer-events-none flex flex-col justify-between p-4 overflow-hidden z-20 mix-blend-difference text-white">
-    <h1 class="text-massive tracking-tighter-massive leading-none translate-y-8 md:translate-y-16 reveal-title">Tikzfy</h1>
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-40 text-white">
+    <h1 class="absolute top-5 left-4 md:top-8 md:left-6 text-[clamp(4rem,12vw,12rem)] font-black tracking-tighter-massive leading-none reveal-title">Tikzfy</h1>
   </div>
 
   <InteractiveGeometry />
 
-  <main class="relative z-30 min-h-screen flex flex-col items-center justify-center p-4">
-    
-    <section id="landing-view" class="flex flex-col items-center max-w-3xl w-full mt-48 md:mt-64">
-      
-      <div class="w-full bg-white border-2 border-black p-8 md:p-10 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative z-20 transition-transform duration-300">
-      <div class="text-center">
-        <h2 class="text-2xl font-bold uppercase tracking-tight mb-2">Image to LaTeX Compiler</h2>
-        <p class="text-sm font-mono text-black/70">Drag & Drop or Select an image</p>
-      </div>
+  <main class="relative z-30 min-h-screen flex flex-col items-center justify-center p-4 pt-16 md:pt-24">
+    <section id="landing-view" class="flex flex-col items-center max-w-2xl w-full mt-8 md:mt-16">
+      <div class="w-full bg-white border-2 border-black p-4 sm:p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative z-20 transition-transform duration-300">
+        <div class="text-center">
+          <p class="font-mono text-[10px] uppercase tracking-[0.3em] mb-3">Image -&gt; vector syntax</p>
+          <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tight mb-2">Image to LaTeX Compiler</h2>
+          <p class="text-sm font-mono text-black/70">Drop an image and inspect the generated geometry.</p>
+        </div>
 
-      <div id="drop-zone" class="w-full mt-6 border-2 border-dashed border-black p-12 text-center cursor-pointer hover:bg-black hover:text-white transition-colors duration-300 group">
-        <span class="font-mono uppercase text-xs tracking-widest group-hover:text-white">Drop Zone</span>
-      </div>
+        <div id="drop-zone" tabindex="0" role="button" aria-label="Drop an image here" class="w-full mt-5 border-2 border-dashed border-black p-7 sm:p-9 text-center cursor-pointer hover:bg-black hover:text-white focus:bg-black focus:text-white transition-colors duration-300 group">
+          <svg class="mx-auto mb-3 w-10 h-10" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+            <path d="M24 34V8M24 8L14 18M24 8L34 18M8 30V40H40V30" stroke="currentColor" stroke-width="2" />
+          </svg>
+          <span class="font-mono uppercase text-xs tracking-widest group-hover:text-white">Drop image</span>
+          <span class="block mt-2 text-[10px] font-mono opacity-60">PNG, JPG or WEBP</span>
+        </div>
 
-      <div class="flex items-center w-full gap-4 opacity-70 my-6">
-        <div class="h-px bg-black flex-1"></div>
-        <span class="text-[10px] uppercase font-mono tracking-widest font-bold">OR</span>
-        <div class="h-px bg-black flex-1"></div>
-      </div>
+        <div class="flex items-center w-full gap-4 opacity-70 my-4">
+          <div class="h-px bg-black flex-1"></div>
+          <span class="text-[10px] uppercase font-mono tracking-widest font-bold">OR</span>
+          <div class="h-px bg-black flex-1"></div>
+        </div>
 
-      <label for="file-upload" class="w-full block text-center px-8 py-4 bg-white border-2 border-black hover:bg-black hover:text-white font-bold uppercase tracking-wider transition-colors duration-300 cursor-pointer text-sm">
-        Upload Image
-      </label>
-      <input id="file-upload" type="file" class="hidden" accept="image/*" />
+        <label for="file-upload" class="w-full block text-center px-8 py-3 bg-white border-2 border-black hover:bg-black hover:text-white focus-within:bg-black focus-within:text-white font-bold uppercase tracking-wider transition-colors duration-300 cursor-pointer text-sm">
+          Select image
+        </label>
+        <input id="file-upload" type="file" class="sr-only" accept="image/png,image/jpeg,image/webp" />
       </div>
     </section>
 
-    <section id="results-view" class="hidden flex-col items-center w-full max-w-7xl opacity-0 transition-opacity duration-500 bg-white border-brutal brutal-shadow p-2 sm:p-4 relative z-20">
-      
-      <div class="w-full flex justify-between items-center mb-4 pb-4 border-b border-black">
-        <button id="btn-back" class="font-mono uppercase text-xs font-bold hover:underline px-4 py-2 border-brutal hover:bg-black hover:text-white transition-colors">
-          ← Back
-        </button>
-        <div class="flex items-center gap-2">
-          <button id="btn-copy" class="font-mono uppercase text-xs font-bold px-4 py-2 border-brutal hover:bg-black hover:text-white transition-colors">
-            Copy Code
-          </button>
-          <button id="btn-save" class="font-mono uppercase text-xs font-bold px-4 py-2 border-brutal bg-black text-white hover:bg-white hover:text-black transition-colors">
-            Save .tex
-          </button>
+    <section id="processing-view" aria-live="polite" class="hidden flex-col items-center w-full max-w-3xl bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 relative z-20">
+      <div class="w-full flex justify-between items-start gap-4 mb-8">
+        <div>
+          <p class="font-mono text-[10px] uppercase tracking-[0.3em] mb-2">Engine status</p>
+          <h2 class="text-2xl font-black uppercase">Extracting geometry</h2>
+        </div>
+        <span id="progress-value" class="font-mono text-2xl font-bold">0%</span>
+      </div>
+
+      <div class="w-full border-2 border-black p-2 mb-8">
+        <div id="progress-bar" class="h-3 bg-black transition-[width] duration-300" style="width: 0%"></div>
+      </div>
+
+      <div class="vector-loader w-full aspect-video border-2 border-black bg-[#f3f3f0] flex items-center justify-center overflow-hidden" aria-hidden="true">
+        <svg viewBox="0 0 640 360" class="w-full h-full" fill="none">
+          <path class="vector-line vector-line-one" d="M40 280C130 80 200 320 300 150S480 100 600 260" stroke="black" stroke-width="3" />
+          <path class="vector-line vector-line-two" d="M80 80L180 270L320 90L470 280L560 100" stroke="black" stroke-width="2" />
+          <circle class="vector-node" cx="180" cy="270" r="7" fill="white" stroke="black" stroke-width="3" />
+          <circle class="vector-node" cx="320" cy="90" r="7" fill="white" stroke="black" stroke-width="3" />
+          <circle class="vector-node" cx="470" cy="280" r="7" fill="white" stroke="black" stroke-width="3" />
+        </svg>
+      </div>
+
+      <div class="w-full grid grid-cols-3 gap-2 mt-6 font-mono text-[10px] uppercase tracking-wider">
+        <span id="stage-image" class="stage active">01 / image</span>
+        <span id="stage-geometry" class="stage">02 / geometry</span>
+        <span id="stage-compile" class="stage">03 / compile</span>
+      </div>
+    </section>
+
+    <section id="error-view" aria-live="assertive" class="hidden flex-col w-full max-w-3xl bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 relative z-20">
+      <p class="font-mono text-[10px] uppercase tracking-[0.3em] mb-3">Engine status / failed</p>
+      <h2 class="text-2xl font-black uppercase mb-3">Generation interrupted</h2>
+      <p id="error-message" class="font-mono text-sm border-l-4 border-black pl-4 mb-8">The generation service is unavailable.</p>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button id="btn-retry" class="font-mono uppercase text-xs font-bold px-4 py-3 border-2 border-black bg-black text-white hover:bg-white hover:text-black transition-colors">Try again</button>
+        <button id="btn-error-back" class="font-mono uppercase text-xs font-bold px-4 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors">Choose another image</button>
+      </div>
+    </section>
+
+    <section id="results-view" class="hidden flex-col items-center w-full max-w-7xl bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-3 sm:p-4 relative z-20">
+      <div class="w-full flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4 pb-4 border-b border-black">
+        <div>
+          <p class="font-mono text-[10px] uppercase tracking-[0.3em]">Engine status / complete</p>
+          <h2 class="text-xl font-black uppercase">Generated artefact</h2>
+        </div>
+        <div class="flex gap-2">
+          <button id="btn-copy" class="font-mono uppercase text-xs font-bold px-4 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors">Copy code</button>
+          <button id="btn-save" class="font-mono uppercase text-xs font-bold px-4 py-2 border-2 border-black bg-black text-white hover:bg-white hover:text-black transition-colors">Save .tex</button>
         </div>
       </div>
 
-      <div class="relative w-full aspect-video max-h-[75vh] border-brutal overflow-hidden select-none bg-gray-100">
-        <div class="absolute inset-0 w-full h-full flex items-center justify-center">
-          <img id="original-image" src="" class="w-full h-full object-contain mix-blend-multiply" alt="Original" />
+      <div class="grid lg:grid-cols-[1.1fr_1fr] gap-4 w-full">
+        <div class="min-w-0">
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-mono text-[10px] uppercase tracking-widest">TikZ source</span>
+            <span id="token-count" class="font-mono text-[10px] uppercase opacity-60"></span>
+          </div>
+          <pre id="code-output" class="h-72 lg:h-[32rem] overflow-auto bg-black text-white p-4 text-xs leading-relaxed font-mono whitespace-pre-wrap"></pre>
         </div>
 
-        <div id="render-layer" class="absolute inset-0 w-full h-full bg-white flex items-center justify-center border-l border-black pointer-events-none" style="clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);">
-          <svg class="w-1/2 h-1/2" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="10" y="10" width="180" height="180" stroke="black" stroke-width="2" stroke-dasharray="4 4" fill="none"/>
-            <circle cx="100" cy="100" r="50" stroke="black" stroke-width="4" fill="none" />
-            <path d="M100 50 L150 150 L50 150 Z" stroke="black" stroke-width="2" fill="none"/>
-            <text x="90" y="105" fill="black" font-family="monospace" font-size="14" font-weight="bold">TikZ</text>
-          </svg>
-        </div>
-
-        <div id="slider-handle" class="absolute inset-y-0 left-1/2 w-0.5 bg-black cursor-ew-resize flex items-center justify-center z-10 -ml-[1px]">
-          <div class="w-8 h-8 bg-white border-2 border-black rounded-full flex items-center justify-center pointer-events-none text-black font-bold text-xs shadow-[2px_2px_0px_0px_#000]">
-            &lt;&gt;
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-mono text-[10px] uppercase tracking-widest">Compiled preview</span>
+            <span class="font-mono text-[10px] uppercase opacity-60">PDF / PNG</span>
+          </div>
+          <div class="relative h-72 lg:h-[32rem] border-2 border-black bg-[#f3f3f0] flex items-center justify-center overflow-hidden">
+            <img id="preview-image" src="" alt="Compiled TikZ preview" class="hidden w-full h-full object-contain bg-white" />
+            <p id="preview-empty" class="px-8 text-center font-mono text-xs leading-relaxed">The API returned TikZ code but no preview URL.</p>
           </div>
         </div>
+      </div>
+
+      <div class="w-full flex justify-start mt-4 pt-4 border-t border-black">
+        <button id="btn-back" class="font-mono uppercase text-xs font-bold px-4 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors">Back</button>
       </div>
     </section>
   </main>
 </Layout>
 
+<style>
+  .stage { opacity: 0.35; border-top: 2px solid currentColor; padding-top: 0.5rem; }
+  .stage.active { opacity: 1; }
+  .vector-line { stroke-dasharray: 900; stroke-dashoffset: 900; animation: draw-vector 2.5s ease-in-out infinite alternate; }
+  .vector-line-two { animation-delay: 0.4s; }
+  .vector-node { animation: pulse-node 1.5s ease-in-out infinite alternate; }
+  .vector-node:nth-of-type(2) { animation-delay: 0.2s; }
+  .vector-node:nth-of-type(3) { animation-delay: 0.4s; }
+
+  @keyframes draw-vector { to { stroke-dashoffset: 0; } }
+  @keyframes pulse-node { from { r: 4; } to { r: 9; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .vector-line, .vector-node { animation: none; }
+    .vector-line { stroke-dashoffset: 0; }
+    * { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+
 <script>
   import anime from 'animejs';
+  import { generateTikzFromImage } from '../utils/apiClient';
 
   document.addEventListener('DOMContentLoaded', () => {
-    anime({
-      targets: '.reveal-title',
-      opacity: [0, 1],
-      translateX: [-50, 0],
-      duration: 1500,
-      easing: 'easeOutExpo',
-      delay: anime.stagger(200)
-    });
-
     const dropZone = document.getElementById('drop-zone');
     const fileUpload = document.getElementById('file-upload');
     const landingView = document.getElementById('landing-view');
+    const processingView = document.getElementById('processing-view');
     const resultsView = document.getElementById('results-view');
+    const errorView = document.getElementById('error-view');
+    const errorMessage = document.getElementById('error-message');
+    const progressBar = document.getElementById('progress-bar');
+    const progressValue = document.getElementById('progress-value');
+    const codeOutput = document.getElementById('code-output');
+    const previewImage = document.getElementById('preview-image');
+    const previewEmpty = document.getElementById('preview-empty');
+    const tokenCount = document.getElementById('token-count');
     const btnBack = document.getElementById('btn-back');
-    const originalImage = document.getElementById('original-image');
-    
-    const sliderContainer = resultsView.querySelector('.aspect-video');
-    const sliderHandle = document.getElementById('slider-handle');
-    const renderLayer = document.getElementById('render-layer');
+    const btnErrorBack = document.getElementById('btn-error-back');
+    const btnRetry = document.getElementById('btn-retry');
+    const btnCopy = document.getElementById('btn-copy');
+    const btnSave = document.getElementById('btn-save');
+    const stageImage = document.getElementById('stage-image');
+    const stageGeometry = document.getElementById('stage-geometry');
+    const stageCompile = document.getElementById('stage-compile');
+    let selectedFile;
+    let generatedCode = '';
+    let progressTimer;
 
-    let isDragging = false;
+    anime({ targets: '.reveal-title', opacity: [0, 1], translateX: [-50, 0], duration: 1500, easing: 'easeOutExpo' });
 
-    const showResults = (file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        originalImage.src = e.target.result;
-        
-        // Hide landing smoothly
-        landingView.style.transform = 'scale(0.95)';
-        landingView.style.opacity = '0';
-        setTimeout(() => {
-          landingView.classList.add('hidden');
-          resultsView.classList.remove('hidden');
-          setTimeout(() => {
-            resultsView.classList.remove('opacity-0');
-            updateSlider(50);
-          }, 50);
-        }, 500);
-      };
-      reader.readAsDataURL(file);
+    const setView = (view) => {
+      [landingView, processingView, resultsView, errorView].forEach((element) => {
+        element.classList.toggle('hidden', element !== view);
+        element.classList.toggle('flex', element === view);
+      });
     };
 
-    const showLanding = () => {
-      resultsView.classList.add('opacity-0');
-      setTimeout(() => {
-        resultsView.classList.add('hidden');
-        landingView.classList.remove('hidden');
-        setTimeout(() => {
-          landingView.style.transform = 'scale(1)';
-          landingView.style.opacity = '1';
-        }, 50);
-      }, 500);
+    const updateProgress = (value) => {
+      progressBar.style.width = `${value}%`;
+      progressValue.textContent = `${value}%`;
+      stageImage.classList.toggle('active', value < 35);
+      stageGeometry.classList.toggle('active', value >= 35 && value < 75);
+      stageCompile.classList.toggle('active', value >= 75);
     };
 
-    dropZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
+    const showError = (error) => {
+      window.clearInterval(progressTimer);
+      errorMessage.textContent = error instanceof Error ? error.message : 'The generation service is unavailable.';
+      setView(errorView);
+    };
+
+    const processFile = async (file) => {
+      if (!file || !file.type.startsWith('image/')) {
+        showError(new Error('Please select a PNG, JPG or WEBP image.'));
+        return;
+      }
+
+      selectedFile = file;
+      setView(processingView);
+      updateProgress(8);
+      let progress = 8;
+      progressTimer = window.setInterval(() => {
+        progress = Math.min(progress + 4, 88);
+        updateProgress(progress);
+      }, 180);
+
+      try {
+        const result = await generateTikzFromImage(file);
+        window.clearInterval(progressTimer);
+        updateProgress(100);
+        generatedCode = result.tikzCode;
+        codeOutput.textContent = generatedCode;
+        tokenCount.textContent = `${generatedCode.trim().split(/\s+/).length} tokens`;
+        previewImage.src = result.previewUrl || '';
+        previewImage.classList.toggle('hidden', !result.previewUrl);
+        previewEmpty.classList.toggle('hidden', Boolean(result.previewUrl));
+        setTimeout(() => setView(resultsView), 250);
+      } catch (error) {
+        showError(error);
+      }
+    };
+
+    const reset = () => {
+      window.clearInterval(progressTimer);
+      setView(landingView);
+      fileUpload.value = '';
+      updateProgress(0);
+    };
+
+    dropZone.addEventListener('click', () => fileUpload.click());
+    dropZone.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') fileUpload.click();
+    });
+    dropZone.addEventListener('dragover', (event) => {
+      event.preventDefault();
       dropZone.classList.add('bg-black', 'text-white');
     });
-
-    dropZone.addEventListener('dragleave', () => {
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-black', 'text-white'));
+    dropZone.addEventListener('drop', (event) => {
+      event.preventDefault();
       dropZone.classList.remove('bg-black', 'text-white');
+      processFile(event.dataTransfer.files[0]);
     });
-
-    dropZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      dropZone.classList.remove('bg-black', 'text-white');
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        showResults(e.dataTransfer.files[0]);
-      }
+    fileUpload.addEventListener('change', () => processFile(fileUpload.files[0]));
+    btnBack.addEventListener('click', reset);
+    btnErrorBack.addEventListener('click', reset);
+    btnRetry.addEventListener('click', () => processFile(selectedFile));
+    btnCopy.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(generatedCode);
+      btnCopy.textContent = 'Copied';
+      setTimeout(() => { btnCopy.textContent = 'Copy code'; }, 1400);
     });
-
-    fileUpload.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files.length > 0) {
-        showResults(e.target.files[0]);
-      }
+    btnSave.addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(new Blob([generatedCode], { type: 'text/plain' }));
+      link.download = 'generated-figure.tex';
+      link.click();
+      URL.revokeObjectURL(link.href);
     });
-
-    btnBack.addEventListener('click', showLanding);
-
-    const updateSlider = (percentage) => {
-      const p = Math.max(0, Math.min(percentage, 100));
-      sliderHandle.style.left = `${p}%`;
-      renderLayer.style.clipPath = `polygon(${p}% 0, 100% 0, 100% 100%, ${p}% 100%)`;
-    };
-
-    const onMouseMove = (e) => {
-      if (!isDragging) return;
-      const rect = sliderContainer.getBoundingClientRect();
-      let x = e.clientX - rect.left;
-      let percentage = (x / rect.width) * 100;
-      updateSlider(percentage);
-    };
-
-    const onMouseUp = () => {
-      isDragging = false;
-      document.body.style.cursor = 'default';
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-
-    sliderHandle.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      isDragging = true;
-      document.body.style.cursor = 'ew-resize';
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
-    });
-
-    sliderHandle.addEventListener('touchstart', (e) => {
-      isDragging = true;
-      const onTouchMove = (e) => {
-        if (!isDragging) return;
-        const rect = sliderContainer.getBoundingClientRect();
-        let x = e.touches[0].clientX - rect.left;
-        let percentage = (x / rect.width) * 100;
-        updateSlider(percentage);
-      };
-      const onTouchEnd = () => {
-        isDragging = false;
-        window.removeEventListener('touchmove', onTouchMove);
-        window.removeEventListener('touchend', onTouchEnd);
-      };
-      window.addEventListener('touchmove', onTouchMove, { passive: false });
-      window.addEventListener('touchend', onTouchEnd);
-    }, { passive: true });
   });
 </script>

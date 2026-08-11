@@ -23,11 +23,26 @@ import { masterCodeString } from '../data/mathFigures.js';
     const masterCodeString = canvas.dataset.master;
     let currentText = "";
     let charIndex = 0;
-    const charsPerFrame = 17; 
+    const charsPerFrame = 24;
     const infiniteString = masterCodeString;
     let hasFilled = false;
+    let lastFrame = 0;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const typeLoop = () => {
+    if (reducedMotion) {
+      canvas.textContent = infiniteString.substring(0, 2600);
+      hasFilled = true;
+      window.isTikzFilled = true;
+      window.dispatchEvent(new Event('tikzFilled'));
+      return;
+    }
+
+    const typeLoop = (timestamp) => {
+      if (timestamp - lastFrame < 28) {
+        requestAnimationFrame(typeLoop);
+        return;
+      }
+      lastFrame = timestamp;
       const charsToAdd = hasFilled ? 200 : charsPerFrame;
       currentText += infiniteString.substring(charIndex, charIndex + charsToAdd);
       charIndex = (charIndex + charsToAdd) % infiniteString.length;
@@ -45,12 +60,7 @@ import { masterCodeString } from '../data/mathFigures.js';
         window.dispatchEvent(new Event('tikzFilled'));
       }
       
-      if (!hasFilled) {
-        window.scrollTo(0, document.body.scrollHeight);
-      }
-
-      const nextDelay = hasFilled ? 150 : 20;
-      setTimeout(typeLoop, nextDelay);
+      requestAnimationFrame(typeLoop);
     };
     
     requestAnimationFrame(typeLoop);

@@ -2,7 +2,7 @@
   <!-- Anchor at center of screen -->
   <div class="absolute left-1/2 top-1/2 w-0 h-0">
     <!-- Animated wrapper for position -->
-    <div id="animated-wrapper" class="absolute">
+      <div id="animated-wrapper" class="absolute opacity-35">
       <!-- Centered ASCII content vertically, left aligned horizontally -->
       <pre id="animated-ascii" class="absolute -translate-y-1/2 font-mono text-[7px] md:text-[9px] font-bold leading-[1.1] tracking-tighter whitespace-pre text-gray-400 opacity-60 mix-blend-multiply mask-fade-left">
       </pre>
@@ -28,17 +28,12 @@
     
     const data = mathFigures;
 
-    const chars = '!<>-_\\[]{}—=+*^?#_01';
-    const randomCharPool = new Array(100000);
-    for(let i=0; i<100000; i++) {
-      randomCharPool[i] = chars[Math.floor(Math.random() * chars.length)];
-    }
+    const chars = '!<>-_\\[]{}=+*^?#_01';
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function formText(text, progress) {
       const len = text.length;
       const activeIndex = Math.floor(progress * len);
-      let poolIndex = Math.floor(Math.random() * 50000);
-      
       const arr = new Array(len);
       for(let i = 0; i < len; i++) {
         const c = text[i];
@@ -48,8 +43,7 @@
           if (i < activeIndex) {
             arr[i] = c;
           } else {
-            arr[i] = randomCharPool[poolIndex];
-            poolIndex = (poolIndex + 1) % 100000;
+            arr[i] = chars[(i * 17 + activeIndex * 7) % chars.length];
           }
         }
       }
@@ -59,8 +53,6 @@
     function deformText(text, progress) {
       const len = text.length;
       const activeIndex = Math.floor(progress * len);
-      let poolIndex = Math.floor(Math.random() * 50000);
-      
       const arr = new Array(len);
       for(let i = 0; i < len; i++) {
         const c = text[i];
@@ -68,8 +60,7 @@
           arr[i] = '\n';
         } else {
           if (i >= len - activeIndex) {
-            arr[i] = randomCharPool[poolIndex];
-            poolIndex = (poolIndex + 1) % 100000;
+            arr[i] = chars[(i * 13 + activeIndex * 5) % chars.length];
           } else {
             arr[i] = c;
           }
@@ -96,6 +87,11 @@
         scale: 1.0
       });
 
+      if (reducedMotion) {
+        asciiEl.textContent = targetText;
+        return;
+      }
+
       const timeline = anime.timeline({
         complete: () => {
           currentIndex++;
@@ -106,8 +102,8 @@
       timeline.add({
         targets: dummy,
         in: [0, 100],
-        duration: 8000,
-        easing: 'easeOutBack',
+         duration: 4500,
+         easing: 'easeInOutSine',
         update: function() {
           const p = dummy.in / 100;
           asciiEl.textContent = formText(targetText, p); 
@@ -116,7 +112,7 @@
 
       timeline.add({
         targets: dummy,
-        duration: 1500,
+         duration: 1000,
         update: function() {
           asciiEl.textContent = targetText;
         }
@@ -125,8 +121,8 @@
       timeline.add({
         targets: dummy,
         out: [0, 100],
-        duration: 8000,
-        easing: 'easeOutBack',
+         duration: 4500,
+         easing: 'easeInOutSine',
         update: function() {
           const p = dummy.out / 100;
           asciiEl.textContent = deformText(targetText, p);
@@ -134,7 +130,12 @@
       });
     }
 
-    const startDelayed = () => setTimeout(runCycle, 3100);
+    const startDelayed = () => setTimeout(runCycle, 1500);
+
+    if (reducedMotion) {
+      asciiEl.textContent = data[0].ascii;
+      return;
+    }
 
     if (window.isTikzFilled) {
       startDelayed();
@@ -145,7 +146,7 @@
           window.isTikzFilled = true;
           startDelayed();
         }
-      }, 6500);
+       }, 3000);
     }
   });
 </script>

@@ -2,7 +2,12 @@
  * Cliente HTTP asíncrono para consumir la API (FastAPI)
  * Cumple con la Capa de Adaptadores según la Arquitectura Hexagonal.
  */
-export async function generateTikzFromImage(imageFile: File): Promise<string> {
+export interface GenerationResult {
+    tikzCode: string;
+    previewUrl?: string;
+}
+
+export async function generateTikzFromImage(imageFile: File): Promise<GenerationResult> {
     const formData = new FormData();
     formData.append("image", imageFile);
 
@@ -17,7 +22,14 @@ export async function generateTikzFromImage(imageFile: File): Promise<string> {
         }
         
         const data = await response.json();
-        return data.tikz_code;
+        if (typeof data.tikz_code !== "string" || data.tikz_code.length === 0) {
+            throw new Error("The API returned no TikZ code.");
+        }
+
+        return {
+            tikzCode: data.tikz_code,
+            previewUrl: typeof data.preview_url === "string" ? data.preview_url : undefined,
+        };
     } catch (error) {
         console.error("Error connecting to the TikZ Generation API:", error);
         throw error;

@@ -1,76 +1,61 @@
----
----
-<div id="brutal-geometry-background" class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none select-none bg-white opacity-20 mix-blend-multiply">
-  <svg id="geometry-svg" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+<div id="geometry-background" class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none select-none bg-[#f4f4f1]">
+  <svg id="geometry-svg" class="w-full h-full" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <pattern id="about-grid" width="48" height="48" patternUnits="userSpaceOnUse">
+        <path d="M48 0H0V48" fill="none" stroke="#000" stroke-width="1" opacity="0.09" />
+      </pattern>
+      <linearGradient id="about-fade" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#fff" stop-opacity="0.8" />
+        <stop offset="0.55" stop-color="#fff" stop-opacity="0" />
+        <stop offset="1" stop-color="#fff" stop-opacity="0.55" />
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="900" fill="url(#about-grid)" />
+    <path d="M-80 720L420 120L1250 500" fill="none" stroke="#000" stroke-width="1" opacity="0.14" />
+    <path d="M-100 170L680 830L1260 180" fill="none" stroke="#000" stroke-width="1" opacity="0.1" />
+    <g id="geometry-shapes" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="180" cy="220" r="112" stroke-width="2" opacity="0.22" />
+      <path d="M80 690L270 390L430 690Z" stroke-width="2" opacity="0.2" />
+      <path d="M700 130L930 130L1040 330L810 430L700 130Z" stroke-width="2" opacity="0.18" />
+      <circle cx="1010" cy="700" r="155" stroke-width="2" opacity="0.16" />
+      <path d="M510 760C590 590 690 590 770 760" stroke-width="2" opacity="0.16" />
+      <path d="M550 250H650M600 200V300" stroke-width="2" opacity="0.22" />
+    </g>
+    <rect width="1200" height="900" fill="url(#about-fade)" />
   </svg>
 </div>
 
-<script>
-  import anime from 'animejs';
+<style>
+  #geometry-background { opacity: 0.9; }
+  #geometry-shapes > * { transform-box: fill-box; transform-origin: center; }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const svg = document.getElementById('geometry-svg');
-    if (!svg) return;
-
-    function createShape() {
-      // Pick random shape: 0 = circle, 1 = polygon, 2 = line
-      const typeRand = Math.random();
-      let type = 'polygon';
-      if (typeRand < 0.33) type = 'circle';
-      else if (typeRand < 0.66) type = 'line';
-
-      const el = document.createElementNS('http://www.w3.org/2000/svg', type);
-      
-      const cx = Math.random() * window.innerWidth;
-      const cy = Math.random() * window.innerHeight;
-      const size = 50 + Math.random() * 250;
-
-      el.setAttribute('stroke', '#000000');
-      el.setAttribute('stroke-width', Math.floor(1 + Math.random() * 4).toString());
-      el.setAttribute('fill', 'none');
-
-      if (type === 'circle') {
-        el.setAttribute('cx', cx.toString());
-        el.setAttribute('cy', cy.toString());
-        el.setAttribute('r', size.toString());
-      } else if (type === 'line') {
-        const angle = Math.random() * Math.PI * 2;
-        el.setAttribute('x1', cx.toString());
-        el.setAttribute('y1', cy.toString());
-        el.setAttribute('x2', (cx + size * Math.cos(angle)).toString());
-        el.setAttribute('y2', (cy + size * Math.sin(angle)).toString());
-      } else {
-        const sides = 3 + Math.floor(Math.random() * 4); // 3 to 6 sides (triangle to hexagon)
-        let points = [];
-        for(let i=0; i<sides; i++) {
-          const angle = (i / sides) * Math.PI * 2 + Math.random();
-          points.push(`${cx + size * Math.cos(angle)},${cy + size * Math.sin(angle)}`);
-        }
-        el.setAttribute('points', points.join(' '));
-      }
-
-      svg.appendChild(el);
-
-      // Animate drawing and erasing
-      anime({
-        targets: el,
-        strokeDashoffset: [anime.setDashoffset, 0],
-        easing: 'easeInOutSine',
-        duration: 3000 + Math.random() * 4000,
-        direction: 'alternate',
-        loop: 1,
-        complete: () => {
-          if (el.parentNode === svg) {
-            svg.removeChild(el);
-          }
-          createShape();
-        }
-      });
+  @media (prefers-reduced-motion: no-preference) {
+    #geometry-svg > rect:first-of-type { animation: grid-drift 14s linear infinite; }
+    #geometry-shapes > * {
+      stroke-dasharray: 800;
+      animation: trace-shape 7s ease-in-out infinite alternate;
     }
+    #geometry-shapes > *:nth-child(odd) { animation: trace-shape 7s ease-in-out infinite alternate, float-shape 10s ease-in-out infinite alternate; }
+    #geometry-shapes > *:nth-child(even) { animation: trace-shape 8s ease-in-out 0.8s infinite alternate, float-shape-reverse 12s ease-in-out infinite alternate; }
+  }
 
-    // Start concurrent continuous vector tracing agents
-    for(let i=0; i<15; i++) {
-      setTimeout(createShape, Math.random() * 5000);
-    }
-  });
-</script>
+  @keyframes grid-drift {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(24px, 16px, 0); }
+  }
+
+  @keyframes trace-shape {
+    from { stroke-dashoffset: 800; opacity: 0.08; }
+    to { stroke-dashoffset: 0; opacity: 0.24; }
+  }
+
+  @keyframes float-shape {
+    from { transform: translate3d(0, 0, 0) rotate(0deg); }
+    to { transform: translate3d(12px, -10px, 0) rotate(2deg); }
+  }
+
+  @keyframes float-shape-reverse {
+    from { transform: translate3d(0, 0, 0) rotate(0deg); }
+    to { transform: translate3d(-10px, 12px, 0) rotate(-2deg); }
+  }
+</style>
