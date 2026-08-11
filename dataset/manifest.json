@@ -1,0 +1,63 @@
+{
+  "seed": 42,
+  "val_ratio": 0.1,
+  "requested": {
+    "procedural": 4800,
+    "external": 200
+  },
+  "rendered": {
+    "total": 5014,
+    "train": 4513,
+    "val": 501
+  },
+  "strata": {
+    "line_segment": {
+      "train": 540,
+      "val": 60
+    },
+    "polyline": {
+      "train": 540,
+      "val": 60
+    },
+    "polygon": {
+      "train": 540,
+      "val": 60
+    },
+    "circle_arc": {
+      "train": 540,
+      "val": 60
+    },
+    "grid_axes": {
+      "train": 540,
+      "val": 60
+    },
+    "function_plot": {
+      "train": 540,
+      "val": 60
+    },
+    "node_arrow": {
+      "train": 540,
+      "val": 60
+    },
+    "composed": {
+      "train": 540,
+      "val": 60
+    },
+    "external": {
+      "train": 193,
+      "val": 21
+    }
+  },
+  "showcase_rendered": true,
+  "duration_seconds": 883.49,
+  "fingerprints_sample": [
+    "21500b01e12b811e25eab0031f48f43092e3d984b212e1e65ea976cda29707ad",
+    "66cd8eb772077a05ac627a2cb6d57aa3ec10cd879872da84c5665912e37968ba",
+    "49fbbe311d9596f5b08612765ae2b34e1dd795818b17247d42ad9881ee83e2a1",
+    "6ae8a7d7b734ffed7e110a63413f832c35eb045e0abe71f728c52ab0f5bd2a76",
+    "737845bbdb376c37e4ff6ba9321f33c462994794665d1327713fc46c6977fdf1",
+    "51760eb49a3d59647f1d6c9ee269eb9872e6710c59db94e249dc24d98de4be85",
+    "230829aabc34ff4730dd8873fdc12c4a5d1e90d74d8dfce914fac7401fe8e908",
+    "f1c2547f547813114d1a21d33090d50f7f2e188decf2cec1d14802622e552e53"
+  ]
+}

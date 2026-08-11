@@ -185,3 +185,30 @@ class TensorPersistencePort(ABC):
         """
         pass
 
+
+class ImageRasterizerPort(ABC):
+    """
+    Outbound port defining the infrastructural contract for PDF rasterization.
+
+    Atomic interface (Interface Segregation): transforms binary PDF payloads
+    into PNG-encoded bytes without coupling the domain to any specific
+    rasterization binary (Ghostscript, Poppler, MuPDF).
+    """
+
+    @abstractmethod
+    async def rasterize_pdf(self, pdf_data: bytes, dpi: int = 150) -> bytes:
+        """
+        Rasterizes a binary PDF payload into PNG-encoded bytes.
+
+        Args:
+            pdf_data (bytes): The raw PDF binary payload.
+            dpi (int): Output rasterization density in dots per inch.
+
+        Returns:
+            bytes: The PNG-encoded raster image payload.
+
+        Raises:
+            DomainError: If the rasterization subprocess strictly fails.
+        """
+        pass
+

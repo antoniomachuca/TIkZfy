@@ -1,3 +1,4 @@
+from adapters.ghostscript_rasterizer import GhostscriptRasterizer
 from adapters.latex_ingestion_client import AiohttpLatexClient
 from adapters.tensor_persistence import PyTorchTensorAdapter
 from adapters.tex_live_adapter import AsyncTexLiveAdapter
@@ -7,6 +8,7 @@ from adapters.vocabulary_persistence import JsonVocabularyAdapter
 __all__ = [
     "AiohttpLatexClient",
     "AsyncTexLiveAdapter",
+    "GhostscriptRasterizer",
     "TorchVisionImageLoader",
     "JsonVocabularyAdapter",
     "PyTorchTensorAdapter",

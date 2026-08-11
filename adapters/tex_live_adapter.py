@@ -16,14 +16,18 @@ class AsyncTexLiveAdapter(TexCompilerPort):
     primary application thread.
     """
 
-    def __init__(self, engine: str = "pdflatex") -> None:
+    def __init__(self, engine: str = "pdflatex", tikz_libraries: tuple[str, ...] = ()) -> None:
         """
         Initializes the TeX Live adapter.
 
         Args:
             engine (str): The compiler engine to invoke (e.g., 'pdflatex', 'lualatex').
+            tikz_libraries (tuple[str, ...]): Optional TikZ library names injected
+                as usetikzlibrary lines in the standalone wrapper. Empty by default,
+                preserving the minimal production compilation preamble.
         """
         self.engine: str = engine
+        self.tikz_libraries: tuple[str, ...] = tikz_libraries
 
     async def compile_tikz(self, tokens: TikzTokens) -> CompilationResult:
         """
@@ -44,9 +48,13 @@ class AsyncTexLiveAdapter(TexCompilerPort):
             markup: str = tokens.markup
 
             if "\\documentclass" not in markup:
+                library_imports: str = "".join(
+                    f"\\usetikzlibrary{{{library}}}\n" for library in self.tikz_libraries
+                )
                 markup = (
                     "\\documentclass{standalone}\n"
                     "\\usepackage{tikz}\n"
+                    f"{library_imports}"
                     "\\begin{document}\n"
                     f"{markup}\n"
                     "\\end{document}\n"
