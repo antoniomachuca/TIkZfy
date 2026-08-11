@@ -2,8 +2,8 @@
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["core", "ports", "adapters"]
+[tool.setuptools.packages.find]
+where = ["."]
 
 [project]
 name = "image-to-tikz-engine"
