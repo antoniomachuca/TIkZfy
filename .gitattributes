@@ -1,3 +1,4 @@
-# Exclude generated dataset TeX files from GitHub Linguist statistics
+# Exclude LaTeX documentation report and large showcase TeX figures from GitHub Linguist language statistics
+docs/** linguist-documentation=true
 dataset/** linguist-generated=true
-dataset/** linguist-vendored=true
+*.tex linguist-documentation=true
