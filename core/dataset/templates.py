@@ -10,8 +10,10 @@ Reference: Golub & Van Loan, Matrix Computations — vectorized sampling of
 vertex coordinates via trigonometric evaluation over batched angle arrays.
 """
 from collections.abc import Callable
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from core.exceptions import DomainError
 
@@ -55,7 +57,7 @@ def _format_point(x: float, y: float) -> str:
     return f"({_format_scalar(x)}, {_format_scalar(y)})"
 
 
-def _sample_points(rng: np.random.Generator, count: int) -> np.ndarray:
+def _sample_points(rng: np.random.Generator, count: int) -> NDArray[Any]:
     """
     Samples `count` uniform points in the [-5, 5]^2 canvas.
 
@@ -77,7 +79,7 @@ def _choice(rng: np.random.Generator, options: tuple[str, ...]) -> str:
     return options[int(rng.integers(0, len(options)))]
 
 
-def _point_chain(points: np.ndarray) -> str:
+def _point_chain(points: NDArray[Any]) -> str:
     """
     Serializes a point array into a TikZ `--` connected path body.
 
@@ -104,7 +106,7 @@ def _line_segment(rng: np.random.Generator) -> str:
 
     Temporal complexity: O(1).
     """
-    points: np.ndarray = _sample_points(rng, 2)
+    points: NDArray[Any] = _sample_points(rng, 2)
     command: str = (
         f"\\draw[{_choice(rng, LINE_WIDTHS)}, {_choice(rng, NAMED_COLORS)}, "
         f"{_choice(rng, LINE_STYLES)}] {_point_chain(points)};"
@@ -119,7 +121,7 @@ def _polyline(rng: np.random.Generator) -> str:
     Temporal complexity: O(k) where k is the vertex count.
     """
     vertex_count: int = int(rng.integers(3, 7))
-    points: np.ndarray = _sample_points(rng, vertex_count)
+    points: NDArray[Any] = _sample_points(rng, vertex_count)
     command: str = (
         f"\\draw[{_choice(rng, LINE_WIDTHS)}, {_choice(rng, NAMED_COLORS)}] "
         f"{_point_chain(points)};"
@@ -137,14 +139,14 @@ def _polygon(rng: np.random.Generator) -> str:
     Temporal complexity: O(n) where n is the side count, vectorized.
     """
     sides: int = int(rng.integers(3, 9))
-    center: np.ndarray = _sample_points(rng, 1)[0]
+    center: NDArray[Any] = _sample_points(rng, 1)[0]
     radius: float = float(rng.uniform(0.5, 3.0))
     rotation: float = float(rng.uniform(0.0, 2.0 * np.pi))
 
     # Shape: (sides,)
-    angles: np.ndarray = rotation + 2.0 * np.pi * np.arange(sides) / sides
+    angles: NDArray[Any] = rotation + 2.0 * np.pi * np.arange(sides) / sides
     # Shape: (sides, 2)
-    vertices: np.ndarray = center + radius * np.column_stack(
+    vertices: NDArray[Any] = center + radius * np.column_stack(
         (np.cos(angles), np.sin(angles))
     )
 
@@ -161,7 +163,7 @@ def _circle_arc(rng: np.random.Generator) -> str:
 
     Temporal complexity: O(1).
     """
-    center: np.ndarray = _sample_points(rng, 1)[0]
+    center: NDArray[Any] = _sample_points(rng, 1)[0]
     style: str = (
         f"{_choice(rng, LINE_WIDTHS)}, {_choice(rng, NAMED_COLORS)}"
     )
@@ -251,7 +253,7 @@ def _node_arrow(rng: np.random.Generator) -> str:
     Temporal complexity: O(k) where k is the node count (k <= 4).
     """
     node_count: int = int(rng.integers(2, 5))
-    points: np.ndarray = _sample_points(rng, node_count)
+    points: NDArray[Any] = _sample_points(rng, node_count)
     identifiers: tuple[str, ...] = tuple("abcde"[:node_count])
 
     declarations: list[str] = [
@@ -290,7 +292,7 @@ def _composed(rng: np.random.Generator) -> str:
     )
     primitive_count: int = int(rng.integers(2, 4))
     # Shape: (primitive_count,)
-    selected: np.ndarray = rng.choice(len(primitive_pool), size=primitive_count)
+    selected: NDArray[Any] = rng.choice(len(primitive_pool), size=primitive_count)
 
     commands: list[str] = [
         _extract_body(primitive_pool[int(primitive_idx)](rng))

@@ -9,8 +9,10 @@ Reference: Golub & Van Loan, Matrix Computations — index arithmetic over
 sorted grouped arrays as a vectorized alternative to per-group loops.
 """
 import hashlib
+from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 from core.exceptions import DomainError
 
@@ -70,7 +72,7 @@ def train_val_split(
     n_samples: int,
     val_ratio: float,
     seed: int,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[Any], NDArray[Any]]:
     """
     Computes a deterministic train/validation index partition.
 
@@ -80,7 +82,7 @@ def train_val_split(
         seed (int): Seed fixing the permutation.
 
     Returns:
-        tuple[np.ndarray, np.ndarray]: Sorted (train_indices, val_indices),
+        tuple[NDArray[Any], NDArray[Any]]: Sorted (train_indices, val_indices),
         each of shape (n_train,) and (n_val,).
 
     Raises:
@@ -95,19 +97,19 @@ def train_val_split(
 
     rng: np.random.Generator = np.random.default_rng(seed)
     # Shape: (n_samples,)
-    permutation: np.ndarray = rng.permutation(n_samples)
+    permutation: NDArray[Any] = rng.permutation(n_samples)
 
     n_val: int = min(max(int(round(n_samples * val_ratio)), 1), n_samples - 1)
-    train_indices: np.ndarray = np.sort(permutation[n_val:])
-    val_indices: np.ndarray = np.sort(permutation[:n_val])
+    train_indices: NDArray[Any] = np.sort(permutation[n_val:])
+    val_indices: NDArray[Any] = np.sort(permutation[:n_val])
     return train_indices, val_indices
 
 
 def stratified_train_val_split(
-    labels: np.ndarray,
+    labels: NDArray[Any],
     val_ratio: float,
     seed: int,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[Any], NDArray[Any]]:
     """
     Computes a deterministic stratified train/validation partition.
 
@@ -115,13 +117,13 @@ def stratified_train_val_split(
     the validation set, guaranteeing family coverage on both sides.
 
     Args:
-        labels (np.ndarray): Non-negative integer stratum per sample.
+        labels (NDArray[Any]): Non-negative integer stratum per sample.
             Shape: (n_samples,)
         val_ratio (float): Validation fraction in (0, 1).
         seed (int): Seed fixing the within-stratum ordering.
 
     Returns:
-        tuple[np.ndarray, np.ndarray]: Sorted (train_indices, val_indices).
+        tuple[NDArray[Any], NDArray[Any]]: Sorted (train_indices, val_indices).
 
     Raises:
         DomainError: On empty input, negative labels, or invalid ratio.
@@ -140,26 +142,26 @@ def stratified_train_val_split(
 
     # Vectorized within-stratum shuffle: sort by (label, uniform_key)
     # Shape: (n_samples,)
-    order: np.ndarray = np.lexsort((rng.random(n_samples), labels))
-    sorted_labels: np.ndarray = labels[order]
+    order: NDArray[Any] = np.lexsort((rng.random(n_samples), labels))
+    sorted_labels: NDArray[Any] = labels[order]
 
     # Per-stratum mass and starting offsets via bincount/cumsum arithmetic
     # Shape: (n_strata,)
-    counts: np.ndarray = np.bincount(sorted_labels)
+    counts: NDArray[Any] = np.bincount(sorted_labels)
     # Shape: (n_strata,)
-    stratum_starts: np.ndarray = np.concatenate(
+    stratum_starts: NDArray[Any] = np.concatenate(
         (np.zeros(1, dtype=np.int64), np.cumsum(counts)[:-1])
     )
 
     # Within-stratum rank of each sorted position, vectorized
     # Shape: (n_samples,)
-    within_rank: np.ndarray = np.arange(n_samples) - stratum_starts[sorted_labels]
+    within_rank: NDArray[Any] = np.arange(n_samples) - stratum_starts[sorted_labels]
     # Shape: (n_strata,)
-    val_counts: np.ndarray = np.floor(counts * val_ratio).astype(np.int64)
+    val_counts: NDArray[Any] = np.floor(counts * val_ratio).astype(np.int64)
 
     # Shape: (n_samples,) boolean mask in sorted order
-    is_val_sorted: np.ndarray = within_rank < val_counts[sorted_labels]
+    is_val_sorted: NDArray[Any] = within_rank < val_counts[sorted_labels]
 
-    val_indices: np.ndarray = np.sort(order[is_val_sorted])
-    train_indices: np.ndarray = np.sort(order[~is_val_sorted])
+    val_indices: NDArray[Any] = np.sort(order[is_val_sorted])
+    train_indices: NDArray[Any] = np.sort(order[~is_val_sorted])
     return train_indices, val_indices

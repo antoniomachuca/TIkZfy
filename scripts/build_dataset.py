@@ -8,6 +8,7 @@ import time
 from typing import Any
 
 import numpy as np
+from numpy.typing import NDArray
 
 # Ensure the parent directory is in the PYTHONPATH so module resolution works
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -31,12 +32,12 @@ EXTERNAL_STRATUM: int = len(FAMILY_NAMES)
 
 def generate_procedural_corpus(
     per_family_count: int, seed: int
-) -> tuple[list[str], np.ndarray]:
+) -> tuple[list[str], NDArray[Any]]:
     """
     Draws a balanced procedural corpus across every template family.
 
     Returns:
-        tuple[list[str], np.ndarray]: Markups and their stratum labels.
+        tuple[list[str], NDArray[Any]]: Markups and their stratum labels.
         Shape of labels: (8 * per_family_count,)
     """
     batches: list[list[str]] = [
@@ -45,7 +46,7 @@ def generate_procedural_corpus(
     ]
     markups: list[str] = [markup for batch in batches for markup in batch]
     # Shape: (8 * per_family_count,)
-    labels: np.ndarray = np.repeat(np.arange(len(FAMILY_NAMES)), per_family_count)
+    labels: NDArray[Any] = np.repeat(np.arange(len(FAMILY_NAMES)), per_family_count)
     return markups, labels
 
 
@@ -108,12 +109,12 @@ async def render_sample(
 
 async def render_corpus(
     markups: list[str], workers: int
-) -> tuple[list[bytes], np.ndarray]:
+) -> tuple[list[bytes], NDArray[Any]]:
     """
     Renders every markup with bounded parallelism.
 
     Returns:
-        tuple[list[bytes], np.ndarray]: PNG payloads aligned with `markups`
+        tuple[list[bytes], NDArray[Any]]: PNG payloads aligned with `markups`
         and a boolean success mask. Shape of mask: (len(markups),)
     """
     semaphore: asyncio.Semaphore = asyncio.Semaphore(workers)
@@ -127,7 +128,7 @@ async def render_corpus(
     results: list[Any] = await asyncio.gather(*tasks, return_exceptions=True)
 
     # Shape: (len(markups),)
-    success_mask: np.ndarray = np.array(
+    success_mask: NDArray[Any] = np.array(
         [isinstance(result, bytes) for result in results], dtype=bool
     )
     payloads: list[bytes] = [
@@ -139,7 +140,7 @@ async def render_corpus(
 def persist_split(
     output_dir: str,
     split_name: str,
-    indices: np.ndarray,
+    indices: NDArray[Any],
     markups: list[str],
     payloads: list[bytes],
 ) -> None:
@@ -228,12 +229,12 @@ async def orchestrate_dataset_build(args: argparse.Namespace) -> None:
     )
     print(f"[*] {len(external_candidates)} unique external candidates in budget.")
 
-    external_labels: np.ndarray = np.full(
+    external_labels: NDArray[Any] = np.full(
         len(external_candidates), EXTERNAL_STRATUM, dtype=np.int64
     )
     all_markups: list[str] = markups + external_candidates
     # Shape: (n_total,)
-    all_labels: np.ndarray = np.concatenate((labels, external_labels))
+    all_labels: NDArray[Any] = np.concatenate((labels, external_labels))
 
     print(f"[*] Rendering {len(all_markups)} samples with {args.workers} workers...")
     payloads, success_mask = await render_corpus(all_markups, args.workers)
@@ -245,7 +246,7 @@ async def orchestrate_dataset_build(args: argparse.Namespace) -> None:
     kept_payloads: list[bytes] = [
         payload for payload, keep in zip(payloads, success_mask, strict=True) if keep
     ]
-    kept_labels: np.ndarray = all_labels[success_mask]
+    kept_labels: NDArray[Any] = all_labels[success_mask]
 
     external_success: int = int(
         np.sum(kept_labels == EXTERNAL_STRATUM)
@@ -269,10 +270,10 @@ async def orchestrate_dataset_build(args: argparse.Namespace) -> None:
     )
 
     # Shape: (n_strata + 1,) per split
-    train_counts: np.ndarray = np.bincount(
+    train_counts: NDArray[Any] = np.bincount(
         kept_labels[train_idx], minlength=EXTERNAL_STRATUM + 1
     )
-    val_counts: np.ndarray = np.bincount(
+    val_counts: NDArray[Any] = np.bincount(
         kept_labels[val_idx], minlength=EXTERNAL_STRATUM + 1
     )
 
@@ -362,7 +363,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     return parser
 
 
-async def main():
+async def main() -> None:
     cli_args: argparse.Namespace = build_argument_parser().parse_args()
     await orchestrate_dataset_build(cli_args)
 

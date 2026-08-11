@@ -1,5 +1,8 @@
+from typing import Any
+
 import numpy as np
 import pytest
+from numpy.typing import NDArray
 
 from core.dataset import (
     deduplicate_markups,
@@ -70,11 +73,11 @@ def test_split_rejects_invalid_arguments() -> None:
 def test_stratified_split_stratum_coverage() -> None:
     """Verify every stratum contributes to both partitions proportionally."""
     # Shape: (800,) — eight strata of 100 samples each
-    labels: np.ndarray = np.repeat(np.arange(8), 100)
+    labels: NDArray[Any] = np.repeat(np.arange(8), 100)
     train_idx, val_idx = stratified_train_val_split(labels, 0.1, seed=42)
 
-    train_labels: np.ndarray = np.bincount(labels[train_idx], minlength=8)
-    val_labels: np.ndarray = np.bincount(labels[val_idx], minlength=8)
+    train_labels: NDArray[Any] = np.bincount(labels[train_idx], minlength=8)
+    val_labels: NDArray[Any] = np.bincount(labels[val_idx], minlength=8)
 
     assert np.all(train_labels == 90)
     assert np.all(val_labels == 10)
@@ -83,7 +86,7 @@ def test_stratified_split_stratum_coverage() -> None:
 
 def test_stratified_split_determinism() -> None:
     """Verify stratified partitions are seed-reproducible."""
-    labels: np.ndarray = np.repeat(np.arange(4), 50)
+    labels: NDArray[Any] = np.repeat(np.arange(4), 50)
     split_a = stratified_train_val_split(labels, 0.25, seed=3)
     split_b = stratified_train_val_split(labels, 0.25, seed=3)
     assert np.array_equal(split_a[0], split_b[0])
