@@ -35,6 +35,7 @@ disallow_any_generics = true
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+src = ["."]
 
 [tool.ruff.lint]
 select = [
@@ -51,3 +52,6 @@ ignore = []
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+markers = [
+    "infrastructure: requires external OS binaries (TeX Live, Ghostscript)",
+]
