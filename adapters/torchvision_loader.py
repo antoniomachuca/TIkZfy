@@ -23,7 +23,7 @@ class TorchVisionImageLoader(ImageLoaderPort):
         """
         # Shape: (C, H, W)
         raw_tensor = io.read_image(source_path)
-        
+
         float_tensor = raw_tensor.to(dtype=torch.float32)
 
         # O(1) Batch dimension injection. Shape: (B, C, H, W) where B = 1

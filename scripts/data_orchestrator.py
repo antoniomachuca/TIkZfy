@@ -9,8 +9,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from adapters.latex_ingestion_client import AiohttpLatexClient
 from adapters.tex_live_adapter import AsyncTexLiveAdapter
-from core.models import RawLatexDocument, TikzTokens, CompilationResult
 from core.exceptions import DomainError
+from core.models import CompilationResult, RawLatexDocument, TikzTokens
 
 
 async def orchestrate_data_generation(uris: list[str], output_dir: str) -> None:
@@ -29,11 +29,11 @@ async def orchestrate_data_generation(uris: list[str], output_dir: str) -> None:
 
     print(f"[*] Ingesting {len(uris)} potential LaTeX sources...")
     raw_docs: list[RawLatexDocument] = await ingestion_client.fetch_sources(uris)
-    
+
     print(f"[*] Successfully ingested {len(raw_docs)} unparsed documents.")
 
     tokens_list: list[TikzTokens] = []
-    
+
     # Deterministic mapping loop
     for doc in raw_docs:
         try:
@@ -43,31 +43,38 @@ async def orchestrate_data_generation(uris: list[str], output_dir: str) -> None:
             print(f"[!] Topological constraint violation during tokenization: {e}")
 
     print(f"[*] Compiling {len(tokens_list)} syntactically validated TikZ sequences...")
-    
+
     compile_tasks: list[Any] = [compiler_adapter.compile_tikz(tokens) for tokens in tokens_list]
     compilation_results: list[Any] = await asyncio.gather(*compile_tasks, return_exceptions=True)
 
     success_count: int = 0
-    
-    for idx, (result, tokens) in enumerate(zip(compilation_results, tokens_list)):
+
+    for idx, (result, tokens) in enumerate(
+        zip(compilation_results, tokens_list, strict=True)
+    ):
         if isinstance(result, CompilationResult) and result.is_successful:
             base_filename: str = os.path.join(output_dir, f"sample_{success_count:04d}")
-            
+
             with open(f"{base_filename}.tex", "w", encoding="utf-8") as tex_out:
                 tex_out.write(tokens.markup)
-                
+
             with open(f"{base_filename}.pdf", "wb") as pdf_out:
                 pdf_out.write(result.pdf_data)
-                
+
             success_count += 1
         elif isinstance(result, Exception):
              print(f"[!] Compilation strictly failed for item {idx}: {result}")
 
-    print(f"[*] Orchestration completed. Persisted {success_count} structural pairs in '{output_dir}'.")
+    print(
+        f"[*] Orchestration completed. Persisted {success_count} structural "
+        f"pairs in '{output_dir}'."
+    )
 
 
 
-parser: argparse.ArgumentParser = argparse.ArgumentParser(description="Deterministic Dataset Orchestrator for Image-to-TikZ")
+parser: argparse.ArgumentParser = argparse.ArgumentParser(
+    description="Deterministic Dataset Orchestrator for Image-to-TikZ"
+)
 parser.add_argument(
     "--uris",
     nargs="*",

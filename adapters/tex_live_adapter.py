@@ -2,15 +2,15 @@ import asyncio
 import os
 import tempfile
 
-from ports.outbound import TexCompilerPort
-from core.models import CompilationResult, TikzTokens
 from core.exceptions import DomainError
+from core.models import CompilationResult, TikzTokens
+from ports.outbound import TexCompilerPort
 
 
 class AsyncTexLiveAdapter(TexCompilerPort):
     """
     Asynchronous infrastructural adapter for TeX Live compilation.
-    
+
     Implements the TexCompilerPort interface to orchestrate the generation
     of PDF binary artifacts via OS-level subprocesses without blocking the
     primary application thread.
@@ -42,7 +42,7 @@ class AsyncTexLiveAdapter(TexCompilerPort):
         with tempfile.TemporaryDirectory() as temp_dir:
             tex_file_path: str = os.path.join(temp_dir, "document.tex")
             markup: str = tokens.markup
-            
+
             if "\\documentclass" not in markup:
                 markup = (
                     "\\documentclass{standalone}\n"
@@ -67,17 +67,20 @@ class AsyncTexLiveAdapter(TexCompilerPort):
             )
 
             stdout_data, stderr_data = await process.communicate()
-            
+
             is_successful: bool = (process.returncode == 0)
             pdf_data: bytes = b""
 
             pdf_file_path: str = os.path.join(temp_dir, "document.pdf")
-            
+
             if is_successful and os.path.exists(pdf_file_path):
                 with open(pdf_file_path, "rb") as pdf_file:
                     pdf_data = pdf_file.read()
             else:
                 error_context: str = stdout_data.decode("utf-8", errors="replace")
-                raise DomainError(f"TeX compilation structurally failed. Engine output:\n{error_context}")
+                raise DomainError(
+                    "TeX compilation structurally failed. Engine output:\n"
+                    f"{error_context}"
+                )
 
             return CompilationResult(pdf_data=pdf_data, is_successful=is_successful)

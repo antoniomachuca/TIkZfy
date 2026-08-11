@@ -11,8 +11,8 @@ import pytest
 import torch
 
 from core.exceptions import TensorTopologyError
-from core.models.value_objects import ImageTensor
 from core.math.preprocessing import preprocess_for_encoder
+from core.models.value_objects import ImageTensor
 
 
 def test_preprocess_full_pipeline_shape() -> None:

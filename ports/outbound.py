@@ -150,3 +150,38 @@ class VocabularyPersistencePort(ABC):
         """
         pass
 
+class TensorPersistencePort(ABC):
+    """
+    Outbound port for tensor serialization.
+    """
+
+    @abstractmethod
+    def save_tensor(self, tensor: ImageTensor, destination_path: str) -> None:
+        """
+        Serializes an ImageTensor to disk.
+
+        Args:
+            tensor (ImageTensor): Tensor to save.
+            destination_path (str): Path where the tensor is written.
+
+        Raises:
+            DomainError: If the file cannot be written.
+        """
+        pass
+
+    @abstractmethod
+    def load_tensor(self, source_path: str) -> ImageTensor:
+        """
+        Loads a tensor from disk.
+
+        Args:
+            source_path (str): Path of the stored tensor.
+
+        Returns:
+            ImageTensor: The loaded tensor.
+
+        Raises:
+            DomainError: If the file is missing, unreadable, or not a valid tensor.
+        """
+        pass
+

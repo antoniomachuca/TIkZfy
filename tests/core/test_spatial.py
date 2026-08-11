@@ -12,15 +12,14 @@ import pytest
 import torch
 
 from core.exceptions import TensorTopologyError
-from core.models.value_objects import ImageTensor
 from core.math.spatial import (
-    normalize_channels,
-    resize_spatial_dimensions,
-    rearrange_channels_last,
-    tile_batch_dimension,
     flatten_spatial_grid,
+    normalize_channels,
+    rearrange_channels_last,
+    resize_spatial_dimensions,
+    tile_batch_dimension,
 )
-
+from core.models.value_objects import ImageTensor
 
 # ---------------------------------------------------------------------------
 # normalize_channels

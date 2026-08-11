@@ -13,9 +13,9 @@ def test_extract_tikz_graphs_success() -> None:
         "More text \\begin{tikzpicture} \\node {A}; \\end{tikzpicture}"
     )
     document = RawLatexDocument(raw_text=raw_str)
-    
+
     tokens = extract_tikz_graphs(document)
-    
+
     assert len(tokens) == 2
     assert isinstance(tokens[0], TikzTokens)
     assert "\\draw (0,0) -- (1,1);" in tokens[0].markup
@@ -28,9 +28,9 @@ def test_extract_tikz_graphs_no_match() -> None:
     """
     raw_str = "This document contains no geometric graphs."
     document = RawLatexDocument(raw_text=raw_str)
-    
+
     tokens = extract_tikz_graphs(document)
-    
+
     assert len(tokens) == 0
 
 

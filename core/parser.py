@@ -2,12 +2,11 @@
 Syntactic parsing operations for geometric graph extraction.
 """
 import re
-from typing import List
 
 from core.models.value_objects import RawLatexDocument, TikzTokens
 
 
-def extract_tikz_graphs(document: RawLatexDocument) -> List[TikzTokens]:
+def extract_tikz_graphs(document: RawLatexDocument) -> list[TikzTokens]:
     """
     Extracts all TikZ geometric graphs from a raw LaTeX document.
     Employs deterministic regular expressions to avoid explicit scalar iterations
@@ -17,16 +16,17 @@ def extract_tikz_graphs(document: RawLatexDocument) -> List[TikzTokens]:
         document (RawLatexDocument): The immutable raw string document.
 
     Returns:
-        List[TikzTokens]: Sequence of extracted geometric graphs mapping to the topological subspace.
+        List[TikzTokens]: Sequence of extracted geometric graphs mapping to
+        the topological subspace.
     """
     if not isinstance(document, RawLatexDocument):
         raise TypeError("Input must be a RawLatexDocument instance.")
 
     # Formal bounding box for the geometric topology.
     pattern = re.compile(r"\\begin\{tikzpicture\}.*?\\end\{tikzpicture\}", re.DOTALL)
-    
+
     # Vectorized C-level extraction bypassing sequential loops.
-    matches: List[str] = pattern.findall(document.raw_text)
-    
+    matches: list[str] = pattern.findall(document.raw_text)
+
     # Deterministic functional mapping to the output domain.
-    return list(map(lambda markup: TikzTokens(markup=markup), matches))
+    return [TikzTokens(markup=match) for match in matches]
