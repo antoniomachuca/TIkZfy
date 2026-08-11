@@ -40,7 +40,8 @@ jobs:
         run: mypy .
 
       - name: Pytest
-        run: pytest tests/ -q
+        # Infrastructure-marked tests need TeX Live/Ghostscript; they run locally and in Docker
+        run: pytest tests/ -q -m "not infrastructure"
 
   docker:
     name: Docker Build
