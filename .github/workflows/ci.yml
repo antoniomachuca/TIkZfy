@@ -32,6 +32,7 @@ jobs:
           # CPU-only wheels: the full CUDA build (~2.5 GB) buys nothing on CPU runners
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
           pip install -r requirements.txt mypy ruff
+          pip install -e .
 
       - name: Ruff
         run: ruff check .
