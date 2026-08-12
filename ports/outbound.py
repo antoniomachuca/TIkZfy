@@ -211,4 +211,3 @@ class ImageRasterizerPort(ABC):
             DomainError: If the rasterization subprocess strictly fails.
         """
         pass
-
