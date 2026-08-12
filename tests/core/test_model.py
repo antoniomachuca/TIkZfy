@@ -2,10 +2,10 @@ import torch
 
 from core.math.tokenization import build_vocabulary
 from core.ml.model import VisionAutoregressiveModel
-from core.models import ImageTensor, TikzTokens
+from core.models import ImageTensor, TikzTokens, TokenVocabulary
 
 
-def _vocabulary():
+def _vocabulary() -> TokenVocabulary:
     sample = TikzTokens(markup=r"\begin{tikzpicture}\draw (0,0);\end{tikzpicture}")
     return build_vocabulary([sample])
 
