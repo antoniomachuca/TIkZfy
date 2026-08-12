@@ -45,7 +45,7 @@ jobs:
         run: pytest tests/ -q -m "not infrastructure"
 
   docker:
-    name: Docker Build
+    name: Docker Build & Infra Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -53,3 +53,8 @@ jobs:
 
       - name: Build image
         run: docker build -t image-to-tikz-engine .
+
+      - name: Infrastructure tests
+        # TeX Live and Ghostscript only exist inside the image; the
+        # infrastructure-marked tests run against the freshly built artifact
+        run: docker run --rm image-to-tikz-engine pytest tests/ -q -m infrastructure
