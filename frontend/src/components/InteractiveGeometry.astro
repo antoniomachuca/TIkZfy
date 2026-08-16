@@ -21,7 +21,7 @@
   import anime from 'animejs';
   import { mathFigures } from '../data/mathFigures.js';
 
-  document.addEventListener('DOMContentLoaded', () => {
+  const initGeometry = () => {
     const wrapper = document.getElementById('animated-wrapper');
     const asciiEl = document.getElementById('animated-ascii');
     if (!wrapper || !asciiEl) return;
@@ -148,5 +148,11 @@
         }
        }, 3000);
     }
-  });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGeometry);
+  } else {
+    initGeometry();
+  }
 </script>

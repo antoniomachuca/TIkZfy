@@ -29,9 +29,15 @@ const { title = "Tikzfy - Image to TikZ Engine", hideBackground = false } = Astr
 		{!hideBackground && <BackgroundTikZ />}
 		
     <nav class="fixed top-0 left-0 w-full p-4 flex justify-between items-start z-50 mix-blend-difference text-white font-mono text-xs uppercase tracking-widest pointer-events-none">
-      <div class="flex gap-6 md:gap-12">
-        <a href={import.meta.env.BASE_URL} class="pointer-events-auto hover:underline">Tikzfy v1.0</a>
-        <span class="hidden md:inline">Algorithmic Vectorization</span>
+      <div class="flex items-center gap-6 md:gap-12">
+        <a href={import.meta.env.BASE_URL} aria-label="Tikzfy Home" class="pointer-events-auto flex items-center hover:opacity-75 transition-opacity">
+          <svg class="w-5 h-5" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+            <path d="M14 48 L46 16 L34 16 L48 14 L46 28 L46 16" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            <path d="M14 48 L28 48 L14 34 Z" fill="currentColor" />
+            <circle cx="51" cy="13" r="3.5" fill="currentColor" />
+          </svg>
+        </a>
+        <span class="hidden md:inline text-white/70">Algorithmic Vectorization</span>
       </div>
       <div class="flex gap-6 md:gap-12">
         <a href={`${import.meta.env.BASE_URL}/about`} class="pointer-events-auto hover:underline">About</a>

@@ -1,7 +1,7 @@
 ---
 import { masterCodeString } from '../data/mathFigures.js';
 ---
-<div id="brutal-background" class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none select-none bg-white">
+<div id="brutal-background" class="fixed inset-0 z-0 overflow-hidden pointer-events-none select-none bg-white">
   <div class="absolute top-0 bottom-0 left-0 w-[55%] overflow-hidden opacity-30 mask-fade">
     <div id="typing-canvas" data-master={masterCodeString} class="font-mono text-[7px] md:text-[9px] text-gray-500 break-all whitespace-pre-wrap leading-tight w-full h-full text-justify pl-4 py-0 pr-12" style="letter-spacing: -0.5px;">
     </div>
@@ -16,11 +16,13 @@ import { masterCodeString } from '../data/mathFigures.js';
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  const initBackground = () => {
     const canvas = document.getElementById('typing-canvas');
     if (!canvas) return;
 
     const masterCodeString = canvas.dataset.master;
+    if (!masterCodeString) return;
+
     let currentText = "";
     let charIndex = 0;
     const charsPerFrame = 24;
@@ -64,5 +66,11 @@ import { masterCodeString } from '../data/mathFigures.js';
     };
     
     requestAnimationFrame(typeLoop);
-  });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBackground);
+  } else {
+    initBackground();
+  }
 </script>

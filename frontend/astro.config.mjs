@@ -8,6 +8,18 @@ export default defineConfig({
   site: 'https://antoniomachuca.github.io',
   base: '/image-to-tikz-engine',
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    build: {
+      chunkSizeWarningLimit: 1200,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('mathFigures')) {
+              return 'math-figures-data';
+            }
+          }
+        }
+      }
+    }
   }
 });

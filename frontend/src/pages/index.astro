@@ -143,7 +143,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
   import anime from 'animejs';
   import { generateTikzFromImage } from '../utils/apiClient';
 
-  document.addEventListener('DOMContentLoaded', () => {
+  const initApp = () => {
     const dropZone = document.getElementById('drop-zone');
     const fileUpload = document.getElementById('file-upload');
     const landingView = document.getElementById('landing-view');
@@ -169,26 +169,30 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     let generatedCode = '';
     let progressTimer;
 
+    if (!dropZone || !fileUpload) return;
+
     anime({ targets: '.reveal-title', opacity: [0, 1], translateX: [-50, 0], duration: 1500, easing: 'easeOutExpo' });
 
     const setView = (view) => {
       [landingView, processingView, resultsView, errorView].forEach((element) => {
-        element.classList.toggle('hidden', element !== view);
-        element.classList.toggle('flex', element === view);
+        if (element) {
+          element.classList.toggle('hidden', element !== view);
+          element.classList.toggle('flex', element === view);
+        }
       });
     };
 
     const updateProgress = (value) => {
-      progressBar.style.width = `${value}%`;
-      progressValue.textContent = `${value}%`;
-      stageImage.classList.toggle('active', value < 35);
-      stageGeometry.classList.toggle('active', value >= 35 && value < 75);
-      stageCompile.classList.toggle('active', value >= 75);
+      if (progressBar) progressBar.style.width = `${value}%`;
+      if (progressValue) progressValue.textContent = `${value}%`;
+      if (stageImage) stageImage.classList.toggle('active', value < 35);
+      if (stageGeometry) stageGeometry.classList.toggle('active', value >= 35 && value < 75);
+      if (stageCompile) stageCompile.classList.toggle('active', value >= 75);
     };
 
     const showError = (error) => {
       window.clearInterval(progressTimer);
-      errorMessage.textContent = error instanceof Error ? error.message : 'The generation service is unavailable.';
+      if (errorMessage) errorMessage.textContent = error instanceof Error ? error.message : 'The generation service is unavailable.';
       setView(errorView);
     };
 
@@ -212,11 +216,15 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
         window.clearInterval(progressTimer);
         updateProgress(100);
         generatedCode = result.tikzCode;
-        codeOutput.textContent = generatedCode;
-        tokenCount.textContent = `${generatedCode.trim().split(/\s+/).length} tokens`;
-        previewImage.src = result.previewUrl || '';
-        previewImage.classList.toggle('hidden', !result.previewUrl);
-        previewEmpty.classList.toggle('hidden', Boolean(result.previewUrl));
+        if (codeOutput) codeOutput.textContent = generatedCode;
+        if (tokenCount) tokenCount.textContent = `${generatedCode.trim().split(/\s+/).length} tokens`;
+        if (previewImage) {
+          previewImage.src = result.previewUrl || '';
+          previewImage.classList.toggle('hidden', !result.previewUrl);
+        }
+        if (previewEmpty) {
+          previewEmpty.classList.toggle('hidden', Boolean(result.previewUrl));
+        }
         setTimeout(() => setView(resultsView), 250);
       } catch (error) {
         showError(error);
@@ -226,7 +234,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     const reset = () => {
       window.clearInterval(progressTimer);
       setView(landingView);
-      fileUpload.value = '';
+      if (fileUpload) fileUpload.value = '';
       updateProgress(0);
     };
 
@@ -242,23 +250,39 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     dropZone.addEventListener('drop', (event) => {
       event.preventDefault();
       dropZone.classList.remove('bg-black', 'text-white');
-      processFile(event.dataTransfer.files[0]);
+      if (event.dataTransfer && event.dataTransfer.files[0]) {
+        processFile(event.dataTransfer.files[0]);
+      }
     });
-    fileUpload.addEventListener('change', () => processFile(fileUpload.files[0]));
-    btnBack.addEventListener('click', reset);
-    btnErrorBack.addEventListener('click', reset);
-    btnRetry.addEventListener('click', () => processFile(selectedFile));
-    btnCopy.addEventListener('click', async () => {
-      await navigator.clipboard.writeText(generatedCode);
-      btnCopy.textContent = 'Copied';
-      setTimeout(() => { btnCopy.textContent = 'Copy code'; }, 1400);
+    fileUpload.addEventListener('change', () => {
+      if (fileUpload.files && fileUpload.files[0]) {
+        processFile(fileUpload.files[0]);
+      }
     });
-    btnSave.addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(new Blob([generatedCode], { type: 'text/plain' }));
-      link.download = 'generated-figure.tex';
-      link.click();
-      URL.revokeObjectURL(link.href);
-    });
-  });
+    if (btnBack) btnBack.addEventListener('click', reset);
+    if (btnErrorBack) btnErrorBack.addEventListener('click', reset);
+    if (btnRetry) btnRetry.addEventListener('click', () => processFile(selectedFile));
+    if (btnCopy) {
+      btnCopy.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(generatedCode);
+        btnCopy.textContent = 'Copied';
+        setTimeout(() => { btnCopy.textContent = 'Copy code'; }, 1400);
+      });
+    }
+    if (btnSave) {
+      btnSave.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([generatedCode], { type: 'text/plain' }));
+        link.download = 'generated-figure.tex';
+        link.click();
+        URL.revokeObjectURL(link.href);
+      });
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
 </script>
