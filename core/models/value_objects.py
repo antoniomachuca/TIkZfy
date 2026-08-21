@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 import torch
 
@@ -60,3 +61,26 @@ class RawLatexDocument:
     def __post_init__(self) -> None:
         if not isinstance(self.raw_text, str):
             raise SyntaxTopologicalError("Raw document payload must be a pure string.")
+
+@dataclass(frozen=True)
+class TrainingCheckpoint:
+    """
+    Immutable snapshot of model and optimizer state at a training step.
+
+    ``model_state`` is the ``nn.Module.state_dict()`` mapping parameter names
+    to tensors; ``optimizer_state`` is the ``Optimizer.state_dict()`` mapping
+    holding per-parameter moments and hyperparameter groups.
+
+    Spatial complexity: O(P) where P is the number of model parameters.
+    """
+    model_state: dict[str, torch.Tensor]
+    optimizer_state: dict[str, Any]
+    epoch: int = 0
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.model_state, dict) or not self.model_state:
+            raise TensorTopologyError("Model state must be a non-empty state-dict mapping.")
+        if not isinstance(self.optimizer_state, dict) or not self.optimizer_state:
+            raise TensorTopologyError("Optimizer state must be a non-empty state-dict mapping.")
+        if not isinstance(self.epoch, int) or self.epoch < 0:
+            raise TensorTopologyError("epoch must be a non-negative integer.")

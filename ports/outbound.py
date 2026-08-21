@@ -6,6 +6,7 @@ from core.models import (
     RawLatexDocument,
     TikzTokens,
     TokenVocabulary,
+    TrainingCheckpoint,
 )
 
 
@@ -147,6 +148,44 @@ class VocabularyPersistencePort(ABC):
 
         Raises:
             DomainError: If retrieval fails or the payload violates constraints.
+        """
+        pass
+
+class CheckpointPersistencePort(ABC):
+    """
+    Outbound port for atomic persistence of model and optimizer training state.
+
+    Isolates the pure mathematical domain from filesystem I/O so that an
+    interrupted write never corrupts a persisted checkpoint.
+    """
+
+    @abstractmethod
+    def save_checkpoint(self, checkpoint: TrainingCheckpoint, destination_path: str) -> None:
+        """
+        Serializes a training checkpoint atomically to a target destination.
+
+        Args:
+            checkpoint (TrainingCheckpoint): Immutable snapshot to persist.
+            destination_path (str): File path or URI identifier for storage.
+
+        Raises:
+            DomainError: If serialization or the atomic commit fails.
+        """
+        pass
+
+    @abstractmethod
+    def load_checkpoint(self, source_path: str) -> TrainingCheckpoint:
+        """
+        Deserializes a stored payload back into a validated TrainingCheckpoint.
+
+        Args:
+            source_path (str): File path or URI identifier for retrieval.
+
+        Returns:
+            TrainingCheckpoint: Reconstructed snapshot of model and optimizer state.
+
+        Raises:
+            DomainError: If retrieval fails or the payload violates invariants.
         """
         pass
 

@@ -1,3 +1,4 @@
+from adapters.checkpoint_adapter import AtomicCheckpointAdapter
 from adapters.ghostscript_rasterizer import GhostscriptRasterizer
 from adapters.latex_ingestion_client import AiohttpLatexClient
 from adapters.model_inference import TorchModelInferenceAdapter
@@ -9,6 +10,7 @@ from adapters.vocabulary_persistence import JsonVocabularyAdapter
 __all__ = [
     "AiohttpLatexClient",
     "AsyncTexLiveAdapter",
+    "AtomicCheckpointAdapter",
     "GhostscriptRasterizer",
     "TorchVisionImageLoader",
     "JsonVocabularyAdapter",

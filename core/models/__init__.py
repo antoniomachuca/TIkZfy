@@ -9,13 +9,20 @@ from .token_vocabulary import (
     UNK_TOKEN,
     TokenVocabulary,
 )
-from .value_objects import CompilationResult, ImageTensor, RawLatexDocument, TikzTokens
+from .value_objects import (
+    CompilationResult,
+    ImageTensor,
+    RawLatexDocument,
+    TikzTokens,
+    TrainingCheckpoint,
+)
 
 __all__ = [
     "ImageTensor",
     "TikzTokens",
     "CompilationResult",
     "RawLatexDocument",
+    "TrainingCheckpoint",
     "TokenVocabulary",
     "PAD_TOKEN",
     "BOS_TOKEN",

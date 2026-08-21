@@ -1,3 +1,4 @@
+from .checkpoint import restore_checkpoint, snapshot_checkpoint
 from .loss import (
     TeacherForcingCrossEntropy,
     build_adamw_optimizer,
@@ -17,6 +18,8 @@ __all__ = [
     "build_teacher_forcing_pair",
     "fit",
     "iter_batch_bounds",
+    "restore_checkpoint",
+    "snapshot_checkpoint",
     "train_one_epoch",
     "warmup_cosine_ratio",
 ]
