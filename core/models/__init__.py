@@ -10,6 +10,7 @@ from .token_vocabulary import (
     TokenVocabulary,
 )
 from .value_objects import (
+    ROOT_ENVIRONMENTS,
     CompilationResult,
     ImageTensor,
     RawLatexDocument,
@@ -20,6 +21,7 @@ from .value_objects import (
 __all__ = [
     "ImageTensor",
     "TikzTokens",
+    "ROOT_ENVIRONMENTS",
     "CompilationResult",
     "RawLatexDocument",
     "TrainingCheckpoint",

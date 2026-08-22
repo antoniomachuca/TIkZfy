@@ -14,3 +14,11 @@ class VocabularyInvariantError(DomainError):
     """Raised when token vocabulary constraints are violated."""
     pass
 
+class MissingPackageError(DomainError):
+    """Raised when a required LaTeX/TikZ package is not installed in TeX Live."""
+    pass
+
+class CompilationSyntaxError(DomainError):
+    """Raised when TeX compilation fails due to invalid markup syntax."""
+    pass
+

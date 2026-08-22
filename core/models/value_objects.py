@@ -3,7 +3,11 @@ from typing import Any
 
 import torch
 
+from core.dataset.packages import PACKAGE_CATALOG
 from core.exceptions import SyntaxTopologicalError, TensorTopologyError
+
+# Whitelisted root environments accepted as the outer drawing environment.
+ROOT_ENVIRONMENTS: tuple[str, ...] = ("tikzpicture", "tikzcd", "axis")
 
 
 @dataclass(frozen=True)
@@ -26,9 +30,15 @@ class ImageTensor:
 @dataclass(frozen=True)
 class TikzTokens:
     """
-    Immutable TikZ markup that must contain a tikzpicture environment.
+    Immutable TikZ markup that must contain a supported root environment.
+
+    Root environments are whitelisted to ``tikzpicture`` (canonical training
+    environment), ``tikzcd`` (commutative diagrams) and ``axis`` (pgfplots).
+    Declared package dependencies are validated against the package catalog so
+    compilation can resolve the correct preamble.
     """
     markup: str
+    packages: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.markup, str):
@@ -38,10 +48,33 @@ class TikzTokens:
         if not stripped_markup:
             raise SyntaxTopologicalError("Generative markup cannot be an empty sequence.")
 
-        if r"\begin{tikzpicture}" not in stripped_markup:
+        if not any(
+            f"\\begin{{{environment}}}" in stripped_markup
+            for environment in ROOT_ENVIRONMENTS
+        ):
             raise SyntaxTopologicalError(
-                "Markup sequence lacks tikzpicture environment"
+                "Markup sequence lacks a supported root environment "
+                f"({', '.join(ROOT_ENVIRONMENTS)})."
             )
+
+        self._validate_packages(self.packages)
+
+    @staticmethod
+    def _validate_packages(packages: tuple[str, ...]) -> None:
+        """
+        Validates declared package dependencies against the catalog.
+
+        Raises:
+            SyntaxTopologicalError: If a package is unknown or not a string.
+        """
+        if not isinstance(packages, tuple):
+            raise SyntaxTopologicalError("Packages must be a tuple of package names.")
+        for package in packages:
+            if not isinstance(package, str) or package not in PACKAGE_CATALOG:
+                raise SyntaxTopologicalError(
+                    f"Unknown package '{package}'. Known packages: "
+                    f"{tuple(PACKAGE_CATALOG)}."
+                )
 
 @dataclass(frozen=True)
 class CompilationResult:

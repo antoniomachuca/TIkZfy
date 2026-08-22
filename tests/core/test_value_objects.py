@@ -58,6 +58,47 @@ def test_tikz_tokens_missing_bounds() -> None:
         TikzTokens(markup=invalid_markup)
 
 
+def test_tikz_tokens_accepts_tikzcd_root_environment() -> None:
+    """Verify the tikzcd root environment is accepted by the whitelist."""
+    markup = "\\begin{tikzcd} A \\arrow[r] & B \\end{tikzcd}"
+    tokens = TikzTokens(markup=markup)
+    assert tokens.markup == markup
+
+
+def test_tikz_tokens_accepts_axis_root_environment() -> None:
+    """Verify the axis root environment is accepted by the whitelist."""
+    markup = "\\begin{axis}\\addplot coordinates {(0,0) (1,1)};\\end{axis}"
+    tokens = TikzTokens(markup=markup)
+    assert tokens.markup == markup
+
+
+def test_tikz_tokens_default_packages_empty() -> None:
+    """Verify the packages field defaults to an empty tuple."""
+    tokens = TikzTokens(markup="\\begin{tikzpicture}\\draw (0,0);\\end{tikzpicture}")
+    assert tokens.packages == ()
+
+
+def test_tikz_tokens_valid_packages() -> None:
+    """Verify declared packages are retained when present in the catalog."""
+    markup = "\\begin{tikzpicture}\\draw (0,0);\\end{tikzpicture}"
+    tokens = TikzTokens(markup=markup, packages=("pgfplots", "tikz-cd"))
+    assert tokens.packages == ("pgfplots", "tikz-cd")
+
+
+def test_tikz_tokens_unknown_package_raises() -> None:
+    """Verify packages absent from the catalog raise structural exceptions."""
+    markup = "\\begin{tikzpicture}\\draw (0,0);\\end{tikzpicture}"
+    with pytest.raises(SyntaxTopologicalError):
+        TikzTokens(markup=markup, packages=("nonexistent",))
+
+
+def test_tikz_tokens_non_tuple_packages_raises() -> None:
+    """Verify non-tuple packages declarations raise structural exceptions."""
+    markup = "\\begin{tikzpicture}\\draw (0,0);\\end{tikzpicture}"
+    with pytest.raises(SyntaxTopologicalError):
+        TikzTokens(markup=markup, packages=["pgfplots"])  # type: ignore
+
+
 def test_compilation_result_instantiation() -> None:
     """Verify payload mapping for compilation products."""
     payload = b"%PDF-1.4\n..."
