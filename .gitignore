@@ -99,5 +99,5 @@ wandb/
 outputs/
 temp_tex/
 
-# Artefactos generados por el pipeline de entrenamiento/evaluación
-results/
+# Checkpoints binarios del pipeline (los reportes y figuras sí se versionan)
+results/checkpoints/

@@ -1,0 +1,12 @@
+{
+  "checkpoint": "results/checkpoints/checkpoint_epoch_020.pt",
+  "samples": 501,
+  "decoding": "greedy",
+  "corpus_bleu": 0.33260943828063627,
+  "mean_geometric_edit_distance": 0.5042863947145971,
+  "compilation_rate": 0.5708582834331337,
+  "compilation": {
+    "successes": 286,
+    "total": 501
+  }
+}
