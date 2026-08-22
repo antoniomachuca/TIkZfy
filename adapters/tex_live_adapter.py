@@ -1,10 +1,46 @@
 import asyncio
 import os
+import re
 import tempfile
 
-from core.exceptions import DomainError
+from core.dataset.packages import build_preamble
+from core.exceptions import CompilationSyntaxError, DomainError, MissingPackageError
 from core.models import CompilationResult, TikzTokens
 from ports.outbound import TexCompilerPort
+
+# TeX Live emits ``! LaTeX Error: File `pgfplots.sty' not found.`` when a
+# ``\\usepackage`` target is absent from the installation.
+_MISSING_PACKAGE_PATTERN: re.Pattern[str] = re.compile(r"File `([^`']+)' not found")
+
+
+def categorize_compilation_failure(log_text: str) -> DomainError:
+    """
+    Categorizes a failed TeX compilation from its engine log.
+
+    Distinguishes a missing package (``File `X.sty' not found``) from an
+    invalid-syntax failure, returning the failing package name on the former.
+
+    Args:
+        log_text (str): Decoded TeX Live engine output from a failed compile.
+
+    Returns:
+        DomainError: A ``MissingPackageError`` when the log reports an absent
+            package, otherwise a ``CompilationSyntaxError``.
+
+    Temporal complexity: O(L) where L is the log length (single regex scan).
+    """
+    missing_match: re.Match[str] | None = _MISSING_PACKAGE_PATTERN.search(log_text)
+    if missing_match is not None:
+        missing_package: str = missing_match.group(1)
+        if missing_package.endswith(".sty"):
+            missing_package = missing_package[: -len(".sty")]
+        return MissingPackageError(
+            f"Required LaTeX package '{missing_package}' is not installed. "
+            "Engine output:\n" + log_text
+        )
+    return CompilationSyntaxError(
+        "TeX compilation structurally failed. Engine output:\n" + log_text
+    )
 
 
 class AsyncTexLiveAdapter(TexCompilerPort):
@@ -13,7 +49,9 @@ class AsyncTexLiveAdapter(TexCompilerPort):
 
     Implements the TexCompilerPort interface to orchestrate the generation
     of PDF binary artifacts via OS-level subprocesses without blocking the
-    primary application thread.
+    primary application thread. The standalone preamble is resolved from the
+    package catalog declared on ``TikzTokens.packages``, and compilation
+    failures are categorized as either a missing-package or a syntax error.
     """
 
     def __init__(self, engine: str = "pdflatex", tikz_libraries: tuple[str, ...] = ()) -> None:
@@ -41,20 +79,18 @@ class AsyncTexLiveAdapter(TexCompilerPort):
                                and arbitrary binary payload data.
 
         Raises:
-            DomainError: If the execution strictly fails or subprocess mapping errors occur.
+            MissingPackageError: If a required package is not installed in TeX Live.
+            CompilationSyntaxError: If the markup syntax is structurally invalid.
+            DomainError: If subprocess mapping errors occur.
         """
         with tempfile.TemporaryDirectory() as temp_dir:
             tex_file_path: str = os.path.join(temp_dir, "document.tex")
             markup: str = tokens.markup
 
             if "\\documentclass" not in markup:
-                library_imports: str = "".join(
-                    f"\\usetikzlibrary{{{library}}}\n" for library in self.tikz_libraries
-                )
+                preamble: str = build_preamble(tokens.packages, self.tikz_libraries)
                 markup = (
-                    "\\documentclass{standalone}\n"
-                    "\\usepackage{tikz}\n"
-                    f"{library_imports}"
+                    f"{preamble}"
                     "\\begin{document}\n"
                     f"{markup}\n"
                     "\\end{document}\n"
@@ -86,9 +122,6 @@ class AsyncTexLiveAdapter(TexCompilerPort):
                     pdf_data = pdf_file.read()
             else:
                 error_context: str = stdout_data.decode("utf-8", errors="replace")
-                raise DomainError(
-                    "TeX compilation structurally failed. Engine output:\n"
-                    f"{error_context}"
-                )
+                raise categorize_compilation_failure(error_context)
 
             return CompilationResult(pdf_data=pdf_data, is_successful=is_successful)
