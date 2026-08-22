@@ -4,3 +4,4 @@ einops>=0.6.0  # O(1) logical tensor dimensional transformations
 pytest>=7.4.3  # Testing framework for domain isolation verification
 torchvision>=0.15.0  # Infrastructural image loading (Vectorización Tensorial I)
 aiohttp>=3.8.0  # Concurrent HTTP client for LaTeX source ingestion
+matplotlib>=3.7.0  # Loss-curve and showcase rendering artifacts

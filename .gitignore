@@ -98,3 +98,6 @@ wandb/
 # Las salidas de compilación transitorias del motor
 outputs/
 temp_tex/
+
+# Artefactos generados por el pipeline de entrenamiento/evaluación
+results/
