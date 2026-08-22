@@ -21,6 +21,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 import numpy as np
+import torch
+import torch.nn.functional as F
 from numpy.typing import NDArray
 
 # Coordinate literals follow the ``(x, y)`` layout emitted by the procedural
@@ -319,3 +321,139 @@ def evaluate_batch(
         mean_geometric_distance=mean_distance,
         per_sample_geometric_distance=per_sample,
     )
+
+
+# Structural similarity (SSIM) constants: an 11x11 Gaussian window with the
+# canonical Wang et al. stability constants on a [0, 1] normalized intensity range.
+SSIM_WINDOW_SIZE: int = 11
+SSIM_SIGMA: float = 1.5
+SSIM_K1: float = 0.01
+SSIM_K2: float = 0.03
+
+
+def _gaussian_window(
+    size: int, sigma: float, dtype: torch.dtype, device: torch.device
+) -> torch.Tensor:
+    """Return a normalized 2D Gaussian window of shape ``(size, size)``."""
+    coords: torch.Tensor = torch.arange(size, dtype=dtype, device=device) - size // 2
+    grid: torch.Tensor = coords[:, None] ** 2 + coords[None, :] ** 2
+    window: torch.Tensor = torch.exp(-grid / (2.0 * sigma * sigma))
+    return window / window.sum()
+
+
+def _to_batch_channels(image: torch.Tensor) -> torch.Tensor:
+    """Coerce a ``(H, W)`` or ``(C, H, W)`` image to ``(1, C, H, W)`` float32."""
+    if image.ndim == 2:
+        return image.to(dtype=torch.float32).unsqueeze(0).unsqueeze(0)
+    if image.ndim == 3:
+        return image.to(dtype=torch.float32).unsqueeze(0)
+    raise ValueError(f"Image must be 2D or 3D. Got {image.ndim}D.")
+
+
+def structural_similarity(
+    image_a: torch.Tensor,
+    image_b: torch.Tensor,
+    data_range: float = 1.0,
+    window_size: int = SSIM_WINDOW_SIZE,
+    k1: float = SSIM_K1,
+    k2: float = SSIM_K2,
+) -> float:
+    """Return the mean structural similarity index (SSIM) in ``[-1, 1]``.
+
+    Computes luminance, contrast and structure terms over an ``11 x 11``
+    Gaussian window with ``k1 = 0.01`` and ``k2 = 0.03``, fully vectorized via
+    ``torch.nn.functional.conv2d`` (no per-pixel loops). Accepts grayscale
+    ``(H, W)`` or RGB ``(C, H, W)`` tensors and averages over every channel
+    and spatial position.
+
+    Args:
+        image_a (torch.Tensor): Reference image ``(H, W)`` or ``(C, H, W)``.
+        image_b (torch.Tensor): Compared image with identical shape.
+        data_range (float): Intensity dynamic range (``1.0`` for normalized images).
+        window_size (int): Odd Gaussian window side length.
+        k1 (float): Luminance stability constant.
+        k2 (float): Contrast stability constant.
+
+    Returns:
+        float: Mean SSIM, ``1.0`` for identical images and ``~0`` for
+            structurally uncorrelated noise.
+
+    Raises:
+        ValueError: On mismatched shapes, unsupported dimensionality, a
+            non-positive data range, or an even window size.
+
+    Temporal complexity: O(C * H * W * K^2) where K is the window side length.
+    """
+    if not isinstance(image_a, torch.Tensor) or not isinstance(image_b, torch.Tensor):
+        raise TypeError("Both images must be torch.Tensor instances.")
+    if image_a.shape != image_b.shape:
+        raise ValueError(
+            f"Image shapes must match. Got {tuple(image_a.shape)} vs {tuple(image_b.shape)}."
+        )
+    if image_a.ndim not in (2, 3):
+        raise ValueError(f"Image must be 2D or 3D. Got {image_a.ndim}D.")
+    if data_range <= 0.0:
+        raise ValueError(f"data_range must be positive. Got {data_range}.")
+    if window_size < 3 or window_size % 2 == 0:
+        raise ValueError(f"window_size must be an odd integer >= 3. Got {window_size}.")
+
+    a: torch.Tensor = _to_batch_channels(image_a)
+    b: torch.Tensor = _to_batch_channels(image_b)
+    channels: int = a.shape[1]
+
+    window: torch.Tensor = _gaussian_window(
+        window_size, SSIM_SIGMA, dtype=a.dtype, device=a.device
+    )
+    # Shape: (channels, 1, window_size, window_size) so each channel convolves
+    # with its own single-channel window via grouped convolution. A valid (zero
+    # padding) convolution keeps the statistics fully-supported, so border
+    # pixels never see truncated windows.
+    kernel: torch.Tensor = window.view(1, 1, window_size, window_size).repeat(
+        channels, 1, 1, 1
+    )
+
+    c1: float = (k1 * data_range) ** 2
+    c2: float = (k2 * data_range) ** 2
+
+    mu_a: torch.Tensor = F.conv2d(a, kernel, groups=channels)
+    mu_b: torch.Tensor = F.conv2d(b, kernel, groups=channels)
+
+    mu_a_sq: torch.Tensor = mu_a * mu_a
+    mu_b_sq: torch.Tensor = mu_b * mu_b
+    mu_ab: torch.Tensor = mu_a * mu_b
+
+    sigma_a_sq: torch.Tensor = F.conv2d(a * a, kernel, groups=channels) - mu_a_sq
+    sigma_b_sq: torch.Tensor = F.conv2d(b * b, kernel, groups=channels) - mu_b_sq
+    sigma_ab: torch.Tensor = F.conv2d(a * b, kernel, groups=channels) - mu_ab
+
+    numerator: torch.Tensor = (2.0 * mu_ab + c1) * (2.0 * sigma_ab + c2)
+    denominator: torch.Tensor = (mu_a_sq + mu_b_sq + c1) * (sigma_a_sq + sigma_b_sq + c2)
+    ssim_map: torch.Tensor = numerator / denominator
+    return float(ssim_map.mean().item())
+
+
+def batch_visual_similarity(
+    pairs: Sequence[tuple[torch.Tensor, torch.Tensor]],
+) -> tuple[float, tuple[float, ...]]:
+    """Return the mean and per-sample SSIM over ``(ground_truth, predicted)`` pairs.
+
+    Args:
+        pairs (Sequence[tuple[torch.Tensor, torch.Tensor]]): Reference/prediction
+            image pairs, each a ``(H, W)`` or ``(C, H, W)`` tensor.
+
+    Returns:
+        tuple[float, tuple[float, ...]]: The mean SSIM and the per-sample trace.
+
+    Raises:
+        ValueError: If ``pairs`` is empty.
+
+    Temporal complexity: O(sum_i C_i * H_i * W_i * K^2) over the batch.
+    """
+    if not pairs:
+        raise ValueError("pairs must be non-empty.")
+
+    per_sample: tuple[float, ...] = tuple(
+        structural_similarity(ground_truth, predicted)
+        for ground_truth, predicted in pairs
+    )
+    return sum(per_sample) / len(per_sample), per_sample

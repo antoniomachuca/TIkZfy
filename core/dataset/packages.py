@@ -85,6 +85,7 @@ BASE_TIKZ_LIBRARIES: tuple[str, ...] = (
     "calc",
     "patterns",
     "decorations.pathmorphing",
+    "shapes.geometric",
 )
 
 # Command fingerprints mapped to their package dependency. Order is fixed so

@@ -1,0 +1,26 @@
+{
+  "tier": 3,
+  "dataset": "nllg/DaTikZ-V4",
+  "requested_target": 1000,
+  "candidates_scanned": 5000,
+  "compiled": 1000,
+  "tikz_libraries": [
+    "arrows.meta",
+    "positioning",
+    "calc",
+    "patterns",
+    "decorations.pathmorphing",
+    "shapes.geometric"
+  ],
+  "duration_seconds": 674.16,
+  "fingerprints_sample": [
+    "e06194b42d0a60d86a7a74e3ce6a9276710e4d4c876ae2d7c90ebeef0980e6f0",
+    "1cbd393ffd55417c5e2d299c5c22c65d440295baa58827c5eb615a6cc1b39a5f",
+    "d3c0741afc2b248a4b46d86576112fac153aecbd27ad4d0a0acecec695e669ba",
+    "c84651518ae8220dbaa62ad9322c622600912a26d2b102e689421ff8e7210c0c",
+    "f4093dacbf99509e635e82e8ad26cee4c6feec5bac891486714028e034ca1779",
+    "b3d62c7c8cc9ca0c0ed541c489b6a7fd5dec1867357977186eae34698e90e5fc",
+    "e6bbce0ea1aa9c82d7f25db47d47928235189c4bfe691ced16c417b1e30bdc7e",
+    "4e468fad7d2f1a6643236163efbda40296c3db4cff0961f918d9c41ab46b14b1"
+  ]
+}

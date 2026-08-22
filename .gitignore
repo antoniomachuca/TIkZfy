@@ -72,7 +72,11 @@ checkpoints/
 /datasets/
 /dataset/raw/
 /dataset/processed/
+/dataset/processed_tier2/
+/dataset/processed_tier3/
+/dataset/encoded/
 /logs/
+logs/
 /tensorboard_logs/
 .huggingface/
 .cache/

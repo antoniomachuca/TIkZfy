@@ -108,7 +108,7 @@ async def render_sample(
 
 
 async def render_corpus(
-    markups: list[str], workers: int
+    markups: list[str], workers: int, tikz_libraries: tuple[str, ...] = ()
 ) -> tuple[list[bytes], NDArray[Any]]:
     """
     Renders every markup with bounded parallelism.
@@ -118,7 +118,9 @@ async def render_corpus(
         and a boolean success mask. Shape of mask: (len(markups),)
     """
     semaphore: asyncio.Semaphore = asyncio.Semaphore(workers)
-    compiler: AsyncTexLiveAdapter = AsyncTexLiveAdapter(engine="pdflatex")
+    compiler: AsyncTexLiveAdapter = AsyncTexLiveAdapter(
+        engine="pdflatex", tikz_libraries=tikz_libraries
+    )
     rasterizer: GhostscriptRasterizer = GhostscriptRasterizer()
 
     tasks: list[Any] = [

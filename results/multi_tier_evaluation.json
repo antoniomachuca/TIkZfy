@@ -1,0 +1,55 @@
+{
+  "checkpoint": "/Users/antoniomachuca/Library/CloudStorage/GoogleDrive-71117kb@gmail.com/Mi unidad/CUARTO/VERANO/REPO 5/image-to-tikz-engine/results/checkpoints/checkpoint_epoch_020.pt",
+  "tiers": {
+    "tier1": {
+      "samples": 501,
+      "corpus_bleu": 0.33260943828063627,
+      "mean_geometric_edit_distance": 0.5042863947145971,
+      "compilation_rate": 0.5708582834331337,
+      "compilation": {
+        "successes": 286,
+        "total": 501
+      },
+      "mean_ssim": 0.6538201527950074,
+      "ssim_samples": 286
+    },
+    "tier2": {
+      "samples": 200,
+      "corpus_bleu": 0.030803084615016737,
+      "mean_geometric_edit_distance": 0.860536509361492,
+      "compilation_rate": 0.215,
+      "compilation": {
+        "successes": 43,
+        "total": 200
+      },
+      "mean_ssim": 0.4708063382477987,
+      "ssim_samples": 42
+    },
+    "tier3": {
+      "samples": 501,
+      "corpus_bleu": 0.014829866355242019,
+      "mean_geometric_edit_distance": 0.8892534302039375,
+      "compilation_rate": 0.21956087824351297,
+      "compilation": {
+        "successes": 110,
+        "total": 501
+      },
+      "mean_ssim": 0.29480560393898153,
+      "ssim_samples": 110
+    }
+  },
+  "generalization_gap": {
+    "tier2": {
+      "corpus_bleu": 0.30180635366561953,
+      "mean_geometric_edit_distance": -0.3562501146468948,
+      "compilation_rate": 0.35585828343313375,
+      "mean_ssim": 0.18301381454720866
+    },
+    "tier3": {
+      "corpus_bleu": 0.31777957192539424,
+      "mean_geometric_edit_distance": -0.3849670354893404,
+      "compilation_rate": 0.3512974051896207,
+      "mean_ssim": 0.35901454885602585
+    }
+  }
+}

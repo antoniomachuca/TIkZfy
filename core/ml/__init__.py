@@ -16,9 +16,11 @@ from .metrics import (
     DEFAULT_COORDINATE_SCALE,
     EvaluationMetrics,
     batch_geometric_edit_distance,
+    batch_visual_similarity,
     corpus_bleu,
     evaluate_batch,
     geometric_edit_distance,
+    structural_similarity,
 )
 from .model import VisionAutoregressiveModel
 from .trainer import TrainingMetrics, fit, iter_batch_bounds, train_one_epoch
@@ -31,6 +33,7 @@ __all__ = [
     "VisionAutoregressiveModel",
     "TrainingMetrics",
     "batch_geometric_edit_distance",
+    "batch_visual_similarity",
     "beam_search",
     "build_adamw_optimizer",
     "decode_indices_to_markup",
@@ -44,6 +47,7 @@ __all__ = [
     "iter_batch_bounds",
     "restore_checkpoint",
     "snapshot_checkpoint",
+    "structural_similarity",
     "train_one_epoch",
     "warmup_cosine_ratio",
 ]

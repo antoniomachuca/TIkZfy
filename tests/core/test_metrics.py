@@ -1,14 +1,17 @@
 import math
 
 import pytest
+import torch
 
 from core.ml.metrics import (
     DEFAULT_COORDINATE_SCALE,
     EvaluationMetrics,
     batch_geometric_edit_distance,
+    batch_visual_similarity,
     corpus_bleu,
     evaluate_batch,
     geometric_edit_distance,
+    structural_similarity,
 )
 
 REFERENCE: list[str] = ["\\draw", "(0,0)", "--", "(1,1)", ";"]
@@ -177,3 +180,79 @@ def test_metrics_operate_on_tokenized_markup() -> None:
     candidate_tokens: list[str] = tokenize_tikz_markup(candidate)
 
     assert geometric_edit_distance(reference_tokens, candidate_tokens) == pytest.approx(0.0)
+
+
+def _fixed_image() -> torch.Tensor:
+    """Return a deterministic 64x64 float image with spatial structure."""
+    generator: torch.Generator = torch.Generator().manual_seed(7)
+    return torch.rand(64, 64, generator=generator)
+
+
+def test_structural_similarity_identical_is_one() -> None:
+    image: torch.Tensor = _fixed_image()
+
+    score = structural_similarity(image, image)
+
+    assert score == pytest.approx(1.0)
+
+
+def test_structural_similarity_uncorrelated_noise_is_near_zero() -> None:
+    generator: torch.Generator = torch.Generator().manual_seed(3)
+    noise_a: torch.Tensor = torch.rand(64, 64, generator=generator)
+    noise_b: torch.Tensor = torch.rand(64, 64, generator=generator)
+
+    score = structural_similarity(noise_a, noise_b)
+
+    assert score == pytest.approx(0.0, abs=0.05)
+
+
+def test_structural_similarity_supports_rgb_channels() -> None:
+    generator: torch.Generator = torch.Generator().manual_seed(11)
+    rgb: torch.Tensor = torch.rand(3, 64, 64, generator=generator)
+
+    assert structural_similarity(rgb, rgb) == pytest.approx(1.0)
+
+
+def test_structural_similarity_rejects_invalid_inputs() -> None:
+    with pytest.raises(ValueError):
+        structural_similarity(torch.rand(64, 64), torch.rand(32, 32))
+    with pytest.raises(ValueError):
+        structural_similarity(torch.rand(2, 2, 64, 64), torch.rand(2, 2, 64, 64))
+    with pytest.raises(ValueError):
+        structural_similarity(torch.rand(64, 64), torch.rand(64, 64), data_range=0.0)
+    with pytest.raises(ValueError):
+        structural_similarity(torch.rand(64, 64), torch.rand(64, 64), window_size=4)
+
+
+def test_batch_visual_similarity_returns_mean_and_trace() -> None:
+    image: torch.Tensor = _fixed_image()
+    pairs: list[tuple[torch.Tensor, torch.Tensor]] = [
+        (image, image),
+        (image, torch.zeros_like(image)),
+    ]
+
+    mean, per_sample = batch_visual_similarity(pairs)
+
+    assert len(per_sample) == 2
+    assert per_sample[0] == pytest.approx(1.0)
+    assert mean == pytest.approx(sum(per_sample) / 2)
+
+
+def test_batch_visual_similarity_is_permutation_invariant() -> None:
+    image: torch.Tensor = _fixed_image()
+    ordered: list[tuple[torch.Tensor, torch.Tensor]] = [
+        (image, image),
+        (image, torch.zeros_like(image)),
+    ]
+    permuted: list[tuple[torch.Tensor, torch.Tensor]] = [ordered[1], ordered[0]]
+
+    mean_ordered, trace_ordered = batch_visual_similarity(ordered)
+    mean_permuted, trace_permuted = batch_visual_similarity(permuted)
+
+    assert mean_ordered == pytest.approx(mean_permuted)
+    assert sorted(trace_ordered) == pytest.approx(sorted(trace_permuted))
+
+
+def test_batch_visual_similarity_rejects_empty() -> None:
+    with pytest.raises(ValueError):
+        batch_visual_similarity([])

@@ -1,0 +1,32 @@
+{
+  "tier": 2,
+  "stratum": 9,
+  "seed": 42,
+  "val_ratio": 0.1,
+  "requested": 2000,
+  "rendered": {
+    "total": 2000,
+    "train": 1800,
+    "val": 200,
+    "compilation_rate": 1.0
+  },
+  "tikz_libraries": [
+    "arrows.meta",
+    "positioning",
+    "calc",
+    "patterns",
+    "decorations.pathmorphing",
+    "shapes.geometric"
+  ],
+  "duration_seconds": 831.72,
+  "fingerprints_sample": [
+    "89c6c4cb4f7355c688c13bddc03d8c606e05a7ba5f879f061da650a8a11affba",
+    "7bbd0265c41589a0e1468eb2a0d55ef4eee4b09306d5544fc20ba025dc6d3460",
+    "3ba60ee9067b59007a4d1a28e392c97bbc38e06b558170eb0b2d7293ff0f50bf",
+    "5baf1cd63234863116eb7797d3d4a3fb051ede2e024d80a1c72f71fe49f94175",
+    "486a4ee5f2b99856fa91cf38e798638dbb1052957fdb12981dcef82942962b67",
+    "3480b284bd7d51db8185dca7e46c2fc94dfc88a69b88f0572ca3b4b2d5dad32a",
+    "6cca8047f1c46f5319bc92547263c19408c4d48c7e8e7b0a32ccdde3ef95c108",
+    "6c3cbbf7efe4328a3455579b89de322725b88681ead35b773fcd5cc55bc150ed"
+  ]
+}
