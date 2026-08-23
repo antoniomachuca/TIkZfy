@@ -14,7 +14,7 @@ import argparse
 import asyncio
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import matplotlib
 
@@ -282,7 +282,7 @@ def orchestrate(arguments: argparse.Namespace) -> None:
     else:
         results, checkpoint = train(arguments)
 
-    config: dict[str, object] = results["config"]  # type: ignore[assignment]
+    config: dict[str, object] = cast(dict[str, object], results["config"])
 
     mixed_tiers: dict[str, dict[str, Any]] = asyncio.run(
         evaluate_mixed(arguments, config, checkpoint)
