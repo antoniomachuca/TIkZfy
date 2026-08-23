@@ -139,7 +139,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         type=Path,
         default=repo_root / "results" / "checkpoints" / "checkpoint_epoch_020.pt",
     )
-    parser.add_argument("--max-length", type=int, default=128)
+    parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--max-samples", type=int, default=501)
     parser.add_argument("--use-beam", action="store_true")
     return parser

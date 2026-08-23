@@ -1,6 +1,10 @@
 """
 Conditional autoregressive generation: greedy and beam search decoding.
 
+Supports expanded context window (L_max = 512 tokens) and robust multi-root
+environment decoding ('tikzpicture', 'tikzcd', 'axis') with automatic package
+inference and structural delimiter completion.
+
 References:
     Goodfellow et al., Deep Learning — conditional sequence generation via the
         chain rule, teacher forcing (§10.2.1) and approximate MAP decoding (§12.4.3).
@@ -9,25 +13,27 @@ References:
     Graves, Sequence Transduction with Recurrent Neural Networks — accumulated
         log-probability scoring and length normalization of beam hypotheses.
 """
-
 from dataclasses import dataclass
 from typing import cast
 
 import torch
 import torch.nn.functional as F
 
+from core.dataset.packages import detect_required_packages
 from core.exceptions import TensorTopologyError
 from core.ml.model import VisionAutoregressiveModel
 from core.models import (
     BOS_INDEX,
     EOS_INDEX,
     PAD_INDEX,
+    ROOT_ENVIRONMENTS,
     UNK_INDEX,
     ImageTensor,
     TikzTokens,
     TokenVocabulary,
 )
 
+DEFAULT_MAX_SEQUENCE_LENGTH: int = 512
 _BEGIN_TIKZ: str = r"\begin{tikzpicture}"
 _END_TIKZ: str = r"\end{tikzpicture}"
 
@@ -63,7 +69,7 @@ def _encode_single_image(
 def greedy_search(
     model: VisionAutoregressiveModel,
     image: ImageTensor,
-    max_length: int,
+    max_length: int = DEFAULT_MAX_SEQUENCE_LENGTH,
 ) -> tuple[int, ...]:
     """
     Decode one image greedily into a ``[BOS, ..., EOS]`` token index sequence.
@@ -75,11 +81,15 @@ def greedy_search(
     Args:
         model (VisionAutoregressiveModel): Trained encoder/decoder in eval mode.
         image (ImageTensor): Single image with shape ``(1, C, H, W)``.
-        max_length (int): Inclusive upper bound on the emitted sequence length.
+        max_length (int): Inclusive upper bound on sequence length. Default: 512.
 
     Returns:
         tuple[int, ...]: Token index sequence including ``BOS_INDEX`` and, when
             emitted before truncation, ``EOS_INDEX``.
+
+    Raises:
+        TypeError: If model or image violate type specifications.
+        ValueError: If max_length is invalid.
 
     Temporal complexity: O(L * T) where L is the emitted length and T is the
         causal decoder cost per step.
@@ -115,8 +125,8 @@ def greedy_search(
 def beam_search(
     model: VisionAutoregressiveModel,
     image: ImageTensor,
-    beam_width: int,
-    max_length: int,
+    beam_width: int = 3,
+    max_length: int = DEFAULT_MAX_SEQUENCE_LENGTH,
     length_penalty: float = 0.0,
 ) -> list[BeamHypothesis]:
     """
@@ -130,13 +140,17 @@ def beam_search(
     Args:
         model (VisionAutoregressiveModel): Trained encoder/decoder in eval mode.
         image (ImageTensor): Single image with shape ``(1, C, H, W)``.
-        beam_width (int): Number of hypotheses retained at each step.
-        max_length (int): Inclusive upper bound on the emitted sequence length.
+        beam_width (int): Number of hypotheses retained at each step. Default: 3.
+        max_length (int): Inclusive upper bound on sequence length. Default: 512.
         length_penalty (float): Non-negative exponent ``alpha``; hypotheses are
-            ranked by ``log_probability / length ** alpha``.
+            ranked by ``log_probability / length ** alpha``. Default: 0.0.
 
     Returns:
         list[BeamHypothesis]: Up to ``beam_width`` hypotheses sorted best-first.
+
+    Raises:
+        TypeError: If model or image violate type specifications.
+        ValueError: If arguments violate structural boundaries.
 
     Temporal complexity: O(L * B * (T + V)) where L is the emitted length, B the
         beam width, V the vocabulary size and T the decoder cost per step.
@@ -208,21 +222,79 @@ def beam_search(
     return ranked[:beam_width]
 
 
+def _reconstruct_environment_markup(
+    decoded_tokens: list[str],
+) -> tuple[str, tuple[str, ...]]:
+    """
+    Reconstructs markup string and detects package dependencies for multi-root environments.
+
+    Preserves root environments ('tikzpicture', 'tikzcd', 'axis') with automatic delimiter
+    completion for truncated sequences, and wraps bare drawing commands in 'tikzpicture'.
+
+    Args:
+        decoded_tokens (list[str]): Decoded token strings excluding special sentinels.
+
+    Returns:
+        tuple[str, tuple[str, ...]]: (reconstructed_markup, detected_packages).
+
+    Temporal complexity: O(L) where L is token length.
+    """
+    if not decoded_tokens:
+        markup: str = f"{_BEGIN_TIKZ} {_END_TIKZ}"
+        return markup, ()
+
+    # Identify declared root environment if present
+    root_env: str | None = None
+    for token in decoded_tokens:
+        if root_env is None:
+            for env_name in ROOT_ENVIRONMENTS:
+                if token == f"\\begin{{{env_name}}}":
+                    root_env = env_name
+
+    final_tokens: list[str] = list(decoded_tokens)
+    if root_env is not None:
+        begin_tag: str = f"\\begin{{{root_env}}}"
+        end_tag: str = f"\\end{{{root_env}}}"
+
+        # Ensure begin tag is at sequence start
+        if final_tokens[0] != begin_tag:
+            final_tokens = [t for t in final_tokens if t != begin_tag]
+            final_tokens = [begin_tag] + final_tokens
+
+        # Ensure matching end tag terminates sequence
+        if final_tokens[-1] != end_tag:
+            final_tokens = [t for t in final_tokens if t != end_tag] + [end_tag]
+    else:
+        # Wrap bare drawing content in canonical tikzpicture delimiters
+        filtered_content: list[str] = [
+            t for t in final_tokens if t not in (_BEGIN_TIKZ, _END_TIKZ)
+        ]
+        final_tokens = [_BEGIN_TIKZ, *filtered_content, _END_TIKZ]
+
+    reconstructed_markup: str = " ".join(final_tokens)
+    detected_packages: tuple[str, ...] = detect_required_packages(reconstructed_markup)
+    return reconstructed_markup, detected_packages
+
+
 def decode_indices_to_markup(
     vocabulary: TokenVocabulary, indices: tuple[int, ...]
 ) -> TikzTokens:
     """
-    Map a generated token index sequence onto ``TikzTokens`` markup.
+    Map a generated token index sequence onto a validated ``TikzTokens`` value object.
 
-    Special sentinels (PAD, BOS, EOS, UNK) are discarded and the tikzpicture
-    environment delimiters are re-anchored around the decoded content.
+    Special sentinels (PAD, BOS, EOS, UNK) are discarded and multi-root environment
+    delimiters ('tikzpicture', 'tikzcd', 'axis') are balanced and package-inferred.
 
     Args:
         vocabulary (TokenVocabulary): Index-to-token mapping used for decoding.
         indices (tuple[int, ...]): Generated sequence of integer token indices.
 
     Returns:
-        TikzTokens: Immutable markup wrapped in a tikzpicture environment.
+        TikzTokens: Immutable markup wrapped in a valid root environment with packages.
+
+    Raises:
+        TypeError: If vocabulary is not a TokenVocabulary instance.
+        TensorTopologyError: If indices is not a valid tuple of integers.
 
     Temporal complexity: O(L) where L is the emitted sequence length.
     """
@@ -241,7 +313,6 @@ def decode_indices_to_markup(
         for index in indices
         if index not in special_indices and index in vocabulary.index_to_token
     ]
-    content_tokens: list[str] = [
-        token for token in decoded_tokens if token not in (_BEGIN_TIKZ, _END_TIKZ)
-    ]
-    return TikzTokens(markup=" ".join([_BEGIN_TIKZ, *content_tokens, _END_TIKZ]))
+
+    markup, packages = _reconstruct_environment_markup(decoded_tokens)
+    return TikzTokens(markup=markup, packages=packages)

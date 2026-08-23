@@ -3,6 +3,7 @@ import torch
 
 from core.math.tokenization import build_vocabulary
 from core.ml.generation import (
+    DEFAULT_MAX_SEQUENCE_LENGTH,
     BeamHypothesis,
     beam_search,
     decode_indices_to_markup,
@@ -31,6 +32,10 @@ def _model(max_length: int = 16) -> VisionAutoregressiveModel:
 
 def _image() -> ImageTensor:
     return ImageTensor(torch.randn(1, 3, 32, 32))
+
+
+def test_default_max_sequence_length_is_512() -> None:
+    assert DEFAULT_MAX_SEQUENCE_LENGTH == 512
 
 
 def test_greedy_search_returns_bounded_bos_sequence() -> None:
@@ -120,3 +125,64 @@ def test_decode_indices_to_markup_rejects_non_tuple_indices() -> None:
 
     with pytest.raises(TensorTopologyError):
         decode_indices_to_markup(model.vocabulary, [BOS_INDEX, EOS_INDEX])  # type: ignore[arg-type]
+
+
+def test_decode_indices_to_markup_axis_environment() -> None:
+    sample = TikzTokens(
+        markup=r"\begin{axis}\addplot coordinates {(0,0)};\end{axis}",
+        packages=("pgfplots",),
+    )
+    vocab = build_vocabulary([sample])
+    tokens = [
+        "\\begin{axis}",
+        "\\addplot",
+        "coordinates",
+        "{",
+        "(",
+        "0",
+        ",",
+        "0",
+        ")",
+        "}",
+        ";",
+        "\\end{axis}",
+    ]
+    indices = tuple(vocab.token_to_index[t] for t in tokens)
+
+    result = decode_indices_to_markup(vocab, indices)
+
+    assert isinstance(result, TikzTokens)
+    assert "\\begin{axis}" in result.markup
+    assert "\\end{axis}" in result.markup
+    assert "pgfplots" in result.packages
+
+
+def test_decode_indices_to_markup_tikzcd_environment() -> None:
+    sample = TikzTokens(
+        markup=r"\begin{tikzcd} A \arrow[r] & B \end{tikzcd}",
+        packages=("tikz-cd",),
+    )
+    vocab = build_vocabulary([sample])
+    tokens = ["\\begin{tikzcd}", "A", "\\arrow", "[", "r", "]", "&", "B", "\\end{tikzcd}"]
+    indices = tuple(vocab.token_to_index[t] for t in tokens)
+
+    result = decode_indices_to_markup(vocab, indices)
+
+    assert isinstance(result, TikzTokens)
+    assert "\\begin{tikzcd}" in result.markup
+    assert "\\end{tikzcd}" in result.markup
+    assert "tikz-cd" in result.packages
+
+
+def test_decode_indices_to_markup_recovers_missing_end_delimiter() -> None:
+    sample = TikzTokens(markup=r"\begin{tikzpicture}\draw (0,0);\end{tikzpicture}")
+    vocab = build_vocabulary([sample])
+    # Truncated without \end{tikzpicture}
+    tokens = ["\\begin{tikzpicture}", "\\draw", "(", "0", ",", "0", ")", ";"]
+    indices = tuple(vocab.token_to_index[t] for t in tokens)
+
+    result = decode_indices_to_markup(vocab, indices)
+
+    assert isinstance(result, TikzTokens)
+    assert "\\begin{tikzpicture}" in result.markup
+    assert "\\end{tikzpicture}" in result.markup

@@ -321,7 +321,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--tier3-dir", type=Path, default=repo_root / "dataset" / "processed_tier3"
     )
-    parser.add_argument("--max-length", type=int, default=128)
+    parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--max-samples", type=int, default=501)
     parser.add_argument("--target-height", type=int, default=64)
     parser.add_argument("--target-width", type=int, default=64)

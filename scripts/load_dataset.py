@@ -144,7 +144,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output-dir", type=Path, default=repo_root / "dataset" / "encoded"
     )
-    parser.add_argument("--max-length", type=int, default=128)
+    parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--target-height", type=int, default=64)
     parser.add_argument("--target-width", type=int, default=64)
     return parser

@@ -193,7 +193,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model-dim", type=int, default=128)
     parser.add_argument("--num-layers", type=int, default=2)
     parser.add_argument("--num-heads", type=int, default=4)
-    parser.add_argument("--max-length", type=int, default=128)
+    parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--checkpoint-every", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)
