@@ -53,12 +53,18 @@ def load_mixed_train_tensors(
     target_width: int,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """Merge Tier 1 and Tier 2 training tensors, returning train and Tier 1 val."""
-    tier1_train_images: torch.Tensor = torch.load(
-        encoded_dir / "train_images.pt", weights_only=True
-    )
-    tier1_train_tokens: torch.Tensor = torch.load(
-        encoded_dir / "train_tokens.pt", weights_only=True
-    )
+    tier1_train_path: Path = encoded_dir / "train_images.pt"
+    tier1_token_path: Path = encoded_dir / "train_tokens.pt"
+    if tier1_train_path.exists() and tier1_token_path.exists():
+        tier1_train_images = torch.load(tier1_train_path, weights_only=True)
+        tier1_train_tokens = torch.load(tier1_token_path, weights_only=True)
+    else:
+        tier1_train_dir: Path = encoded_dir.parent / "processed" / "train"
+        print(f"[*] Encoding Tier 1 train tensors on-the-fly from '{tier1_train_dir}'...")
+        tier1_corpus = load_markup_corpus(tier1_train_dir)
+        tier1_train_tokens = batch_encode(tier1_corpus, vocabulary, max_length)
+        tier1_train_images = load_image_batch(tier1_train_dir, target_height, target_width)
+
     val_images: torch.Tensor = torch.load(
         encoded_dir / "val_images.pt", weights_only=True
     )
@@ -67,6 +73,7 @@ def load_mixed_train_tensors(
     )
 
     tier2_train_dir: Path = tier2_dir / "train"
+    print(f"[*] Encoding Tier 2 train tensors from '{tier2_train_dir}'...")
     corpus = load_markup_corpus(tier2_train_dir)
     tier2_train_tokens: torch.Tensor = batch_encode(corpus, vocabulary, max_length)
     tier2_train_images: torch.Tensor = load_image_batch(
@@ -79,6 +86,7 @@ def load_mixed_train_tensors(
     train_tokens: torch.Tensor = torch.cat(
         (tier1_train_tokens, tier2_train_tokens), dim=0
     )
+    print(f"[*] Mixed training corpus ready: {train_images.shape[0]} total samples.")
     return train_images, train_tokens, val_images, val_tokens
 
 
@@ -203,21 +211,20 @@ async def evaluate_mixed(
                 arguments.target_height,
                 arguments.target_width,
             )
+            print(f"[*] Evaluating mixed model on {tier_name}...")
+            tier_results[tier_name] = await evaluate_tier(
+                model,
+                vocabulary,
+                images,
+                tokens,
+                arguments.max_samples,
+                arguments.max_length,
+                arguments.workers,
+                arguments.target_height,
+                arguments.target_width,
+            )
         except (ValueError, FileNotFoundError) as error:
             print(f"[!] Skipping {tier_name}: {error}")
-            continue
-        print(f"[*] Evaluating mixed model on {tier_name}...")
-        tier_results[tier_name] = await evaluate_tier(
-            model,
-            vocabulary,
-            images,
-            tokens,
-            arguments.max_samples,
-            arguments.max_length,
-            arguments.workers,
-            arguments.target_height,
-            arguments.target_width,
-        )
     return tier_results
 
 
@@ -225,12 +232,20 @@ def compare_against_baseline(
     arguments: argparse.Namespace, mixed_tiers: dict[str, dict[str, Any]]
 ) -> dict[str, Any]:
     """Load the Tier 1 baseline and compute the mixed-model delta per tier."""
+    multi_path: Path = arguments.results_dir / "multi_tier_evaluation.json"
     baseline_path: Path = arguments.results_dir / "tier1_evaluation.json"
-    if not baseline_path.exists():
-        return {"baseline": {}, "deltas": {}}
+    baseline: dict[str, Any] = {}
 
-    with baseline_path.open("r", encoding="utf-8") as handle:
-        baseline: dict[str, Any] = json.load(handle)
+    if multi_path.exists():
+        with multi_path.open("r", encoding="utf-8") as handle:
+            multi_eval: dict[str, Any] = json.load(handle)
+        baseline = multi_eval.get("tiers", {}).get("tier1", {})
+    elif baseline_path.exists():
+        with baseline_path.open("r", encoding="utf-8") as handle:
+            baseline = json.load(handle)
+
+    if not baseline:
+        return {"baseline": {}, "deltas": {}}
 
     metric_keys: tuple[str, ...] = (
         "corpus_bleu",
@@ -242,7 +257,7 @@ def compare_against_baseline(
     for tier_name, summary in mixed_tiers.items():
         if tier_name == "tier1":
             deltas[tier_name] = {
-                key: float(summary[key]) - float(baseline.get(key, 0.0))
+                key: float(summary.get(key, 0.0)) - float(baseline.get(key, 0.0))
                 for key in metric_keys
             }
         else:
@@ -253,7 +268,20 @@ def compare_against_baseline(
 
 def orchestrate(arguments: argparse.Namespace) -> None:
     """Run training, evaluation, and baseline comparison for the mixed model."""
-    results, checkpoint = train(arguments)
+    checkpoint: Path = (
+        arguments.output_dir
+        / "checkpoints"
+        / f"checkpoint_epoch_{arguments.num_epochs:03d}.pt"
+    )
+    results_path: Path = arguments.output_dir / "training_results.json"
+
+    if arguments.skip_train and checkpoint.exists() and results_path.exists():
+        print(f"[*] Skipping training; using existing checkpoint '{checkpoint}'...")
+        with results_path.open("r", encoding="utf-8") as handle:
+            results: dict[str, Any] = json.load(handle)
+    else:
+        results, checkpoint = train(arguments)
+
     config: dict[str, object] = results["config"]  # type: ignore[assignment]
 
     mixed_tiers: dict[str, dict[str, Any]] = asyncio.run(
@@ -310,6 +338,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--target-height", type=int, default=64)
     parser.add_argument("--target-width", type=int, default=64)
     parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument(
+        "--skip-train",
+        action="store_true",
+        help="Skip re-training if final checkpoint already exists and evaluate directly.",
+    )
     return parser
 
 

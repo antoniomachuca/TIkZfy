@@ -1,0 +1,119 @@
+{
+  "checkpoint": "/Users/antoniomachuca/Library/CloudStorage/GoogleDrive-71117kb@gmail.com/Mi unidad/CUARTO/VERANO/REPO 5/image-to-tikz-engine/results/mixed/checkpoints/checkpoint_epoch_020.pt",
+  "mixed_tiers": {
+    "tier1": {
+      "samples": 501,
+      "corpus_bleu": 0.32152913504734093,
+      "mean_geometric_edit_distance": 0.5424492989102006,
+      "compilation_rate": 0.4930139720558882,
+      "compilation": {
+        "successes": 247,
+        "total": 501
+      },
+      "mean_ssim": 0.6240800136669737,
+      "ssim_samples": 244
+    },
+    "tier2": {
+      "samples": 200,
+      "corpus_bleu": 0.09795986118005211,
+      "mean_geometric_edit_distance": 0.8095473534579881,
+      "compilation_rate": 0.035,
+      "compilation": {
+        "successes": 7,
+        "total": 200
+      },
+      "mean_ssim": 0.547286889382771,
+      "ssim_samples": 7
+    },
+    "tier3": {
+      "samples": 501,
+      "corpus_bleu": 0.014496976156672732,
+      "mean_geometric_edit_distance": 0.9010138236048297,
+      "compilation_rate": 0.22954091816367264,
+      "compilation": {
+        "successes": 115,
+        "total": 501
+      },
+      "mean_ssim": 0.3094953243013309,
+      "ssim_samples": 115
+    }
+  },
+  "baseline": {
+    "samples": 501,
+    "corpus_bleu": 0.33260943828063627,
+    "mean_geometric_edit_distance": 0.5042863947145971,
+    "compilation_rate": 0.5708582834331337,
+    "compilation": {
+      "successes": 286,
+      "total": 501
+    },
+    "mean_ssim": 0.6538201527950074,
+    "ssim_samples": 286
+  },
+  "deltas": {
+    "tier1": {
+      "corpus_bleu": -0.011080303233295341,
+      "mean_geometric_edit_distance": 0.03816290419560342,
+      "compilation_rate": -0.07784431137724551,
+      "mean_ssim": -0.029740139128033638
+    },
+    "tier2": {
+      "corpus_bleu": 0.23464957710058415,
+      "mean_geometric_edit_distance": -0.305260958743391,
+      "compilation_rate": 0.5358582834331337,
+      "mean_ssim": 0.10653326341223635
+    },
+    "tier3": {
+      "corpus_bleu": 0.31811246212396355,
+      "mean_geometric_edit_distance": -0.3967274288902326,
+      "compilation_rate": 0.3413173652694611,
+      "mean_ssim": 0.34432482849367646
+    }
+  },
+  "training": {
+    "epoch_losses": [
+      5.615137359764002,
+      1.8255821309512175,
+      1.4488569045368629,
+      1.2503624713873562,
+      1.1371109831182262,
+      1.0669523109363603,
+      1.0156795044488545,
+      0.9799946050100689,
+      0.9446918406063998,
+      0.9224893784221214,
+      0.8978012187571465,
+      0.8753837927987304,
+      0.8553919377206247,
+      0.8393262920500357,
+      0.8217083710658399,
+      0.8140694702727885,
+      0.8059244696098038,
+      0.800376824185818,
+      0.7969119310379028,
+      0.7963047700592234
+    ],
+    "val_losses": [
+      1.9558047354221344,
+      1.55083211325109,
+      1.3678454253822565,
+      1.3905168380588293,
+      1.3828305937349796,
+      1.3899772483855486,
+      1.34863768145442,
+      1.3453002078458667,
+      1.2769771656021476,
+      1.332627751864493,
+      1.2640758994966745,
+      1.2767446236684918,
+      1.266559386625886,
+      1.2762639541178942,
+      1.266683497466147,
+      1.2390881683677435,
+      1.2688948372378945,
+      1.2569765709340572,
+      1.2597764357924461,
+      1.2575276754796505
+    ]
+  }
+}

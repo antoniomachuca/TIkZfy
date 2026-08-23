@@ -223,7 +223,10 @@ def generalization_gap(
         "compilation_rate",
         "mean_ssim",
     )
-    return {key: float(baseline[key]) - float(target[key]) for key in metric_keys}
+    return {
+        key: float(baseline.get(key, 0.0)) - float(target.get(key, 0.0))
+        for key in metric_keys
+    }
 
 
 def evaluate(arguments: argparse.Namespace) -> None:
