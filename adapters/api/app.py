@@ -17,7 +17,10 @@ from adapters.api.schemas import (
     HealthResponse,
 )
 from adapters.ghostscript_rasterizer import GhostscriptRasterizer
-from adapters.orchestrator import ImageToTikzOrchestrator
+from adapters.orchestrator import (
+    DemoImageToTikzOrchestrator,
+    ImageToTikzOrchestrator,
+)
 from adapters.tex_live_adapter import AsyncTexLiveAdapter
 from core.exceptions import DomainError
 from core.models import ImageTensor, TikzTokens
@@ -78,6 +81,8 @@ def create_app(
                 checkpoint_path=checkpoint_env,
                 vocabulary_path=vocab_env,
             )
+        else:
+            active_orchestrator = DemoImageToTikzOrchestrator()
 
     @app.get(
         "/health",

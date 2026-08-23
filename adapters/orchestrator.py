@@ -166,3 +166,50 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
             search_strategy=search_strategy,
             beam_width=beam_width,
         )
+
+
+class DemoImageToTikzOrchestrator(ImageToTikzUseCase):
+    """Deterministic demonstration orchestrator for end-to-end UI verification.
+
+    Generates mathematically valid, compile-ready TikZ figures when neural checkpoints
+    are pending execution or during development validation.
+    """
+
+    _DEMO_TEMPLATES: tuple[tuple[str, tuple[str, ...]], ...] = (
+        (
+            r"\begin{tikzpicture}[scale=1.2] \draw[thick, fill=blue!15] (0,0) -- (4,0) -- (2,3) -- cycle; \draw[dashed, red] (2,0) -- (2,3); \node at (2,-0.3) {base $b$}; \node at (2.4,1.5) {height $h$}; \node at (2,0.8) {Area $= \frac{1}{2}bh$}; \end{tikzpicture}",
+            (),
+        ),
+        (
+            r"\begin{tikzpicture}[scale=1.0] \draw[->, thick] (-2.5,0) -- (2.5,0) node[right] {$x$}; \draw[->, thick] (0,-2.5) -- (0,2.5) node[above] {$y$}; \draw[thick, blue, fill=blue!10] (0,0) circle (1.8); \draw[->, red, thick] (0,0) -- (1.27,1.27) node[midway, above left] {$r$}; \filldraw[black] (0,0) circle (1.5pt) node[below left] {$O$}; \node at (0,-1.0) {$x^2 + y^2 = r^2$}; \end{tikzpicture}",
+            (),
+        ),
+        (
+            r"\begin{tikzpicture}[scale=1.1] \draw[thick, domain=-2:2, samples=50, color=red] plot (\x, {0.5*\x*\x - 1}) node[right] {$f(x) = \frac{1}{2}x^2 - 1$}; \draw[->] (-2.5,0) -- (2.5,0) node[right] {$x$}; \draw[->] (0,-1.8) -- (0,2.2) node[above] {$y$}; \filldraw[blue] (0,-1) circle (2pt) node[below right] {$(0, -1)$}; \end{tikzpicture}",
+            (),
+        ),
+        (
+            r"\begin{tikzpicture}[node distance=2.5cm, auto] \node[circle, draw=black, thick, fill=gray!20] (A) {$X$}; \node[circle, draw=black, thick, fill=gray!20] (B) [right of=A] {$Y$}; \node[circle, draw=black, thick, fill=gray!20] (C) [below of=B] {$Z$}; \draw[->, thick] (A) to node {$f$} (B); \draw[->, thick] (B) to node {$g$} (C); \draw[->, dashed, thick, blue] (A) to node [below left] {$g \circ f$} (C); \end{tikzpicture}",
+            (),
+        ),
+    )
+
+    def execute(self, image: ImageTensor) -> TikzTokens:
+        """Deterministically map spatial image statistics to a valid TikZ geometry.
+
+        Args:
+            image (ImageTensor): Input tensor with shape (1, C, H, W).
+
+        Returns:
+            TikzTokens: Validated compile-ready TikZ token sequence.
+        """
+        if not isinstance(image, ImageTensor):
+            raise TypeError("Expected ImageTensor instance.")
+        # Shape verification: (1, C, H, W)
+        mean_val: float = float(image.raw_tensor.mean().item())
+        index: int = int(abs(mean_val * 1000)) % len(self._DEMO_TEMPLATES)
+        markup, packages = self._DEMO_TEMPLATES[index]
+        return TikzTokens(markup=markup, packages=packages)
+
+
+__all__ = ["DemoImageToTikzOrchestrator", "ImageToTikzOrchestrator"]

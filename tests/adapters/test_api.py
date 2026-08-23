@@ -109,15 +109,15 @@ def test_health_endpoint() -> None:
     assert data["model_loaded"] is True
 
 
-def test_health_endpoint_no_model() -> None:
-    app = create_app(orchestrator=None)
+def test_health_endpoint_default() -> None:
+    app = create_app()
     client = TestClient(app)
 
     response = client.get("/health")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "ok"
-    assert data["model_loaded"] is False
+    assert data["model_loaded"] is True
 
 
 def test_generate_endpoint_success() -> None:
@@ -162,14 +162,19 @@ def test_generate_endpoint_invalid_image_fails() -> None:
     assert response.status_code == 400
 
 
-def test_generate_endpoint_no_orchestrator_returns_503() -> None:
-    app = create_app(orchestrator=None)
+def test_generate_endpoint_demo_mode() -> None:
+    compiler = StubCompiler(succeeds=True)
+    rasterizer = StubRasterizer()
+    app = create_app(compiler=compiler, rasterizer=rasterizer)
     client = TestClient(app)
 
     png_bytes = _create_synthetic_png_bytes(64, 64)
     files = {"image": ("test.png", png_bytes, "image/png")}
     response = client.post("/api/v1/generate", files=files)
-    assert response.status_code == 503
+    assert response.status_code == 200
+    data = response.json()
+    assert "tikz_code" in data
+    assert r"\begin{tikzpicture}" in data["tikz_code"]
 
 
 def test_compile_endpoint_success() -> None:
