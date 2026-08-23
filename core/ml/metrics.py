@@ -36,6 +36,9 @@ _COORDINATE_PATTERN: re.Pattern[str] = re.compile(
 )
 
 
+_NUMERIC_PATTERN: re.Pattern[str] = re.compile(r"^-?\d+(?:\.\d+)?$")
+
+
 def _validate_batch(
     references: Sequence[Sequence[str]],
     candidates: Sequence[Sequence[str]],
@@ -64,17 +67,33 @@ def _parse_coordinate(token: str) -> tuple[float, float] | None:
 
 def _token_points(tokens: Sequence[str]) -> NDArray[np.float64]:
     """Return a ``(L, 2)`` array of coordinate rows, NaN-padded for structural tokens."""
-    parsed: list[tuple[float, float] | None] = [_parse_coordinate(token) for token in tokens]
-    points: NDArray[np.float64] = np.full((len(tokens), 2), np.nan, dtype=np.float64)
-    valid_indices: NDArray[np.int64] = np.array(
-        [index for index, coordinates in enumerate(parsed) if coordinates is not None],
-        dtype=np.int64,
-    )
-    if valid_indices.size:
-        points[valid_indices] = np.array(
-            [coordinates for coordinates in parsed if coordinates is not None],
-            dtype=np.float64,
-        )
+    token_count: int = len(tokens)
+    points: NDArray[np.float64] = np.full((token_count, 2), np.nan, dtype=np.float64)
+    idx: int = 0
+    while idx < token_count:
+        token: str = str(tokens[idx])
+        match: re.Match[str] | None = _COORDINATE_PATTERN.fullmatch(token)
+        if match is not None:
+            points[idx] = [float(match.group(1)), float(match.group(2))]
+            idx += 1
+        elif (
+            token == "("
+            and idx + 4 < token_count
+            and str(tokens[idx + 2]) == ","
+            and str(tokens[idx + 4]) == ")"
+        ):
+            x_match: re.Match[str] | None = _NUMERIC_PATTERN.fullmatch(str(tokens[idx + 1]))
+            y_match: re.Match[str] | None = _NUMERIC_PATTERN.fullmatch(str(tokens[idx + 3]))
+            if x_match is not None and y_match is not None:
+                coord_val: list[float] = [float(tokens[idx + 1]), float(tokens[idx + 3])]
+                points[idx] = coord_val
+                points[idx + 1] = coord_val
+                points[idx + 3] = coord_val
+                idx += 5
+            else:
+                idx += 1
+        else:
+            idx += 1
     return points
 
 

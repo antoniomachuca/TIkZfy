@@ -1,8 +1,15 @@
 """
 Bidirectional tokenization primitives (markup text <-> integer indices).
 
-References: Golub & Van Loan, Matrix Computations (integer indexing);
-Goodfellow et al., Deep Learning (autoregressive sequence modeling).
+Provides coordinate quantization over the continuous canvas [-5, 5]^2 into
+uniform spatial bins with step 0.1, compacting the vocabulary from O(|coords|^2)
+unbounded combinations down to a bounded O(|V|) token space (approx. 350-400 tokens).
+
+References:
+    Golub & Van Loan, Matrix Computations — discrete quantization, uniform
+        coordinate binning, and integer index projections.
+    Goodfellow et al., Deep Learning — autoregressive sequence modeling,
+        vocabulary construction, and token embedding layers.
 """
 import re
 
@@ -22,61 +29,178 @@ from core.models.token_vocabulary import (
 )
 from core.models.value_objects import TikzTokens
 
-# Regex pattern matching TikZ tokens
+# Canonical canvas spatial domain constants
+CANVAS_MIN: float = -5.0
+CANVAS_MAX: float = 5.0
+COORDINATE_STEP: float = 0.1
+NUM_COORDINATE_BINS: int = 100
+
+# Pre-computed spatial coordinate bins: 101 discrete points spanning [-5.0, 5.0]
+COORDINATE_BINS: tuple[str, ...] = tuple(
+    f"{round(CANVAS_MIN + idx * COORDINATE_STEP, 1):g}"
+    for idx in range(NUM_COORDINATE_BINS + 1)
+)
+
+# Regex pattern matching discrete TikZ tokens, environments, operators, and identifiers
 TIKZ_TOKEN_PATTERN: re.Pattern[str] = re.compile(
-    r"\\begin\{tikzpicture\}"
-    r"|\\end\{tikzpicture\}"
+    r"\\begin\{[a-zA-Z*]+\}"
+    r"|\\end\{[a-zA-Z*]+\}"
     r"|\\[a-zA-Z]+"
-    r"|\(-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\)"
-    r"|--|->|<-|<->|\|-|-\||\.\."
+    r"|--|->|<-|<->|\|-|-\||\.\.|\+\+|->>|-stealth"
     r"|-?\d+(?:\.\d+)?"
     r"|[a-zA-Z_][a-zA-Z0-9_-]*"
     r"|[^\s]"
 )
 
+_FLOAT_PATTERN: re.Pattern[str] = re.compile(r"^-?\d+\.\d+$")
 
 
-def tokenize_tikz_markup(tokens: TikzTokens) -> list[str]:
+def quantize_coordinate_scalar(
+    val: float,
+    min_val: float = CANVAS_MIN,
+    max_val: float = CANVAS_MAX,
+    step: float = COORDINATE_STEP,
+) -> float:
     """
-    Splits TikZ markup into individual tokens.
+    Uniform scalar coordinate binning on [min_val, max_val] with discrete step.
+
+    Applies clamping and round-to-nearest projection onto the 1D lattice:
+        q(x) = min_val + round((clamp(x, min_val, max_val) - min_val) / step) * step
 
     Args:
-        tokens (TikzTokens): Input markup.
+        val (float): Real-valued input coordinate.
+        min_val (float): Lower canvas boundary. Default: -5.0.
+        max_val (float): Upper canvas boundary. Default: 5.0.
+        step (float): Discretization step. Default: 0.1.
 
     Returns:
-        list[str]: The extracted tokens.
+        float: Discretized, clamped scalar coordinate.
 
-    Temporal complexity: O(N) where N is the length of the markup.
+    Raises:
+        VocabularyInvariantError: On invalid domain boundaries or non-positive step.
+        TypeError: If input values are not numeric.
+
+    Temporal complexity: O(1).
+    """
+    if not isinstance(val, (int, float)):
+        raise TypeError(f"Coordinate scalar must be numeric. Got {type(val).__name__}.")
+    if not isinstance(min_val, (int, float)) or not isinstance(max_val, (int, float)):
+        raise TypeError("Domain boundaries must be numeric.")
+    if not isinstance(step, (int, float)):
+        raise TypeError("Discretization step must be numeric.")
+    if min_val >= max_val:
+        raise VocabularyInvariantError(
+            f"min_val ({min_val}) must be strictly less than max_val ({max_val})."
+        )
+    if step <= 0.0:
+        raise VocabularyInvariantError(f"step must be strictly positive. Got {step}.")
+
+    clamped: float = max(float(min_val), min(float(max_val), float(val)))
+    bin_idx: int = round((clamped - min_val) / step)
+    quantized: float = round(min_val + bin_idx * step, 4)
+    normalized: float = 0.0 if abs(quantized) < 1e-9 else quantized
+    return normalized
+
+
+def quantize_coordinate_tuple(
+    point: tuple[float, float],
+    min_val: float = CANVAS_MIN,
+    max_val: float = CANVAS_MAX,
+    step: float = COORDINATE_STEP,
+) -> tuple[float, float]:
+    """
+    Quantizes a 2D coordinate point onto the uniform grid [min_val, max_val]^2.
+
+    Args:
+        point (tuple[float, float]): Input coordinate (x, y).
+        min_val (float): Lower canvas boundary. Default: -5.0.
+        max_val (float): Upper canvas boundary. Default: 5.0.
+        step (float): Discretization step. Default: 0.1.
+
+    Returns:
+        tuple[float, float]: Quantized (qx, qy) tuple.
+
+    Temporal complexity: O(1).
+    """
+    if not isinstance(point, tuple) or len(point) != 2:
+        raise TypeError("Point must be a 2-element tuple of floats.")
+
+    return (
+        quantize_coordinate_scalar(point[0], min_val=min_val, max_val=max_val, step=step),
+        quantize_coordinate_scalar(point[1], min_val=min_val, max_val=max_val, step=step),
+    )
+
+
+def tokenize_tikz_markup(tokens: TikzTokens, quantize: bool = True) -> list[str]:
+    """
+    Splits TikZ markup into discrete tokens with coordinate quantization.
+
+    Args:
+        tokens (TikzTokens): Input markup value object.
+        quantize (bool): When True, discretizes real-valued floating literals
+            onto the 0.1-spaced canvas grid. Default: True.
+
+    Returns:
+        list[str]: Extracted token strings.
+
+    Raises:
+        TypeError: If input is not a TikzTokens instance.
+
+    Temporal complexity: O(N) where N is the length of the markup string.
     """
     if not isinstance(tokens, TikzTokens):
         raise TypeError("Input must be a TikzTokens instance.")
 
-    return TIKZ_TOKEN_PATTERN.findall(tokens.markup)
+    raw_tokens: list[str] = TIKZ_TOKEN_PATTERN.findall(tokens.markup)
+    if not quantize:
+        return raw_tokens
+
+    processed_tokens: list[str] = []
+    for token in raw_tokens:
+        if _FLOAT_PATTERN.fullmatch(token):
+            quantized_val: float = quantize_coordinate_scalar(float(token))
+            processed_tokens.append(f"{quantized_val:g}")
+        else:
+            processed_tokens.append(token)
+
+    return processed_tokens
 
 
-def build_vocabulary(corpus: list[TikzTokens]) -> TokenVocabulary:
+def build_vocabulary(
+    corpus: list[TikzTokens],
+    include_spatial_grid: bool = True,
+    quantize: bool = True,
+) -> TokenVocabulary:
     """
-    Constructs the TokenVocabulary from a TikZ corpus.
+    Constructs the TokenVocabulary from a TikZ corpus with bounded spatial support.
 
     Args:
         corpus (list[TikzTokens]): Sequence of TikZ document samples.
+        include_spatial_grid (bool): When True, pre-populates all 101 spatial
+            coordinate bins in [-5.0, 5.0] to ensure complete coverage. Default: True.
+        quantize (bool): When True, quantizes coordinates during extraction. Default: True.
 
     Returns:
-        TokenVocabulary: Vocabulary entity with reserved indices.
+        TokenVocabulary: Invariant-enforced bidirectional token vocabulary.
+
+    Raises:
+        TypeError: If corpus is not a list.
 
     Temporal complexity: O(|C| * |T|) where |C| is corpus size and |T| is token length.
     """
     if not isinstance(corpus, list):
         raise TypeError("Corpus must be a list of TikzTokens instances.")
 
-    # Extract tokens for all documents without explicit loops
-    all_token_lists: list[list[str]] = list(map(tokenize_tikz_markup, corpus))
+    all_token_lists: list[list[str]] = [
+        tokenize_tikz_markup(doc, quantize=quantize) for doc in corpus
+    ]
     flat_tokens: set[str] = {token for sublist in all_token_lists for token in sublist}
 
-    # Filter reserved tokens to prevent collisions
+    if include_spatial_grid:
+        flat_tokens.update(COORDINATE_BINS)
+
     reserved_set: set[str] = {PAD_TOKEN, BOS_TOKEN, EOS_TOKEN, UNK_TOKEN}
     unique_tokens: list[str] = sorted(flat_tokens - reserved_set)
-
 
     token_to_index: dict[str, int] = {
         PAD_TOKEN: PAD_INDEX,
@@ -91,7 +215,6 @@ def build_vocabulary(corpus: list[TikzTokens]) -> TokenVocabulary:
         UNK_INDEX: UNK_TOKEN,
     }
 
-    # Assign sequential indices to remaining unique tokens starting at index 4
     for idx, token in enumerate(unique_tokens, start=4):
         token_to_index[token] = idx
         index_to_token[idx] = token
@@ -103,19 +226,25 @@ def encode_to_tensor(
     tokens: TikzTokens,
     vocabulary: TokenVocabulary,
     max_length: int = 512,
+    quantize: bool = True,
 ) -> torch.Tensor:
     """
-    Encodes markup tokens into an integer tensor.
+    Encodes markup tokens into a rank-1 integer index tensor.
 
     Args:
         tokens (TikzTokens): Input markup.
-        vocabulary (TokenVocabulary): Token vocabulary.
+        vocabulary (TokenVocabulary): Bidirectional token vocabulary.
         max_length (int): Fixed output sequence length. Default: 512.
+        quantize (bool): Whether to quantize continuous coordinates. Default: True.
 
     Returns:
-        torch.Tensor: Rank-1 index tensor. Shape: (max_length,)
+        torch.Tensor: Rank-1 long index tensor of shape (max_length,).
 
-    Temporal complexity: O(T) where T is the sequence length.
+    Raises:
+        VocabularyInvariantError: If max_length is non-positive.
+        TypeError: If inputs fail type constraints.
+
+    Temporal complexity: O(T) where T is the token sequence length.
     """
     if max_length <= 0:
         raise VocabularyInvariantError(f"max_length must be positive. Got {max_length}.")
@@ -126,7 +255,7 @@ def encode_to_tensor(
     if not isinstance(vocabulary, TokenVocabulary):
         raise TypeError("Vocabulary must be a TokenVocabulary instance.")
 
-    string_tokens: list[str] = tokenize_tikz_markup(tokens)
+    string_tokens: list[str] = tokenize_tikz_markup(tokens, quantize=quantize)
     token_indices: list[int] = [BOS_INDEX] + [
         vocabulary.token_to_index.get(token, UNK_INDEX) for token in string_tokens
     ] + [EOS_INDEX]
@@ -144,14 +273,18 @@ def encode_to_tensor(
 
 def decode_from_tensor(tensor: torch.Tensor, vocabulary: TokenVocabulary) -> TikzTokens:
     """
-    Decodes an integer index tensor back into markup.
+    Decodes a rank-1 integer index tensor back into a validated TikzTokens entity.
 
     Args:
-        tensor (torch.Tensor): Rank-1 index tensor. Shape: (max_length,)
-        vocabulary (TokenVocabulary): Token vocabulary.
+        tensor (torch.Tensor): Rank-1 index tensor of shape (max_length,).
+        vocabulary (TokenVocabulary): Bidirectional token vocabulary.
 
     Returns:
-        TikzTokens: The reconstructed markup.
+        TikzTokens: Reconstructed markup value object.
+
+    Raises:
+        TypeError: If inputs fail type validation.
+        VocabularyInvariantError: If tensor rank is not 1.
 
     Temporal complexity: O(T) where T is the sequence length.
     """
@@ -181,19 +314,25 @@ def batch_encode(
     corpus: list[TikzTokens],
     vocabulary: TokenVocabulary,
     max_length: int = 512,
+    quantize: bool = True,
 ) -> torch.Tensor:
     """
-    Encodes a batch of TikZ documents into a 2D index tensor.
+    Encodes a batch of TikZ documents into a 2D integer index tensor.
 
     Args:
         corpus (list[TikzTokens]): Input documents.
-        vocabulary (TokenVocabulary): Token vocabulary.
+        vocabulary (TokenVocabulary): Bidirectional token vocabulary.
         max_length (int): Fixed sequence length per sample. Default: 512.
+        quantize (bool): Whether to quantize continuous coordinates. Default: True.
 
     Returns:
-        torch.Tensor: Batch tensor. Shape: (N, max_length)
+        torch.Tensor: Batch tensor of shape (N, max_length).
 
-    Temporal complexity: O(N * T) where N is batch size and T is max sequence length.
+    Raises:
+        TypeError: If corpus is not a list.
+        VocabularyInvariantError: If corpus is empty.
+
+    Temporal complexity: O(N * T) where N is batch size and T is max_length.
     """
     if not isinstance(corpus, list):
         raise TypeError("Corpus must be a list of TikzTokens instances.")
@@ -202,7 +341,8 @@ def batch_encode(
         raise VocabularyInvariantError("Corpus cannot be empty for batch encoding.")
 
     tensors: list[torch.Tensor] = [
-        encode_to_tensor(doc, vocabulary, max_length=max_length) for doc in corpus
+        encode_to_tensor(doc, vocabulary, max_length=max_length, quantize=quantize)
+        for doc in corpus
     ]
 
     # Shape: (N, max_length)
