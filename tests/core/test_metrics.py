@@ -6,13 +6,17 @@ import torch
 from core.ml.metrics import (
     DEFAULT_COORDINATE_SCALE,
     EvaluationMetrics,
+    GeometricPrimitive,
     batch_geometric_edit_distance,
+    batch_geometric_graph_edit_distance,
     batch_visual_similarity,
     corpus_bleu,
     evaluate_batch,
     geometric_edit_distance,
+    geometric_graph_edit_distance,
     structural_similarity,
 )
+from core.models.value_objects import TikzTokens
 
 REFERENCE: list[str] = ["\\draw", "(0,0)", "--", "(1,1)", ";"]
 
@@ -256,3 +260,126 @@ def test_batch_visual_similarity_is_permutation_invariant() -> None:
 def test_batch_visual_similarity_rejects_empty() -> None:
     with pytest.raises(ValueError):
         batch_visual_similarity([])
+
+
+def test_geometric_primitive_validates_types() -> None:
+    primitive = GeometricPrimitive(kind="draw", coordinates=((0.0, 0.0), (1.0, 1.0)))
+    assert primitive.kind == "draw"
+    assert primitive.coordinates == ((0.0, 0.0), (1.0, 1.0))
+
+    with pytest.raises(TypeError):
+        GeometricPrimitive(kind="", coordinates=())
+    with pytest.raises(TypeError):
+        GeometricPrimitive(kind=123, coordinates=())  # type: ignore[arg-type]
+    with pytest.raises(TypeError):
+        GeometricPrimitive(kind="draw", coordinates=[(0.0, 0.0)])  # type: ignore[arg-type]
+    with pytest.raises(TypeError):
+        GeometricPrimitive(kind="draw", coordinates=((0.0, 0.0, 0.0),))  # type: ignore[arg-type]
+    with pytest.raises(TypeError):
+        GeometricPrimitive(kind="draw", coordinates=(("0.0", "0.0"),))  # type: ignore[arg-type]
+
+
+def test_geometric_graph_edit_distance_identical_is_zero() -> None:
+    markup = r"\begin{tikzpicture}\draw (0,0) -- (1,1);\node at (2,2) {A};\end{tikzpicture}"
+    distance = geometric_graph_edit_distance(markup, markup)
+    assert distance == pytest.approx(0.0)
+
+
+def test_geometric_graph_edit_distance_permutation_invariance() -> None:
+    reference = (
+        r"\begin{tikzpicture}"
+        r"\draw (0,0) -- (1,1);"
+        r"\node at (2,2) {A};"
+        r"\fill[red] (3,3) circle (1.0);"
+        r"\end{tikzpicture}"
+    )
+    permuted_candidate_a = (
+        r"\begin{tikzpicture}"
+        r"\fill[red] (3,3) circle (1.0);"
+        r"\draw (0,0) -- (1,1);"
+        r"\node at (2,2) {A};"
+        r"\end{tikzpicture}"
+    )
+    permuted_candidate_b = (
+        r"\begin{tikzpicture}"
+        r"\node at (2,2) {A};"
+        r"\fill[red] (3,3) circle (1.0);"
+        r"\draw (0,0) -- (1,1);"
+        r"\end{tikzpicture}"
+    )
+
+    distance_a = geometric_graph_edit_distance(reference, permuted_candidate_a)
+    distance_b = geometric_graph_edit_distance(reference, permuted_candidate_b)
+
+    assert distance_a == pytest.approx(0.0)
+    assert distance_b == pytest.approx(0.0)
+
+
+def test_geometric_graph_edit_distance_empty_vs_non_empty() -> None:
+    non_empty = r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}"
+    empty = r"\begin{tikzpicture}\end{tikzpicture}"
+
+    assert geometric_graph_edit_distance(empty, empty) == pytest.approx(0.0)
+    assert geometric_graph_edit_distance(non_empty, empty) == pytest.approx(1.0)
+    assert geometric_graph_edit_distance(empty, non_empty) == pytest.approx(1.0)
+
+
+def test_geometric_graph_edit_distance_coordinate_perturbation() -> None:
+    reference = r"\draw (0,0) -- (1,1);"
+    near_candidate = r"\draw (0.1, 0.0) -- (1.1, 1.0);"
+    far_candidate = r"\draw (5.0, 5.0) -- (-5.0, -5.0);"
+
+    near_distance = geometric_graph_edit_distance(reference, near_candidate)
+    far_distance = geometric_graph_edit_distance(reference, far_candidate)
+
+    assert 0.0 < near_distance < far_distance <= 1.0
+
+
+def test_geometric_graph_edit_distance_primitive_type_mismatch() -> None:
+    draw_markup = r"\draw (0,0) -- (1,1);"
+    fill_markup = r"\fill (0,0) -- (1,1);"
+
+    distance = geometric_graph_edit_distance(draw_markup, fill_markup)
+    assert distance == pytest.approx(1.0)
+
+
+def test_geometric_graph_edit_distance_supports_tikz_tokens() -> None:
+    ref_tokens = TikzTokens(
+        markup=r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}"
+    )
+    cand_tokens = TikzTokens(
+        markup=r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}"
+    )
+
+    assert geometric_graph_edit_distance(ref_tokens, cand_tokens) == pytest.approx(0.0)
+
+
+def test_batch_geometric_graph_edit_distance_returns_per_sample_trace() -> None:
+    references = [
+        r"\draw (0,0) -- (1,1);",
+        r"\draw (0,0) -- (1,1);",
+    ]
+    candidates = [
+        r"\draw (0,0) -- (1,1);",
+        r"\draw (5,5) -- (-5,-5);",
+    ]
+
+    distances = batch_geometric_graph_edit_distance(references, candidates)
+
+    assert len(distances) == 2
+    assert distances[0] == pytest.approx(0.0)
+    assert distances[1] > 0.0
+
+
+def test_batch_geometric_graph_edit_distance_rejects_invalid_inputs() -> None:
+    with pytest.raises(ValueError):
+        batch_geometric_graph_edit_distance([], [])
+    with pytest.raises(ValueError):
+        batch_geometric_graph_edit_distance([r"\draw (0,0);"], [r"\draw (0,0);", r"\draw (1,1);"])
+    with pytest.raises(ValueError):
+        geometric_graph_edit_distance(r"\draw (0,0);", r"\draw (0,0);", coordinate_scale=0.0)
+    with pytest.raises(ValueError):
+        geometric_graph_edit_distance(r"\draw (0,0);", r"\draw (0,0);", coordinate_scale=-2.0)
+    with pytest.raises(TypeError):
+        geometric_graph_edit_distance(123, r"\draw (0,0);")  # type: ignore[arg-type]
+

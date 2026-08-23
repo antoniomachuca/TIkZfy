@@ -31,7 +31,11 @@ from core.exceptions import DomainError
 from core.math.spatial import resize_spatial_dimensions
 from core.math.tokenization import batch_encode, decode_from_tensor, tokenize_tikz_markup
 from core.ml.generation import decode_indices_to_markup, greedy_search
-from core.ml.metrics import evaluate_batch, structural_similarity
+from core.ml.metrics import (
+    batch_geometric_graph_edit_distance,
+    evaluate_batch,
+    structural_similarity,
+)
 from core.ml.model import VisionAutoregressiveModel
 from core.models import ImageTensor, TikzTokens, TokenVocabulary
 from scripts.load_dataset import load_image_batch, load_markup_corpus
@@ -198,6 +202,16 @@ async def evaluate_tier(
         ground_truth_images.append(images[index])
 
     metrics = evaluate_batch(references, candidates)
+    reference_markups: list[TikzTokens] = [
+        decode_from_tensor(tokens[idx], vocabulary) for idx in range(sample_count)
+    ]
+    graph_edit_distances: tuple[float, ...] = batch_geometric_graph_edit_distance(
+        reference_markups, candidate_markups
+    )
+    mean_graph_distance: float = (
+        sum(graph_edit_distances) / len(graph_edit_distances) if graph_edit_distances else 0.0
+    )
+
     successes, total, mean_ssim, ssim_samples = await compilation_and_ssim(
         candidate_markups, ground_truth_images, workers, target_height, target_width
     )
@@ -206,6 +220,7 @@ async def evaluate_tier(
         "samples": sample_count,
         "corpus_bleu": metrics.bleu_score,
         "mean_geometric_edit_distance": metrics.mean_geometric_distance,
+        "mean_graph_edit_distance": mean_graph_distance,
         "compilation_rate": successes / total if total else 0.0,
         "compilation": {"successes": successes, "total": total},
         "mean_ssim": mean_ssim,
@@ -220,6 +235,7 @@ def generalization_gap(
     metric_keys: tuple[str, ...] = (
         "corpus_bleu",
         "mean_geometric_edit_distance",
+        "mean_graph_edit_distance",
         "compilation_rate",
         "mean_ssim",
     )

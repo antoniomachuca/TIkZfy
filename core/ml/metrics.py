@@ -1,8 +1,7 @@
-"""Batch evaluation metrics: token-level BLEU and geometric edit distance.
+"""Batch evaluation metrics: token BLEU, geometric edit distance, and Hungarian graph edit distance.
 
-Both metrics operate over token sequences ``Sequence[str]`` produced by
-``core.math.tokenization.tokenize_tikz_markup``, keeping evaluation independent
-of the encoder budget and the vocabulary index space.
+Metrics operate over token sequences or raw TikZ markup, keeping evaluation
+independent of encoder budget and vocabulary index space.
 
 References:
     Papineni et al., BLEU: a Method for Automatic Evaluation of Machine
@@ -12,6 +11,10 @@ References:
     Golub & Van Loan, Matrix Computations — the edit-distance dynamic program
         is swept column-wise with ``minimum.accumulate`` (a prefix-minimum) so
         each of the O(n) control-flow steps is a vectorized O(m) algebra pass.
+    Kuhn, The Hungarian Method for the Assignment Problem / Munkres, Algorithms
+        for the Assignment and Transportation Problems — optimal bipartite
+        matching for permutation-invariant graph edit distance.
+    Tantau, The TikZ and PGF Packages Manual — geometric primitive grammar.
 """
 
 import math
@@ -24,6 +27,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from numpy.typing import NDArray
+from scipy.optimize import linear_sum_assignment
+
+from core.models.value_objects import TikzTokens
 
 # Coordinate literals follow the ``(x, y)`` layout emitted by the procedural
 # dataset, whose canvas is the closed square [-5, 5]^2. Its diagonal is
@@ -476,3 +482,244 @@ def batch_visual_similarity(
         for ground_truth, predicted in pairs
     )
     return sum(per_sample) / len(per_sample), per_sample
+
+
+# Regex patterns for lightweight TikZ markup parsing: comments, environment
+# wrappers (e.g. \begin{tikzpicture}, \end{tikzpicture}, \pgfplotsset{...}),
+# and drawing command keywords.
+_LATEX_COMMENT_PATTERN: re.Pattern[str] = re.compile(r"%.*$", re.MULTILINE)
+_ENVIRONMENT_STRIP_PATTERN: re.Pattern[str] = re.compile(
+    r"\\(?:begin|end)\{[^}]*\}|\\documentclass(?:\[[^\]]*\])?\{[^}]*\}|"
+    r"\\usepackage(?:\[[^\]]*\])?\{[^}]*\}|\\usetikzlibrary\{[^}]*\}|\\pgfplotsset\{[^}]*\}"
+)
+_TIKZ_COMMAND_PATTERN: re.Pattern[str] = re.compile(r"\\([a-zA-Z]+)")
+
+
+@dataclass(frozen=True)
+class GeometricPrimitive:
+    """Immutable representation of an extracted TikZ geometric drawing primitive.
+
+    Attributes:
+        kind (str): Normalized primitive command name (e.g. 'draw', 'fill', 'node', 'path').
+        coordinates (tuple[tuple[float, float], ...]): Sequence of 2D Cartesian
+            coordinate pairs extracted from the command literal.
+    """
+
+    kind: str
+    coordinates: tuple[tuple[float, float], ...] = ()
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.kind, str) or not self.kind.strip():
+            raise TypeError("Primitive kind must be a non-empty string.")
+        if not isinstance(self.coordinates, tuple):
+            raise TypeError("Primitive coordinates must be a tuple.")
+        for coord in self.coordinates:
+            if not isinstance(coord, tuple) or len(coord) != 2:
+                raise TypeError("Each coordinate must be a 2D tuple of length 2.")
+            if not all(isinstance(val, (int, float)) for val in coord):
+                raise TypeError("Coordinate components must be numeric floats.")
+
+
+def _extract_markup_text(markup: str | TikzTokens | Sequence[str]) -> str:
+    """Extract raw markup text string from str, TikzTokens, or token sequences."""
+    if isinstance(markup, str):
+        return markup
+    if hasattr(markup, "markup") and isinstance(markup.markup, str):
+        return markup.markup
+    if isinstance(markup, Sequence) and not isinstance(markup, (bytes, bytearray)):
+        return " ".join(str(token) for token in markup)
+    raise TypeError(f"Expected str, TikzTokens, or Sequence[str]. Got {type(markup)}.")
+
+
+def _parse_tikz_primitives(
+    markup: str | TikzTokens | Sequence[str],
+) -> list[GeometricPrimitive]:
+    """Parse TikZ drawing statements into structured geometric primitives.
+
+    Strips comments and environment boilerplate, splits statements by semicolon,
+    and extracts command keywords with associated Cartesian coordinates.
+
+    Args:
+        markup (str | TikzTokens | Sequence[str]): TikZ input representation.
+
+    Returns:
+        list[GeometricPrimitive]: Parsed geometric primitives in statement order.
+
+    Temporal complexity: O(L) where L is markup length.
+    """
+    text: str = _extract_markup_text(markup)
+    cleaned: str = _LATEX_COMMENT_PATTERN.sub("", text)
+    cleaned = _ENVIRONMENT_STRIP_PATTERN.sub("", cleaned)
+
+    statements: list[str] = cleaned.split(";")
+    primitives: list[GeometricPrimitive] = []
+
+    for raw_stmt in statements:
+        stmt: str = raw_stmt.strip()
+        if stmt:
+            cmd_match: re.Match[str] | None = _TIKZ_COMMAND_PATTERN.search(stmt)
+            if cmd_match is not None:
+                kind: str = cmd_match.group(1).lower()
+                coordinates: tuple[tuple[float, float], ...] = tuple(
+                    (float(m.group(1)), float(m.group(2)))
+                    for m in _COORDINATE_PATTERN.finditer(stmt)
+                )
+                primitives.append(
+                    GeometricPrimitive(kind=kind, coordinates=coordinates)
+                )
+
+    return primitives
+
+
+def _primitive_distance(
+    reference: GeometricPrimitive,
+    candidate: GeometricPrimitive,
+    coordinate_scale: float,
+) -> float:
+    """Calculate the normalized distance between two geometric primitives in [0, 1].
+
+    - Categorical mismatch in ``kind`` yields unit substitution cost 1.0.
+    - Matching kinds compare aligned coordinate sequences: Euclidean distance
+      between aligned vertices normalized by ``coordinate_scale`` clamped to [0, 1],
+      plus unit penalty for any surplus unmatched coordinates.
+
+    Spatial complexity: O(min(K_r, K_c)) temporary coordinate arrays.
+    Temporal complexity: O(min(K_r, K_c)) vectorized Euclidean distance.
+    """
+    if reference.kind != candidate.kind:
+        return 1.0
+
+    ref_coords: tuple[tuple[float, float], ...] = reference.coordinates
+    cand_coords: tuple[tuple[float, float], ...] = candidate.coordinates
+
+    ref_len: int = len(ref_coords)
+    cand_len: int = len(cand_coords)
+
+    if ref_len == 0 and cand_len == 0:
+        return 0.0
+    if ref_len == 0 or cand_len == 0:
+        return 1.0
+
+    min_len: int = min(ref_len, cand_len)
+    max_len: int = max(ref_len, cand_len)
+
+    ref_arr: NDArray[np.float64] = np.asarray(ref_coords[:min_len], dtype=np.float64)
+    cand_arr: NDArray[np.float64] = np.asarray(cand_coords[:min_len], dtype=np.float64)
+
+    # Vectorized Euclidean differences across aligned coordinate pairs
+    diffs: NDArray[np.float64] = ref_arr - cand_arr  # Shape: (min_len, 2)
+    euclidean_dists: NDArray[np.float64] = np.linalg.norm(diffs, axis=1)  # Shape: (min_len,)
+    scaled_dists: NDArray[np.float64] = np.minimum(euclidean_dists / coordinate_scale, 1.0)
+
+    total_cost: float = float(np.sum(scaled_dists)) + float(max_len - min_len) * 1.0
+    return total_cost / max_len
+
+
+def _build_primitive_cost_matrix(
+    references: Sequence[GeometricPrimitive],
+    candidates: Sequence[GeometricPrimitive],
+    coordinate_scale: float,
+) -> NDArray[np.float64]:
+    """Construct the (M, N) bipartite cost matrix between primitive sequences.
+
+    Temporal complexity: O(M * N * K) where K is max coordinate sequence length.
+    """
+    num_refs: int = len(references)
+    num_cands: int = len(candidates)
+    cost_matrix: NDArray[np.float64] = np.ones((num_refs, num_cands), dtype=np.float64)
+
+    for ref_idx in range(num_refs):
+        for cand_idx in range(num_cands):
+            cost_matrix[ref_idx, cand_idx] = _primitive_distance(
+                references[ref_idx], candidates[cand_idx], coordinate_scale
+            )
+    return cost_matrix
+
+
+def geometric_graph_edit_distance(
+    reference_markup: str | TikzTokens,
+    candidate_markup: str | TikzTokens,
+    coordinate_scale: float = DEFAULT_COORDINATE_SCALE,
+) -> float:
+    """Compute permutation-invariant geometric graph edit distance in [0, 1].
+
+    Extracts TikZ geometric primitives (draw, fill, node, path, etc.) and uses
+    the Kuhn-Munkres Hungarian algorithm (``scipy.optimize.linear_sum_assignment``)
+    to find the minimum-weight bipartite matching between reference and candidate
+    primitives, penalizing unmatched primitives with unit insertion/deletion cost.
+
+    Args:
+        reference_markup (str | TikzTokens): Ground truth TikZ markup.
+        candidate_markup (str | TikzTokens): Predicted TikZ markup.
+        coordinate_scale (float): Canvas diagonal normalization scale.
+
+    Returns:
+        float: Normalized graph edit distance in [0, 1].
+
+    Raises:
+        ValueError: If coordinate_scale is non-positive.
+        TypeError: If markups are not strings, TikzTokens, or token sequences.
+
+    Temporal complexity: O(M * N * K + (M + N)^3) where M, N are primitive counts
+        and K is the max coordinate sequence length.
+    """
+    if coordinate_scale <= 0.0:
+        raise ValueError(f"coordinate_scale must be positive. Got {coordinate_scale}.")
+
+    ref_primitives: list[GeometricPrimitive] = _parse_tikz_primitives(reference_markup)
+    cand_primitives: list[GeometricPrimitive] = _parse_tikz_primitives(candidate_markup)
+
+    num_refs: int = len(ref_primitives)
+    num_cands: int = len(cand_primitives)
+
+    if num_refs == 0 and num_cands == 0:
+        return 0.0
+    if num_refs == 0 or num_cands == 0:
+        return 1.0
+
+    cost_matrix: NDArray[np.float64] = _build_primitive_cost_matrix(
+        ref_primitives, cand_primitives, coordinate_scale
+    )  # Shape: (num_refs, num_cands)
+
+    row_ind, col_ind = linear_sum_assignment(cost_matrix)
+    matched_cost: float = float(cost_matrix[row_ind, col_ind].sum())
+
+    unmatched_count: int = abs(num_refs - num_cands)
+    total_cost: float = matched_cost + float(unmatched_count) * 1.0
+    max_primitives: int = max(num_refs, num_cands)
+
+    return total_cost / max_primitives
+
+
+def batch_geometric_graph_edit_distance(
+    references: Sequence[str | TikzTokens],
+    candidates: Sequence[str | TikzTokens],
+    coordinate_scale: float = DEFAULT_COORDINATE_SCALE,
+) -> tuple[float, ...]:
+    """Compute per-sample Hungarian geometric graph edit distance for a batch.
+
+    Args:
+        references (Sequence[str | TikzTokens]): Reference markups.
+        candidates (Sequence[str | TikzTokens]): Candidate markups.
+        coordinate_scale (float): Canvas normalization scale.
+
+    Returns:
+        tuple[float, ...]: Tuple of normalized distances in [0, 1].
+
+    Raises:
+        ValueError: If batches are empty or lengths mismatch, or scale is invalid.
+        TypeError: If elements are of invalid type.
+
+    Temporal complexity: O(sum_i (M_i * N_i * K_i + (M_i + N_i)^3)) over the batch.
+    """
+    if not references or not candidates:
+        raise ValueError("Reference and candidate batches must be non-empty.")
+    if len(references) != len(candidates):
+        raise ValueError("Reference and candidate batches must have equal length.")
+    if coordinate_scale <= 0.0:
+        raise ValueError(f"coordinate_scale must be positive. Got {coordinate_scale}.")
+
+    return tuple(
+        geometric_graph_edit_distance(ref, cand, coordinate_scale=coordinate_scale)
+        for ref, cand in zip(references, candidates, strict=True)
+    )
