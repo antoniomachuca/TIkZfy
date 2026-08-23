@@ -1,8 +1,12 @@
 torch>=2.0.0  # Tensor operations and neural propagation
 numpy>=1.24.0  # CPU vectorization and spatial data arrays
+scipy>=1.10.0  # Bipartite matching for Hungarian graph edit distance
 einops>=0.6.0  # O(1) logical tensor dimensional transformations
 pytest>=7.4.3  # Testing framework for domain isolation verification
 torchvision>=0.15.0  # Infrastructural image loading (Vectorización Tensorial I)
 aiohttp>=3.8.0  # Concurrent HTTP client for LaTeX source ingestion
 matplotlib>=3.7.0  # Loss-curve and showcase rendering artifacts
 datasets>=2.14.0  # HuggingFace dataset loader for DaTikZ-V4 Tier 3 ingestion
+mypy>=1.0.0  # Static type analysis for strict mathematical typing
+ruff>=0.1.0  # Linter and code style formatting
+
