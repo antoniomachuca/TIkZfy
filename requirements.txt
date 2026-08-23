@@ -9,4 +9,9 @@ matplotlib>=3.7.0  # Loss-curve and showcase rendering artifacts
 datasets>=2.14.0  # HuggingFace dataset loader for DaTikZ-V4 Tier 3 ingestion
 mypy>=1.0.0  # Static type analysis for strict mathematical typing
 ruff>=0.1.0  # Linter and code style formatting
+fastapi>=0.100.0  # REST API framework for inbound HTTP adapter
+uvicorn>=0.22.0  # ASGI server for FastAPI execution
+python-multipart>=0.0.6  # Multipart form parsing for image uploads
+pydantic>=2.0.0  # Data validation and response schemas
+httpx>=0.24.0  # HTTP client for API integration tests
 
