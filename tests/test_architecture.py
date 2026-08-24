@@ -20,7 +20,7 @@ INFRASTRUCTURE_TOP_LEVELS: frozenset[str] = frozenset(
 
 
 def _python_files(root: Path) -> list[Path]:
-    return sorted(root.rglob("*.py"))
+    return sorted(p for p in root.rglob("*.py") if not p.name.startswith("._"))
 
 
 def _imported_top_level_modules(file_path: Path) -> set[str]:
