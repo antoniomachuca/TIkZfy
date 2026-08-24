@@ -177,19 +177,53 @@ class DemoImageToTikzOrchestrator(ImageToTikzUseCase):
 
     _DEMO_TEMPLATES: tuple[tuple[str, tuple[str, ...]], ...] = (
         (
-            r"\begin{tikzpicture}[scale=1.2] \draw[thick, fill=blue!15] (0,0) -- (4,0) -- (2,3) -- cycle; \draw[dashed, red] (2,0) -- (2,3); \node at (2,-0.3) {base $b$}; \node at (2.4,1.5) {height $h$}; \node at (2,0.8) {Area $= \frac{1}{2}bh$}; \end{tikzpicture}",
+            (
+                r"\begin{tikzpicture}[scale=1.2] "
+                r"\draw[thick, fill=blue!15] (0,0) -- (4,0) -- (2,3) -- cycle; "
+                r"\draw[dashed, red] (2,0) -- (2,3); "
+                r"\node at (2,-0.3) {base $b$}; "
+                r"\node at (2.4,1.5) {height $h$}; "
+                r"\node at (2,0.8) {Area $= \frac{1}{2}bh$}; "
+                r"\end{tikzpicture}"
+            ),
             (),
         ),
         (
-            r"\begin{tikzpicture}[scale=1.0] \draw[->, thick] (-2.5,0) -- (2.5,0) node[right] {$x$}; \draw[->, thick] (0,-2.5) -- (0,2.5) node[above] {$y$}; \draw[thick, blue, fill=blue!10] (0,0) circle (1.8); \draw[->, red, thick] (0,0) -- (1.27,1.27) node[midway, above left] {$r$}; \filldraw[black] (0,0) circle (1.5pt) node[below left] {$O$}; \node at (0,-1.0) {$x^2 + y^2 = r^2$}; \end{tikzpicture}",
+            (
+                r"\begin{tikzpicture}[scale=1.0] "
+                r"\draw[->, thick] (-2.5,0) -- (2.5,0) node[right] {$x$}; "
+                r"\draw[->, thick] (0,-2.5) -- (0,2.5) node[above] {$y$}; "
+                r"\draw[thick, blue, fill=blue!10] (0,0) circle (1.8); "
+                r"\draw[->, red, thick] (0,0) -- (1.27,1.27) node[midway, above left] {$r$}; "
+                r"\filldraw[black] (0,0) circle (1.5pt) node[below left] {$O$}; "
+                r"\node at (0,-1.0) {$x^2 + y^2 = r^2$}; "
+                r"\end{tikzpicture}"
+            ),
             (),
         ),
         (
-            r"\begin{tikzpicture}[scale=1.1] \draw[thick, domain=-2:2, samples=50, color=red] plot (\x, {0.5*\x*\x - 1}) node[right] {$f(x) = \frac{1}{2}x^2 - 1$}; \draw[->] (-2.5,0) -- (2.5,0) node[right] {$x$}; \draw[->] (0,-1.8) -- (0,2.2) node[above] {$y$}; \filldraw[blue] (0,-1) circle (2pt) node[below right] {$(0, -1)$}; \end{tikzpicture}",
+            (
+                r"\begin{tikzpicture}[scale=1.1] "
+                r"\draw[thick, domain=-2:2, samples=50, color=red] plot (\x, {0.5*\x*\x - 1}) "
+                r"node[right] {$f(x) = \frac{1}{2}x^2 - 1$}; "
+                r"\draw[->] (-2.5,0) -- (2.5,0) node[right] {$x$}; "
+                r"\draw[->] (0,-1.8) -- (0,2.2) node[above] {$y$}; "
+                r"\filldraw[blue] (0,-1) circle (2pt) node[below right] {$(0, -1)$}; "
+                r"\end{tikzpicture}"
+            ),
             (),
         ),
         (
-            r"\begin{tikzpicture}[node distance=2.5cm, auto] \node[circle, draw=black, thick, fill=gray!20] (A) {$X$}; \node[circle, draw=black, thick, fill=gray!20] (B) [right of=A] {$Y$}; \node[circle, draw=black, thick, fill=gray!20] (C) [below of=B] {$Z$}; \draw[->, thick] (A) to node {$f$} (B); \draw[->, thick] (B) to node {$g$} (C); \draw[->, dashed, thick, blue] (A) to node [below left] {$g \circ f$} (C); \end{tikzpicture}",
+            (
+                r"\begin{tikzpicture}[node distance=2.5cm, auto] "
+                r"\node[circle, draw=black, thick, fill=gray!20] (A) {$X$}; "
+                r"\node[circle, draw=black, thick, fill=gray!20] (B) [right of=A] {$Y$}; "
+                r"\node[circle, draw=black, thick, fill=gray!20] (C) [below of=B] {$Z$}; "
+                r"\draw[->, thick] (A) to node {$f$} (B); "
+                r"\draw[->, thick] (B) to node {$g$} (C); "
+                r"\draw[->, dashed, thick, blue] (A) to node [below left] {$g \circ f$} (C); "
+                r"\end{tikzpicture}"
+            ),
             (),
         ),
     )
