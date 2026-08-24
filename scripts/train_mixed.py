@@ -331,6 +331,24 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("--num-layers", type=int, default=2)
     parser.add_argument("--num-heads", type=int, default=4)
     parser.add_argument("--max-length", type=int, default=512)
+    parser.add_argument(
+        "--dim-ff",
+        type=int,
+        default=None,
+        help="Feed-forward dimension in Transformer decoder (defaults to 4 * model_dim).",
+    )
+    parser.add_argument(
+        "--num-encoder-blocks",
+        type=int,
+        default=6,
+        help="Number of residual blocks in VisionEncoder (default: 6).",
+    )
+    parser.add_argument(
+        "--device",
+        type=str,
+        default=None,
+        help="Execution device (defaults to auto CUDA/CPU resolution).",
+    )
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--checkpoint-every", type=int, default=5)
     parser.add_argument("--seed", type=int, default=42)

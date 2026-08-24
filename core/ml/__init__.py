@@ -25,16 +25,24 @@ from .metrics import (
     geometric_graph_edit_distance,
     structural_similarity,
 )
-from .model import VisionAutoregressiveModel
+from .model import (
+    ConvResidualBlock,
+    VisionAutoregressiveModel,
+    VisionEncoder,
+    resolve_device,
+)
 from .trainer import TrainingMetrics, fit, iter_batch_bounds, train_one_epoch
 
 __all__ = [
     "BeamHypothesis",
+    "ConvResidualBlock",
     "DEFAULT_COORDINATE_SCALE",
     "EvaluationMetrics",
     "GeometricPrimitive",
     "TeacherForcingCrossEntropy",
     "VisionAutoregressiveModel",
+    "VisionEncoder",
+    "resolve_device",
     "TrainingMetrics",
     "batch_geometric_edit_distance",
     "batch_geometric_graph_edit_distance",

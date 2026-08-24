@@ -77,6 +77,8 @@ checkpoints/
 /dataset/encoded/
 /logs/
 logs/
+*.tar
+*.tar.gz
 /tensorboard_logs/
 .huggingface/
 .cache/

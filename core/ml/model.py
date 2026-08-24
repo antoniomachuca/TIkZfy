@@ -17,29 +17,104 @@ from core.models import (
 )
 
 
-class VisionEncoder(nn.Module):
-    """Convolutional image encoder returning normalized visual tokens."""
+class ConvResidualBlock(nn.Module):
+    """Residual convolutional block with LayerNorm and GELU.
 
-    def __init__(self, input_channels: int, model_dimension: int) -> None:
+    Structure: ``Conv2D -> LayerNorm -> GELU -> Residual``.
+    Tensor Shape: ``(B, C, H, W) -> (B, C, H, W)``.
+    """
+
+    def __init__(self, channels: int) -> None:
         super().__init__()
-        self.network: nn.Sequential = nn.Sequential(
+        if channels <= 0:
+            raise VocabularyInvariantError("channels must be positive.")
+        self.conv: nn.Conv2d = nn.Conv2d(
+            channels,
+            channels,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias=True,
+        )
+        self.norm: nn.LayerNorm = nn.LayerNorm(channels)
+        self.activation: nn.GELU = nn.GELU()
+
+    def forward(self, features: torch.Tensor) -> torch.Tensor:
+        """Apply residual block to input tensor with shape ``(B, C, H, W)``."""
+        # Shape: (B, C, H, W)
+        residual: torch.Tensor = features
+        conv_out: torch.Tensor = cast(torch.Tensor, self.conv(features))
+        # Channels-last permutation for spatial LayerNorm: (B, C, H, W) -> (B, H, W, C)
+        norm_in: torch.Tensor = conv_out.permute(0, 2, 3, 1)
+        norm_out: torch.Tensor = cast(torch.Tensor, self.norm(norm_in))
+        # Permute back to standard PyTorch spatial layout: (B, H, W, C) -> (B, C, H, W)
+        norm_spatial: torch.Tensor = norm_out.permute(0, 3, 1, 2)
+        activated: torch.Tensor = cast(torch.Tensor, self.activation(norm_spatial))
+        return residual + activated
+
+
+class VisionEncoder(nn.Module):
+    """Deep convolutional image encoder returning normalized visual tokens.
+
+    Downsamples the input image through a 2-stage convolutional stem and
+    processes the feature maps through a sequence of residual blocks.
+
+    Input shape: ``(B, C_{in}, H, W)``
+    Output shape: ``(B, S, D)`` where ``S = (H / 4) * (W / 4)`` and ``D = model_dimension``.
+    """
+
+    def __init__(
+        self,
+        input_channels: int,
+        model_dimension: int,
+        num_blocks: int = 6,
+    ) -> None:
+        super().__init__()
+        if input_channels <= 0 or model_dimension <= 0:
+            raise VocabularyInvariantError(
+                "input_channels and model_dimension must be positive."
+            )
+        if num_blocks < 0:
+            raise VocabularyInvariantError("num_blocks must be non-negative.")
+
+        self.stem: nn.Sequential = nn.Sequential(
             nn.Conv2d(input_channels, model_dimension, kernel_size=3, stride=2, padding=1),
             nn.GELU(),
             nn.Conv2d(model_dimension, model_dimension, kernel_size=3, stride=2, padding=1),
             nn.GELU(),
         )
+        self.residual_blocks: nn.Sequential = nn.Sequential(
+            *[ConvResidualBlock(channels=model_dimension) for _ in range(num_blocks)]
+        )
         self.normalization: nn.LayerNorm = nn.LayerNorm(model_dimension)
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         """Encode images into visual tokens with shape ``(B, S, D)``."""
-        features: torch.Tensor = cast(torch.Tensor, self.network(images))
+        # Shape: (B, C_in, H, W) -> (B, D, H/4, W/4)
+        features: torch.Tensor = cast(torch.Tensor, self.stem(images))
+        # Shape: (B, D, H/4, W/4) -> (B, D, H/4, W/4)
+        features = cast(torch.Tensor, self.residual_blocks(features))
         batch_size, channels, height, width = features.shape
-        visual_tokens: torch.Tensor = features.reshape(batch_size, channels, height * width)
-        return cast(torch.Tensor, self.normalization(visual_tokens.transpose(1, 2)))
+        # Spatial flatten to token sequence: (B, D, H/4, W/4) -> (B, D, S) -> (B, S, D)
+        visual_tokens: torch.Tensor = features.reshape(
+            batch_size, channels, height * width
+        ).transpose(1, 2)
+        return cast(torch.Tensor, self.normalization(visual_tokens))
+
+
+def resolve_device(device: torch.device | str | None = None) -> torch.device:
+    """Return the execution device, resolving to CUDA if available when unspecified."""
+    if device is not None:
+        return torch.device(device)
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class AutoregressiveDecoder(nn.Module):
-    """Causal Transformer decoder attending to the visual token sequence."""
+    """Causal Transformer decoder attending to the visual token sequence.
+
+    Supports configurable depth (6 to 8 layers), latent dimension (d_model=384),
+    multi-head attention (n_head=8), and feed-forward dimension (d_ff=1536).
+    """
 
     def __init__(
         self,
@@ -48,16 +123,40 @@ class AutoregressiveDecoder(nn.Module):
         max_length: int,
         num_layers: int,
         num_heads: int,
+        dim_feedforward: int | None = None,
+        dropout: float = 0.0,
     ) -> None:
         super().__init__()
+        if vocabulary_size <= 0 or model_dimension <= 0 or num_layers <= 0:
+            raise VocabularyInvariantError(
+                "vocabulary_size, model_dimension, and num_layers must be positive."
+            )
+        if max_length < 2:
+            raise VocabularyInvariantError("max_length must be at least 2.")
+        if num_heads <= 0 or model_dimension % num_heads != 0:
+            raise VocabularyInvariantError(
+                "model_dimension must be divisible by a positive num_heads."
+            )
+        ff_dimension: int = (
+            dim_feedforward if dim_feedforward is not None else model_dimension * 4
+        )
+        if ff_dimension <= 0:
+            raise VocabularyInvariantError("dim_feedforward must be positive.")
+        if not 0.0 <= dropout <= 1.0:
+            raise VocabularyInvariantError("dropout must be in range [0.0, 1.0].")
+
         self.max_length: int = max_length
+        self.model_dimension: int = model_dimension
+        self.num_layers: int = num_layers
+        self.num_heads: int = num_heads
+        self.dim_feedforward: int = ff_dimension
         self.token_embedding: nn.Embedding = nn.Embedding(vocabulary_size, model_dimension)
         self.position_embedding: nn.Embedding = nn.Embedding(max_length, model_dimension)
         decoder_layer: nn.TransformerDecoderLayer = nn.TransformerDecoderLayer(
             d_model=model_dimension,
             nhead=num_heads,
-            dim_feedforward=model_dimension * 4,
-            dropout=0.0,
+            dim_feedforward=ff_dimension,
+            dropout=dropout,
             batch_first=True,
             norm_first=True,
         )
@@ -109,7 +208,7 @@ class AutoregressiveDecoder(nn.Module):
 
 
 class VisionAutoregressiveModel(nn.Module):
-    """Small image-to-TikZ Transformer model.
+    """Multimodal image-to-TikZ Transformer model.
 
     Image shape: ``(B, C, H, W)``.
     Target shape: ``(B, L)``.
@@ -124,6 +223,10 @@ class VisionAutoregressiveModel(nn.Module):
         max_length: int = 512,
         num_layers: int = 2,
         num_heads: int = 4,
+        dim_feedforward: int | None = None,
+        num_encoder_blocks: int = 6,
+        dropout: float = 0.0,
+        device: torch.device | str | None = None,
     ) -> None:
         super().__init__()
         if not isinstance(vocabulary, TokenVocabulary):
@@ -132,6 +235,8 @@ class VisionAutoregressiveModel(nn.Module):
             raise VocabularyInvariantError(
                 "input_channels, model_dimension, and num_layers must be positive."
             )
+        if num_encoder_blocks < 0:
+            raise VocabularyInvariantError("num_encoder_blocks must be non-negative.")
         if max_length < 2:
             raise VocabularyInvariantError("max_length must be at least 2.")
         if num_heads <= 0 or model_dimension % num_heads != 0:
@@ -141,14 +246,28 @@ class VisionAutoregressiveModel(nn.Module):
 
         self.vocabulary: TokenVocabulary = vocabulary
         self.max_length: int = max_length
-        self.encoder: VisionEncoder = VisionEncoder(input_channels, model_dimension)
+        self.model_dimension: int = model_dimension
+        self.num_layers: int = num_layers
+        self.num_heads: int = num_heads
+        self.num_encoder_blocks: int = num_encoder_blocks
+        self.target_device: torch.device = resolve_device(device)
+
+        self.encoder: VisionEncoder = VisionEncoder(
+            input_channels=input_channels,
+            model_dimension=model_dimension,
+            num_blocks=num_encoder_blocks,
+        )
         self.decoder: AutoregressiveDecoder = AutoregressiveDecoder(
             vocabulary_size=len(vocabulary.token_to_index),
             model_dimension=model_dimension,
             max_length=max_length,
             num_layers=num_layers,
             num_heads=num_heads,
+            dim_feedforward=dim_feedforward,
+            dropout=dropout,
         )
+        if device is not None:
+            self.to(self.target_device)
 
     def forward(
         self, images: torch.Tensor | ImageTensor, target_tokens: torch.Tensor
@@ -164,18 +283,24 @@ class VisionAutoregressiveModel(nn.Module):
         return cast(torch.Tensor, self.decoder(visual_tokens, target_tokens))
 
     @torch.inference_mode()
-    def generate_markup(self, image: ImageTensor) -> TikzTokens:
+    def generate_markup(
+        self, image: ImageTensor, device: torch.device | str | None = None
+    ) -> TikzTokens:
         """Generate a bounded greedy TikZ sequence for one image."""
         image_tensor: torch.Tensor = self._extract_images(image)
         if image_tensor.shape[0] != 1:
             raise TensorTopologyError("Inference requires an image batch of size one.")
 
+        target_device: torch.device = (
+            resolve_device(device) if device is not None else image_tensor.device
+        )
+        image_tensor = image_tensor.to(target_device)
         generated: torch.Tensor = torch.full(
-            (1, 1), BOS_INDEX, dtype=torch.long, device=image_tensor.device
+            (1, 1), BOS_INDEX, dtype=torch.long, device=target_device
         )
         visual_tokens: torch.Tensor = self.encoder(image_tensor)
         step: int = 0
-        finished: torch.Tensor = torch.zeros(1, dtype=torch.bool, device=image_tensor.device)
+        finished: torch.Tensor = torch.zeros(1, dtype=torch.bool, device=target_device)
         while step < self.max_length - 1 and not bool(finished.all().item()):
             logits: torch.Tensor = self.decoder(visual_tokens, generated)
             next_token: torch.Tensor = logits[:, -1, :].argmax(dim=-1)
