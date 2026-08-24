@@ -102,8 +102,19 @@ class VisionEncoder(nn.Module):
         return cast(torch.Tensor, self.normalization(visual_tokens))
 
 
+def resolve_device(device: torch.device | str | None = None) -> torch.device:
+    """Return the execution device, resolving to CUDA if available when unspecified."""
+    if device is not None:
+        return torch.device(device)
+    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
 class AutoregressiveDecoder(nn.Module):
-    """Causal Transformer decoder attending to the visual token sequence."""
+    """Causal Transformer decoder attending to the visual token sequence.
+
+    Supports configurable depth (6 to 8 layers), latent dimension (d_model=384),
+    multi-head attention (n_head=8), and feed-forward dimension (d_ff=1536).
+    """
 
     def __init__(
         self,
@@ -112,16 +123,40 @@ class AutoregressiveDecoder(nn.Module):
         max_length: int,
         num_layers: int,
         num_heads: int,
+        dim_feedforward: int | None = None,
+        dropout: float = 0.0,
     ) -> None:
         super().__init__()
+        if vocabulary_size <= 0 or model_dimension <= 0 or num_layers <= 0:
+            raise VocabularyInvariantError(
+                "vocabulary_size, model_dimension, and num_layers must be positive."
+            )
+        if max_length < 2:
+            raise VocabularyInvariantError("max_length must be at least 2.")
+        if num_heads <= 0 or model_dimension % num_heads != 0:
+            raise VocabularyInvariantError(
+                "model_dimension must be divisible by a positive num_heads."
+            )
+        ff_dimension: int = (
+            dim_feedforward if dim_feedforward is not None else model_dimension * 4
+        )
+        if ff_dimension <= 0:
+            raise VocabularyInvariantError("dim_feedforward must be positive.")
+        if not 0.0 <= dropout <= 1.0:
+            raise VocabularyInvariantError("dropout must be in range [0.0, 1.0].")
+
         self.max_length: int = max_length
+        self.model_dimension: int = model_dimension
+        self.num_layers: int = num_layers
+        self.num_heads: int = num_heads
+        self.dim_feedforward: int = ff_dimension
         self.token_embedding: nn.Embedding = nn.Embedding(vocabulary_size, model_dimension)
         self.position_embedding: nn.Embedding = nn.Embedding(max_length, model_dimension)
         decoder_layer: nn.TransformerDecoderLayer = nn.TransformerDecoderLayer(
             d_model=model_dimension,
             nhead=num_heads,
-            dim_feedforward=model_dimension * 4,
-            dropout=0.0,
+            dim_feedforward=ff_dimension,
+            dropout=dropout,
             batch_first=True,
             norm_first=True,
         )
@@ -173,7 +208,7 @@ class AutoregressiveDecoder(nn.Module):
 
 
 class VisionAutoregressiveModel(nn.Module):
-    """Small image-to-TikZ Transformer model.
+    """Multimodal image-to-TikZ Transformer model.
 
     Image shape: ``(B, C, H, W)``.
     Target shape: ``(B, L)``.
@@ -188,7 +223,10 @@ class VisionAutoregressiveModel(nn.Module):
         max_length: int = 512,
         num_layers: int = 2,
         num_heads: int = 4,
+        dim_feedforward: int | None = None,
         num_encoder_blocks: int = 6,
+        dropout: float = 0.0,
+        device: torch.device | str | None = None,
     ) -> None:
         super().__init__()
         if not isinstance(vocabulary, TokenVocabulary):
@@ -208,6 +246,12 @@ class VisionAutoregressiveModel(nn.Module):
 
         self.vocabulary: TokenVocabulary = vocabulary
         self.max_length: int = max_length
+        self.model_dimension: int = model_dimension
+        self.num_layers: int = num_layers
+        self.num_heads: int = num_heads
+        self.num_encoder_blocks: int = num_encoder_blocks
+        self.target_device: torch.device = resolve_device(device)
+
         self.encoder: VisionEncoder = VisionEncoder(
             input_channels=input_channels,
             model_dimension=model_dimension,
@@ -219,7 +263,11 @@ class VisionAutoregressiveModel(nn.Module):
             max_length=max_length,
             num_layers=num_layers,
             num_heads=num_heads,
+            dim_feedforward=dim_feedforward,
+            dropout=dropout,
         )
+        if device is not None:
+            self.to(self.target_device)
 
     def forward(
         self, images: torch.Tensor | ImageTensor, target_tokens: torch.Tensor
@@ -235,18 +283,24 @@ class VisionAutoregressiveModel(nn.Module):
         return cast(torch.Tensor, self.decoder(visual_tokens, target_tokens))
 
     @torch.inference_mode()
-    def generate_markup(self, image: ImageTensor) -> TikzTokens:
+    def generate_markup(
+        self, image: ImageTensor, device: torch.device | str | None = None
+    ) -> TikzTokens:
         """Generate a bounded greedy TikZ sequence for one image."""
         image_tensor: torch.Tensor = self._extract_images(image)
         if image_tensor.shape[0] != 1:
             raise TensorTopologyError("Inference requires an image batch of size one.")
 
+        target_device: torch.device = (
+            resolve_device(device) if device is not None else image_tensor.device
+        )
+        image_tensor = image_tensor.to(target_device)
         generated: torch.Tensor = torch.full(
-            (1, 1), BOS_INDEX, dtype=torch.long, device=image_tensor.device
+            (1, 1), BOS_INDEX, dtype=torch.long, device=target_device
         )
         visual_tokens: torch.Tensor = self.encoder(image_tensor)
         step: int = 0
-        finished: torch.Tensor = torch.zeros(1, dtype=torch.bool, device=image_tensor.device)
+        finished: torch.Tensor = torch.zeros(1, dtype=torch.bool, device=target_device)
         while step < self.max_length - 1 and not bool(finished.all().item()):
             logits: torch.Tensor = self.decoder(visual_tokens, generated)
             next_token: torch.Tensor = logits[:, -1, :].argmax(dim=-1)

@@ -105,3 +105,76 @@ def test_vision_encoder_custom_block_count() -> None:
     # 16 / 4 = 4 -> 4 * 4 = 16 tokens
     assert tokens.shape == (1, 16, 16)
 
+
+def test_autoregressive_decoder_scaling_and_feedforward() -> None:
+    from core.ml.model import AutoregressiveDecoder
+
+    # Test with 6 layers, d_model=384, n_head=8, d_ff=1536
+    decoder_6 = AutoregressiveDecoder(
+        vocabulary_size=100,
+        model_dimension=384,
+        max_length=64,
+        num_layers=6,
+        num_heads=8,
+        dim_feedforward=1536,
+    )
+    assert decoder_6.model_dimension == 384
+    assert decoder_6.num_layers == 6
+    assert decoder_6.num_heads == 8
+    assert decoder_6.dim_feedforward == 1536
+
+    # Test with 8 layers
+    decoder_8 = AutoregressiveDecoder(
+        vocabulary_size=100,
+        model_dimension=384,
+        max_length=64,
+        num_layers=8,
+        num_heads=8,
+        dim_feedforward=1536,
+    )
+    assert decoder_8.num_layers == 8
+
+    # Forward pass through scaled decoder
+    visual_tokens = torch.randn(2, 64, 384)
+    target_tokens = torch.randint(0, 100, (2, 32))
+    logits = decoder_6(visual_tokens, target_tokens)
+    assert logits.shape == (2, 32, 100)
+
+
+def test_resolve_device_and_cuda_assignment() -> None:
+    from core.ml.model import resolve_device
+
+    # None defaults to cuda if available, else cpu
+    auto_device = resolve_device(None)
+    assert isinstance(auto_device, torch.device)
+    assert auto_device.type in ("cuda", "cpu")
+
+    # Explicit string override
+    cpu_device = resolve_device("cpu")
+    assert cpu_device == torch.device("cpu")
+
+
+def test_vision_autoregressive_model_scaled_architecture() -> None:
+    from core.ml.model import VisionAutoregressiveModel
+
+    vocab = _vocabulary()
+    model = VisionAutoregressiveModel(
+        vocabulary=vocab,
+        input_channels=3,
+        model_dimension=384,
+        max_length=64,
+        num_layers=6,
+        num_heads=8,
+        dim_feedforward=1536,
+        num_encoder_blocks=6,
+        device="cpu",
+    )
+
+    images = torch.randn(2, 3, 32, 32)
+    targets = torch.randint(0, len(vocab.token_to_index), (2, 16))
+    logits = model(images, targets)
+
+    assert logits.shape == (2, 16, len(vocab.token_to_index))
+    assert model.target_device == torch.device("cpu")
+
+
