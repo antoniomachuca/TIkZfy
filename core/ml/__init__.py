@@ -31,6 +31,13 @@ from .model import (
     VisionEncoder,
     resolve_device,
 )
+from .reporting import (
+    compute_mean_and_std,
+    format_mean_std,
+    generate_ablation_latex_table,
+    generate_multitier_latex_table,
+    save_latex_tables,
+)
 from .trainer import TrainingMetrics, fit, iter_batch_bounds, train_one_epoch
 
 __all__ = [
@@ -49,17 +56,22 @@ __all__ = [
     "batch_visual_similarity",
     "beam_search",
     "build_adamw_optimizer",
+    "compute_mean_and_std",
     "decode_indices_to_markup",
     "build_cosine_warmup_scheduler",
     "build_teacher_forcing_pair",
     "corpus_bleu",
     "evaluate_batch",
     "fit",
+    "format_mean_std",
+    "generate_ablation_latex_table",
+    "generate_multitier_latex_table",
     "geometric_edit_distance",
     "geometric_graph_edit_distance",
     "greedy_search",
     "iter_batch_bounds",
     "restore_checkpoint",
+    "save_latex_tables",
     "snapshot_checkpoint",
     "structural_similarity",
     "train_one_epoch",
