@@ -148,7 +148,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
           <span class="absolute top-2.5 left-2.5 bg-black text-white font-mono text-[8px] sm:text-[9px] uppercase tracking-wider px-2 py-0.5 z-10 pointer-events-none select-none">
             Original Photo
           </span>
-          <span class="absolute top-2.5 right-2.5 bg-blue-600 text-white font-mono text-[8px] sm:text-[9px] uppercase tracking-wider px-2 py-0.5 z-10 pointer-events-none select-none">
+          <span class="absolute top-2.5 right-2.5 bg-black text-white font-mono text-[8px] sm:text-[9px] uppercase tracking-wider px-2 py-0.5 z-10 pointer-events-none select-none">
             Compiled TikZ
           </span>
         </div>
@@ -419,8 +419,17 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     if (btnCopy) {
       btnCopy.addEventListener('click', async () => {
         await navigator.clipboard.writeText(generatedCode);
-        btnCopy.textContent = 'Copied';
-        setTimeout(() => { btnCopy.textContent = 'Copy code'; }, 1400);
+        btnCopy.innerHTML = `
+          <svg class="w-3.5 h-3.5 text-emerald-600 inline-block mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Copied!</span>
+        `;
+        btnCopy.classList.add('border-emerald-600', 'text-emerald-700');
+        setTimeout(() => {
+          btnCopy.innerHTML = 'Copy code';
+          btnCopy.classList.remove('border-emerald-600', 'text-emerald-700');
+        }, 1600);
       });
     }
     if (btnSave) {
@@ -430,6 +439,16 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
         link.download = 'generated-figure.tex';
         link.click();
         URL.revokeObjectURL(link.href);
+
+        btnSave.innerHTML = `
+          <svg class="w-3.5 h-3.5 text-emerald-400 inline-block mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Saved!</span>
+        `;
+        setTimeout(() => {
+          btnSave.innerHTML = 'Save .tex';
+        }, 1600);
       });
     }
 
