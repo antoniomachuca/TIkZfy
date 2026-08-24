@@ -17,25 +17,89 @@ from core.models import (
 )
 
 
-class VisionEncoder(nn.Module):
-    """Convolutional image encoder returning normalized visual tokens."""
+class ConvResidualBlock(nn.Module):
+    """Residual convolutional block with LayerNorm and GELU.
 
-    def __init__(self, input_channels: int, model_dimension: int) -> None:
+    Structure: ``Conv2D -> LayerNorm -> GELU -> Residual``.
+    Tensor Shape: ``(B, C, H, W) -> (B, C, H, W)``.
+    """
+
+    def __init__(self, channels: int) -> None:
         super().__init__()
-        self.network: nn.Sequential = nn.Sequential(
+        if channels <= 0:
+            raise VocabularyInvariantError("channels must be positive.")
+        self.conv: nn.Conv2d = nn.Conv2d(
+            channels,
+            channels,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias=True,
+        )
+        self.norm: nn.LayerNorm = nn.LayerNorm(channels)
+        self.activation: nn.GELU = nn.GELU()
+
+    def forward(self, features: torch.Tensor) -> torch.Tensor:
+        """Apply residual block to input tensor with shape ``(B, C, H, W)``."""
+        # Shape: (B, C, H, W)
+        residual: torch.Tensor = features
+        conv_out: torch.Tensor = cast(torch.Tensor, self.conv(features))
+        # Channels-last permutation for spatial LayerNorm: (B, C, H, W) -> (B, H, W, C)
+        norm_in: torch.Tensor = conv_out.permute(0, 2, 3, 1)
+        norm_out: torch.Tensor = cast(torch.Tensor, self.norm(norm_in))
+        # Permute back to standard PyTorch spatial layout: (B, H, W, C) -> (B, C, H, W)
+        norm_spatial: torch.Tensor = norm_out.permute(0, 3, 1, 2)
+        activated: torch.Tensor = cast(torch.Tensor, self.activation(norm_spatial))
+        return residual + activated
+
+
+class VisionEncoder(nn.Module):
+    """Deep convolutional image encoder returning normalized visual tokens.
+
+    Downsamples the input image through a 2-stage convolutional stem and
+    processes the feature maps through a sequence of residual blocks.
+
+    Input shape: ``(B, C_{in}, H, W)``
+    Output shape: ``(B, S, D)`` where ``S = (H / 4) * (W / 4)`` and ``D = model_dimension``.
+    """
+
+    def __init__(
+        self,
+        input_channels: int,
+        model_dimension: int,
+        num_blocks: int = 6,
+    ) -> None:
+        super().__init__()
+        if input_channels <= 0 or model_dimension <= 0:
+            raise VocabularyInvariantError(
+                "input_channels and model_dimension must be positive."
+            )
+        if num_blocks < 0:
+            raise VocabularyInvariantError("num_blocks must be non-negative.")
+
+        self.stem: nn.Sequential = nn.Sequential(
             nn.Conv2d(input_channels, model_dimension, kernel_size=3, stride=2, padding=1),
             nn.GELU(),
             nn.Conv2d(model_dimension, model_dimension, kernel_size=3, stride=2, padding=1),
             nn.GELU(),
         )
+        self.residual_blocks: nn.Sequential = nn.Sequential(
+            *[ConvResidualBlock(channels=model_dimension) for _ in range(num_blocks)]
+        )
         self.normalization: nn.LayerNorm = nn.LayerNorm(model_dimension)
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         """Encode images into visual tokens with shape ``(B, S, D)``."""
-        features: torch.Tensor = cast(torch.Tensor, self.network(images))
+        # Shape: (B, C_in, H, W) -> (B, D, H/4, W/4)
+        features: torch.Tensor = cast(torch.Tensor, self.stem(images))
+        # Shape: (B, D, H/4, W/4) -> (B, D, H/4, W/4)
+        features = cast(torch.Tensor, self.residual_blocks(features))
         batch_size, channels, height, width = features.shape
-        visual_tokens: torch.Tensor = features.reshape(batch_size, channels, height * width)
-        return cast(torch.Tensor, self.normalization(visual_tokens.transpose(1, 2)))
+        # Spatial flatten to token sequence: (B, D, H/4, W/4) -> (B, D, S) -> (B, S, D)
+        visual_tokens: torch.Tensor = features.reshape(
+            batch_size, channels, height * width
+        ).transpose(1, 2)
+        return cast(torch.Tensor, self.normalization(visual_tokens))
 
 
 class AutoregressiveDecoder(nn.Module):
@@ -124,6 +188,7 @@ class VisionAutoregressiveModel(nn.Module):
         max_length: int = 512,
         num_layers: int = 2,
         num_heads: int = 4,
+        num_encoder_blocks: int = 6,
     ) -> None:
         super().__init__()
         if not isinstance(vocabulary, TokenVocabulary):
@@ -132,6 +197,8 @@ class VisionAutoregressiveModel(nn.Module):
             raise VocabularyInvariantError(
                 "input_channels, model_dimension, and num_layers must be positive."
             )
+        if num_encoder_blocks < 0:
+            raise VocabularyInvariantError("num_encoder_blocks must be non-negative.")
         if max_length < 2:
             raise VocabularyInvariantError("max_length must be at least 2.")
         if num_heads <= 0 or model_dimension % num_heads != 0:
@@ -141,7 +208,11 @@ class VisionAutoregressiveModel(nn.Module):
 
         self.vocabulary: TokenVocabulary = vocabulary
         self.max_length: int = max_length
-        self.encoder: VisionEncoder = VisionEncoder(input_channels, model_dimension)
+        self.encoder: VisionEncoder = VisionEncoder(
+            input_channels=input_channels,
+            model_dimension=model_dimension,
+            num_blocks=num_encoder_blocks,
+        )
         self.decoder: AutoregressiveDecoder = AutoregressiveDecoder(
             vocabulary_size=len(vocabulary.token_to_index),
             model_dimension=model_dimension,
