@@ -1,13 +1,16 @@
-# Image to TikZ Engine
+# TikZfy — Multimodal Image-to-TikZ Neural Engine & Geometric Compiler
 
-Este repositorio es el núcleo principal para la inferencia y generación de código TikZ a partir de imágenes, implementado bajo una Arquitectura Hexagonal estricta para garantizar la escalabilidad, inmutabilidad de estados y separación de responsabilidades.
+TikZfy is an end-to-end multimodal deep learning engine that translates raster geometric figures into native, compile-ready LaTeX/TikZ markup. Built under strict Hexagonal Architecture (Ports and Adapters) and SOLID principles to ensure mathematical purity, high performance, and continuous integration.
 
-## Estructura de Directorios
+## Architectural Structure
 
-- `core/`: 🧠 Núcleo matemático inmutable (PyTorch, NumPy, Einops). Funciones vectorizadas, cero I/O.
-- `ports/`: 🔌 Interfaces abstractas. Define contratos de entrada/salida para mantener el sistema desacoplado.
-- `adapters/`: ⚙️ Adaptadores e infraestructura de red (FastAPI, Pydantic, aiohttp). Manejo de concurrencia y validaciones de frontera.
-- `scripts/`: 🚀 Bucle de entrenamiento, evaluación y orquestación (Makefiles, Docker, automatización).
-- `frontend/`: 🌐 Aplicación cliente externa construida con Astro + Tailwind CSS para una óptima hidratación y carga rápida.
+- `core/`: Pure immutable mathematical and neural domain (PyTorch, NumPy, Einops). Vectorized operations, zero I/O.
+- `ports/`: Abstract inbound and outbound port interfaces enforcing boundary contracts.
+- `adapters/`: Infrastructure adapters (FastAPI REST API, TeX Live compiler, Ghostscript rasterizer, persistence).
+- `scripts/`: Training orchestrators, multi-tier benchmark evaluations, and data ingestion pipelines.
+- `frontend/`: Interactive client application built with Astro, Tailwind CSS, and anime.js for live geometric reconstruction comparison.
 
-*Nota:* Las herramientas de agentes u orquestación de inteligencia artificial residen externamente en el directorio `agent/` (fuera de este repositorio).
+## Web Application & Live Demo
+
+- **Interactive Client:** [https://antoniomachuca.github.io/tikzfy/](https://antoniomachuca.github.io/tikzfy/)
+- **API Documentation:** `http://127.0.0.1:8000/docs` (when running the FastAPI backend locally).

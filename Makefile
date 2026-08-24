@@ -11,7 +11,7 @@ test:
 	pytest tests/
 
 docker-build:
-	docker build -t image-to-tikz-engine .
+	docker build -t tikzfy .
 
 docker-run:
-	docker run --rm -it image-to-tikz-engine
+	docker run --rm -it tikzfy

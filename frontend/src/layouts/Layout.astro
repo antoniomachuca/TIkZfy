@@ -7,7 +7,7 @@ interface Props {
   hideBackground?: boolean;
 }
 
-const { title = "Tikzfy - Image to TikZ Engine", hideBackground = false } = Astro.props;
+const { title = "TikZfy — Image to TikZ Engine", hideBackground = false } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : `${import.meta.env.BASE_URL}/`;
 ---
 
@@ -42,7 +42,7 @@ const baseUrl = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_UR
       </div>
       <div class="flex gap-6 md:gap-12">
         <a href={`${import.meta.env.BASE_URL}/about`} class="pointer-events-auto hover:underline">About</a>
-        <a href="https://github.com/antoniomachuca/image-to-tikz-engine" target="_blank" class="pointer-events-auto hover:underline">GitHub</a>
+        <a href="https://github.com/antoniomachuca/tikzfy" target="_blank" class="pointer-events-auto hover:underline">GitHub</a>
         <a href="https://ko-fi.com/antoniomachuca" target="_blank" class="pointer-events-auto hover:underline">Ko-fi</a>
       </div>
     </nav>

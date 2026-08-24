@@ -52,9 +52,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build image
-        run: docker build -t image-to-tikz-engine .
+        run: docker build -t tikzfy .
 
       - name: Infrastructure tests
         # TeX Live and Ghostscript only exist inside the image; the
         # infrastructure-marked tests run against the freshly built artifact
-        run: docker run --rm image-to-tikz-engine pytest tests/ -q -m infrastructure
+        run: docker run --rm tikzfy pytest tests/ -q -m infrastructure
