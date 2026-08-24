@@ -9,6 +9,14 @@ export default defineConfig({
   base: '/image-to-tikz-engine',
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      proxy: {
+        '/api': {
+          target: 'http://127.0.0.1:8000',
+          changeOrigin: true,
+        },
+      },
+    },
     build: {
       chunkSizeWarningLimit: 1200,
       rollupOptions: {

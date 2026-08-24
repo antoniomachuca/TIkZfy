@@ -52,7 +52,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
       </div>
     </section>
 
-    <section id="processing-view" aria-live="polite" class="hidden flex-col items-center w-full max-w-3xl bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 relative z-20">
+    <section id="processing-view" aria-live="polite" class="hidden flex-col items-center w-full max-w-3xl -mt-6 sm:-mt-10 md:-mt-14 bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 relative z-20">
       <div class="w-full flex justify-between items-start gap-4 mb-8">
         <div>
           <p class="font-mono text-[10px] uppercase tracking-[0.3em] mb-2">Engine status</p>
@@ -82,7 +82,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
       </div>
     </section>
 
-    <section id="error-view" aria-live="assertive" class="hidden flex-col w-full max-w-3xl bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 relative z-20">
+    <section id="error-view" aria-live="assertive" class="hidden flex-col w-full max-w-3xl -mt-6 sm:-mt-10 md:-mt-14 bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 relative z-20">
       <p class="font-mono text-[10px] uppercase tracking-[0.3em] mb-3">Engine status / failed</p>
       <h2 class="text-2xl font-black uppercase mb-3">Generation interrupted</h2>
       <p id="error-message" class="font-mono text-sm border-l-4 border-black pl-4 mb-8">The generation service is unavailable.</p>
@@ -92,41 +92,79 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
       </div>
     </section>
 
-    <section id="results-view" class="hidden flex-col items-center w-full max-w-7xl bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-3 sm:p-4 relative z-20">
-      <div class="w-full flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-4 pb-4 border-b border-black">
+    <section id="results-view" class="hidden flex-col items-center w-full max-w-6xl -mt-6 sm:-mt-10 md:-mt-14 bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-4 sm:p-6 relative z-20">
+      <div class="w-full flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-3 pb-3 border-b border-black">
         <div>
-          <p class="font-mono text-[10px] uppercase tracking-[0.3em]">Engine status / complete</p>
-          <h2 class="text-xl font-black uppercase">Generated artefact</h2>
+          <p class="font-mono text-[9px] uppercase tracking-[0.3em] opacity-70">Engine status / complete</p>
+          <h2 class="text-xl sm:text-2xl font-black uppercase">Geometric Reconstruction</h2>
         </div>
-        <div class="flex gap-2">
-          <button id="btn-copy" class="font-mono uppercase text-xs font-bold px-4 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors">Copy code</button>
-          <button id="btn-save" class="font-mono uppercase text-xs font-bold px-4 py-2 border-2 border-black bg-black text-white hover:bg-white hover:text-black transition-colors">Save .tex</button>
+        <div class="flex flex-wrap gap-2">
+          <button id="btn-toggle-code" class="font-mono uppercase text-xs font-bold px-3.5 py-1.5 border-2 border-black bg-white hover:bg-black hover:text-white transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            <span id="toggle-code-label">View TikZ Code</span>
+          </button>
+          <button id="btn-copy" class="font-mono uppercase text-xs font-bold px-3.5 py-1.5 border-2 border-black hover:bg-black hover:text-white transition-colors">Copy code</button>
+          <button id="btn-save" class="font-mono uppercase text-xs font-bold px-3.5 py-1.5 border-2 border-black bg-black text-white hover:bg-white hover:text-black transition-colors">Save .tex</button>
         </div>
       </div>
 
-      <div class="grid lg:grid-cols-[1.1fr_1fr] gap-4 w-full">
-        <div class="min-w-0">
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-mono text-[10px] uppercase tracking-widest">TikZ source</span>
-            <span id="token-count" class="font-mono text-[10px] uppercase opacity-60"></span>
+      <!-- Interactive Split-Comparison Viewer -->
+      <div class="w-full flex flex-col gap-3">
+        <div id="comparison-slider" class="relative w-full h-80 sm:h-96 md:h-[28rem] lg:h-[31rem] border-2 border-black bg-[#f3f3f0] overflow-hidden select-none touch-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] cursor-ew-resize">
+          <!-- Background: Compiled TikZ Preview (Revealed on Right) -->
+          <div class="absolute inset-0 w-full h-full flex items-center justify-center bg-white pointer-events-none select-none">
+            <img id="preview-image" src="" alt="Compiled TikZ preview" draggable="false" class="w-full h-full object-contain p-4 bg-white pointer-events-none select-none" />
+            <p id="preview-empty" class="px-6 text-center font-mono text-xs leading-relaxed hidden">The API returned TikZ code but no preview URL.</p>
           </div>
-          <pre id="code-output" class="h-72 lg:h-[32rem] overflow-auto bg-black text-white p-4 text-xs leading-relaxed font-mono whitespace-pre-wrap"></pre>
+
+          <!-- Foreground Overlay: Uploaded User Image (Clipped on Left) -->
+          <div id="comparison-clip" class="absolute inset-0 w-full h-full flex items-center justify-center bg-white overflow-hidden pointer-events-none select-none" style="clip-path: inset(0 50% 0 0);">
+            <img id="uploaded-image" src="" alt="Original uploaded image" draggable="false" class="w-full h-full object-contain p-4 bg-white pointer-events-none select-none" />
+          </div>
+
+          <!-- Vertical Divider Bar & Grab Handle -->
+          <div id="comparison-handle" class="absolute top-0 bottom-0 w-0.5 bg-black flex items-center justify-center z-10 pointer-events-none select-none" style="left: 50%;">
+            <div class="w-8 h-8 -ml-4 bg-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center font-mono text-[11px] font-bold select-none">
+              ↔
+            </div>
+          </div>
+
+          <!-- Native Ultra-smooth Range Overlay -->
+          <input
+            id="comparison-range"
+            type="range"
+            min="0"
+            max="100"
+            value="50"
+            step="0.1"
+            aria-label="Image comparison slider"
+            class="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-20 m-0 p-0"
+          />
+
+          <!-- Top Corner Badges -->
+          <span class="absolute top-2.5 left-2.5 bg-black text-white font-mono text-[8px] sm:text-[9px] uppercase tracking-wider px-2 py-0.5 z-10 pointer-events-none select-none">
+            Original Photo
+          </span>
+          <span class="absolute top-2.5 right-2.5 bg-black text-white font-mono text-[8px] sm:text-[9px] uppercase tracking-wider px-2 py-0.5 z-10 pointer-events-none select-none">
+            Compiled TikZ
+          </span>
         </div>
 
-        <div>
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-mono text-[10px] uppercase tracking-widest">Compiled preview</span>
-            <span class="font-mono text-[10px] uppercase opacity-60">PDF / PNG</span>
+        <!-- Collapsible TikZ Source Code Section -->
+        <div id="code-drawer" class="hidden w-full border-2 border-black bg-black transition-all duration-300">
+          <div class="flex justify-between items-center px-3 py-2 border-b border-white/20 text-white">
+            <span class="font-mono text-[9px] uppercase tracking-widest font-bold">LaTeX / TikZ Syntactic Tokens</span>
+            <span id="token-count" class="font-mono text-[9px] uppercase text-white/70"></span>
           </div>
-          <div class="relative h-72 lg:h-[32rem] border-2 border-black bg-[#f3f3f0] flex items-center justify-center overflow-hidden">
-            <img id="preview-image" src="" alt="Compiled TikZ preview" class="hidden w-full h-full object-contain bg-white" />
-            <p id="preview-empty" class="px-8 text-center font-mono text-xs leading-relaxed">The API returned TikZ code but no preview URL.</p>
-          </div>
+          <pre id="code-output" class="max-h-48 sm:max-h-60 overflow-auto bg-black text-emerald-400 p-3 text-xs leading-relaxed font-mono whitespace-pre-wrap selection:bg-white selection:text-black"></pre>
         </div>
       </div>
 
-      <div class="w-full flex justify-start mt-4 pt-4 border-t border-black">
-        <button id="btn-back" class="font-mono uppercase text-xs font-bold px-4 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors">Back</button>
+      <div class="w-full flex justify-start items-center mt-3 pt-2.5 border-t border-black">
+        <button id="btn-back" class="font-mono uppercase text-xs font-bold px-4 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors">← Choose another image</button>
       </div>
     </section>
   </main>
@@ -157,6 +195,46 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     cursor: pointer !important;
   }
 
+  #comparison-slider {
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  #comparison-slider img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+  }
+
+  #comparison-range {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: ew-resize;
+  }
+
+  #comparison-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 60px;
+    height: 100%;
+    cursor: ew-resize;
+    opacity: 0;
+  }
+
+  #comparison-range::-moz-range-thumb {
+    width: 60px;
+    height: 100%;
+    cursor: ew-resize;
+    opacity: 0;
+  }
+
   @keyframes draw-vector { to { stroke-dashoffset: 0; } }
   @keyframes pulse-node { from { r: 4; } to { r: 9; } }
 
@@ -182,7 +260,15 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     const progressBar = document.getElementById('progress-bar');
     const progressValue = document.getElementById('progress-value');
     const codeOutput = document.getElementById('code-output');
+    const codeDrawer = document.getElementById('code-drawer');
+    const btnToggleCode = document.getElementById('btn-toggle-code');
+    const toggleCodeLabel = document.getElementById('toggle-code-label');
     const previewImage = document.getElementById('preview-image');
+    const uploadedImage = document.getElementById('uploaded-image');
+    const comparisonSlider = document.getElementById('comparison-slider');
+    const comparisonClip = document.getElementById('comparison-clip');
+    const comparisonHandle = document.getElementById('comparison-handle');
+    const comparisonRange = document.getElementById('comparison-range');
     const previewEmpty = document.getElementById('preview-empty');
     const tokenCount = document.getElementById('token-count');
     const btnBack = document.getElementById('btn-back');
@@ -194,6 +280,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     const stageGeometry = document.getElementById('stage-geometry');
     const stageCompile = document.getElementById('stage-compile');
     let selectedFile;
+    let uploadedObjectUrl = '';
     let generatedCode = '';
     let progressTimer;
 
@@ -224,6 +311,31 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
       setView(errorView);
     };
 
+    const applyComparisonPercent = (percent) => {
+      const clamped = Math.max(0, Math.min(percent, 100));
+      if (comparisonClip) comparisonClip.style.clipPath = `inset(0 ${100 - clamped}% 0 0)`;
+      if (comparisonHandle) comparisonHandle.style.left = `${clamped}%`;
+      if (comparisonRange && parseFloat(comparisonRange.value) !== clamped) {
+        comparisonRange.value = String(clamped);
+      }
+    };
+
+    if (comparisonRange) {
+      comparisonRange.addEventListener('input', (event) => {
+        const target = event.target;
+        if (target && 'value' in target) {
+          applyComparisonPercent(parseFloat(target.value));
+        }
+      });
+    }
+
+    if (btnToggleCode && codeDrawer && toggleCodeLabel) {
+      btnToggleCode.addEventListener('click', () => {
+        const isHidden = codeDrawer.classList.toggle('hidden');
+        toggleCodeLabel.textContent = isHidden ? 'View TikZ Code' : 'Hide TikZ Code';
+      });
+    }
+
     const processFile = async (file) => {
       if (!file || !file.type.startsWith('image/')) {
         showError(new Error('Please select a PNG, JPG or WEBP image.'));
@@ -231,6 +343,16 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
       }
 
       selectedFile = file;
+      if (uploadedObjectUrl) {
+        URL.revokeObjectURL(uploadedObjectUrl);
+      }
+      uploadedObjectUrl = URL.createObjectURL(file);
+      if (uploadedImage) {
+        uploadedImage.src = uploadedObjectUrl;
+      }
+
+      applyComparisonPercent(50);
+
       setView(processingView);
       updateProgress(8);
       let progress = 8;
@@ -261,6 +383,10 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
 
     const reset = () => {
       window.clearInterval(progressTimer);
+      if (uploadedObjectUrl) {
+        URL.revokeObjectURL(uploadedObjectUrl);
+        uploadedObjectUrl = '';
+      }
       setView(landingView);
       if (fileUpload) fileUpload.value = '';
       updateProgress(0);
@@ -293,8 +419,17 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     if (btnCopy) {
       btnCopy.addEventListener('click', async () => {
         await navigator.clipboard.writeText(generatedCode);
-        btnCopy.textContent = 'Copied';
-        setTimeout(() => { btnCopy.textContent = 'Copy code'; }, 1400);
+        btnCopy.innerHTML = `
+          <svg class="w-3.5 h-3.5 text-emerald-600 inline-block mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Copied!</span>
+        `;
+        btnCopy.classList.add('border-emerald-600', 'text-emerald-700');
+        setTimeout(() => {
+          btnCopy.innerHTML = 'Copy code';
+          btnCopy.classList.remove('border-emerald-600', 'text-emerald-700');
+        }, 1600);
       });
     }
     if (btnSave) {
@@ -304,6 +439,16 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
         link.download = 'generated-figure.tex';
         link.click();
         URL.revokeObjectURL(link.href);
+
+        btnSave.innerHTML = `
+          <svg class="w-3.5 h-3.5 text-emerald-400 inline-block mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Saved!</span>
+        `;
+        setTimeout(() => {
+          btnSave.innerHTML = 'Save .tex';
+        }, 1600);
       });
     }
 
@@ -366,3 +511,4 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     initApp();
   }
 </script>
+
