@@ -1,0 +1,16 @@
+\begin{table}[h]
+\centering
+\small
+\caption{Ablation Study on Out-Of-Distribution Tier 3 Test Benchmark.}
+\label{tab:ablation_study}
+\begin{tabular}{lcccc}
+\toprule
+Ablation Variant & BLEU ($\Delta$) & Hungarian GED ($\Delta$) & CR \% ($\Delta$) & SSIM ($\Delta$) \\
+\midrule
+\textbf{Full} & 0.000 & 0.872 & 100.0\% & 0.128 \\
+\textbf{No-Aug} & 0.000 (-0.000) & 0.872 (+0.000) & 100.0\% (+0.0) & 0.128 (+0.000) \\
+\textbf{Tier1-Only} & 0.000 (-0.000) & 0.872 (+0.000) & 100.0\% (+0.0) & 0.128 (+0.000) \\
+\textbf{Decoder-Only} & 0.000 (-0.000) & 0.872 (+0.000) & 100.0\% (+0.0) & 0.128 (+0.000) \\
+\bottomrule
+\end{tabular}
+\end{table}

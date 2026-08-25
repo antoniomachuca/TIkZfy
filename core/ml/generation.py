@@ -63,6 +63,9 @@ def _encode_single_image(
         raise TensorTopologyError("Image must be a rank-4 tensor with shape (B, C, H, W).")
     if image_tensor.shape[0] != 1:
         raise TensorTopologyError("Inference requires an image batch of size one.")
+    model_device: torch.device = next(model.parameters()).device
+    if image_tensor.device != model_device:
+        image_tensor = image_tensor.to(model_device)
     return cast(torch.Tensor, model.encoder(image_tensor))
 
 

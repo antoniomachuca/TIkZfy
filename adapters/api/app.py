@@ -77,10 +77,13 @@ def create_app(
             "VOCABULARY_PATH", "dataset/encoded/vocabulary.json"
         )
         if Path(checkpoint_env).exists() and Path(vocab_env).exists():
-            active_orchestrator = ImageToTikzOrchestrator.from_checkpoint(
-                checkpoint_path=checkpoint_env,
-                vocabulary_path=vocab_env,
-            )
+            try:
+                active_orchestrator = ImageToTikzOrchestrator.from_checkpoint(
+                    checkpoint_path=checkpoint_env,
+                    vocabulary_path=vocab_env,
+                )
+            except Exception:
+                active_orchestrator = DemoImageToTikzOrchestrator()
         else:
             active_orchestrator = DemoImageToTikzOrchestrator()
 
