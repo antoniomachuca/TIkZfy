@@ -1,0 +1,332 @@
+{
+  "config": {
+    "model_dim": 384,
+    "num_layers": 6,
+    "num_heads": 8,
+    "dim_ff": 1536,
+    "num_encoder_blocks": 6,
+    "max_length": 512,
+    "num_epochs": 60,
+    "batch_size": 32,
+    "learning_rate": 0.0003,
+    "seeds": [
+      42,
+      123,
+      7
+    ],
+    "device": "cuda"
+  },
+  "multiseed_runs": {
+    "baseline": [
+      {
+        "tier1": {
+          "corpus_bleu": 0.12903522221658134,
+          "mean_geometric_edit_distance": 0.5957996009311891,
+          "mean_graph_edit_distance": 0.25645238095238077,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.7435476190476192
+        },
+        "tier2": {
+          "corpus_bleu": 0.0013339709746175434,
+          "mean_geometric_edit_distance": 0.8427410970364966,
+          "mean_graph_edit_distance": 0.9013283184393873,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.09867168156061268
+        },
+        "tier3": {
+          "corpus_bleu": 0.00010822774299642853,
+          "mean_geometric_edit_distance": 0.8936535153121118,
+          "mean_graph_edit_distance": 0.8716076427302454,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.12839235726975462
+        }
+      },
+      {
+        "tier1": {
+          "corpus_bleu": 0.05640234911643435,
+          "mean_geometric_edit_distance": 0.6197441092575363,
+          "mean_graph_edit_distance": 0.25645238095238077,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.7435476190476192
+        },
+        "tier2": {
+          "corpus_bleu": 4.103513737109421e-09,
+          "mean_geometric_edit_distance": 0.9508932323244307,
+          "mean_graph_edit_distance": 0.9013283184393873,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.09867168156061268
+        },
+        "tier3": {
+          "corpus_bleu": 8.10979237057778e-11,
+          "mean_geometric_edit_distance": 0.9476009379467019,
+          "mean_graph_edit_distance": 0.8716076427302454,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.12839235726975462
+        }
+      },
+      {
+        "tier1": {
+          "corpus_bleu": 0.05819787344689967,
+          "mean_geometric_edit_distance": 0.6191109124963039,
+          "mean_graph_edit_distance": 0.25645238095238077,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.7435476190476192
+        },
+        "tier2": {
+          "corpus_bleu": 6.577079697224051e-08,
+          "mean_geometric_edit_distance": 0.9429318262060389,
+          "mean_graph_edit_distance": 0.9013283184393873,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.09867168156061268
+        },
+        "tier3": {
+          "corpus_bleu": 1.1269022736319501e-10,
+          "mean_geometric_edit_distance": 0.9473090471099791,
+          "mean_graph_edit_distance": 0.8716076427302454,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.12839235726975462
+        }
+      }
+    ],
+    "mixed": [
+      {
+        "tier1": {
+          "corpus_bleu": 0.13098610831549226,
+          "mean_geometric_edit_distance": 0.5476178985967374,
+          "mean_graph_edit_distance": 0.25645238095238077,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.7435476190476192
+        },
+        "tier2": {
+          "corpus_bleu": 4.2508375211919796e-05,
+          "mean_geometric_edit_distance": 0.8965695365927684,
+          "mean_graph_edit_distance": 0.9013283184393873,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.09867168156061268
+        },
+        "tier3": {
+          "corpus_bleu": 2.4936807836765204e-06,
+          "mean_geometric_edit_distance": 0.9144769172240383,
+          "mean_graph_edit_distance": 0.8716076427302454,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.12839235726975462
+        }
+      },
+      {
+        "tier1": {
+          "corpus_bleu": 0.049445716140875534,
+          "mean_geometric_edit_distance": 0.6249335020389603,
+          "mean_graph_edit_distance": 0.25645238095238077,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.7435476190476192
+        },
+        "tier2": {
+          "corpus_bleu": 5.690264075333843e-10,
+          "mean_geometric_edit_distance": 0.9512833274330421,
+          "mean_graph_edit_distance": 0.9013283184393873,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.09867168156061268
+        },
+        "tier3": {
+          "corpus_bleu": 1.2562369075273247e-11,
+          "mean_geometric_edit_distance": 0.9474308338418296,
+          "mean_graph_edit_distance": 0.8716076427302454,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.12839235726975462
+        }
+      },
+      {
+        "tier1": {
+          "corpus_bleu": 0.12723900904612392,
+          "mean_geometric_edit_distance": 0.6037870399276113,
+          "mean_graph_edit_distance": 0.25645238095238077,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.7435476190476192
+        },
+        "tier2": {
+          "corpus_bleu": 0.0013072084806095069,
+          "mean_geometric_edit_distance": 0.8449976466511473,
+          "mean_graph_edit_distance": 0.9013283184393873,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.09867168156061268
+        },
+        "tier3": {
+          "corpus_bleu": 8.93081716876639e-05,
+          "mean_geometric_edit_distance": 0.8980170455838605,
+          "mean_graph_edit_distance": 0.8716076427302454,
+          "compilation_rate": 1.0,
+          "mean_ssim": 0.12839235726975462
+        }
+      }
+    ]
+  },
+  "aggregated_metrics": {
+    "baseline": {
+      "tier1": {
+        "corpus_bleu": [
+          0.08121181492663845,
+          0.04142601465890902
+        ],
+        "mean_geometric_edit_distance": [
+          0.6115515408950097,
+          0.013645253533828778
+        ],
+        "mean_graph_edit_distance": [
+          0.25645238095238077,
+          0.0
+        ],
+        "compilation_rate": [
+          1.0,
+          0.0
+        ],
+        "mean_ssim": [
+          0.7435476190476192,
+          0.0
+        ]
+      },
+      "tier2": {
+        "corpus_bleu": [
+          0.0004446802829760843,
+          0.0007701483309277649
+        ],
+        "mean_geometric_edit_distance": [
+          0.9121887185223221,
+          0.06027499559829397
+        ],
+        "mean_graph_edit_distance": [
+          0.9013283184393873,
+          0.0
+        ],
+        "compilation_rate": [
+          1.0,
+          0.0
+        ],
+        "mean_ssim": [
+          0.09867168156061268,
+          0.0
+        ]
+      },
+      "tier3": {
+        "corpus_bleu": [
+          3.60759789281932e-05,
+          6.248526061095505e-05
+        ],
+        "mean_geometric_edit_distance": [
+          0.9295211667895976,
+          0.031062640212125115
+        ],
+        "mean_graph_edit_distance": [
+          0.8716076427302454,
+          0.0
+        ],
+        "compilation_rate": [
+          1.0,
+          0.0
+        ],
+        "mean_ssim": [
+          0.12839235726975462,
+          0.0
+        ]
+      }
+    },
+    "mixed": {
+      "tier1": {
+        "corpus_bleu": [
+          0.10255694450083057,
+          0.046033814980523766
+        ],
+        "mean_geometric_edit_distance": [
+          0.592112813521103,
+          0.03995799426337086
+        ],
+        "mean_graph_edit_distance": [
+          0.25645238095238077,
+          0.0
+        ],
+        "compilation_rate": [
+          1.0,
+          0.0
+        ],
+        "mean_ssim": [
+          0.7435476190476192,
+          0.0
+        ]
+      },
+      "tier2": {
+        "corpus_bleu": [
+          0.0004499058082826114,
+          0.0007427500470419396
+        ],
+        "mean_geometric_edit_distance": [
+          0.8976168368923192,
+          0.05315057961354505
+        ],
+        "mean_graph_edit_distance": [
+          0.9013283184393873,
+          0.0
+        ],
+        "compilation_rate": [
+          1.0,
+          0.0
+        ],
+        "mean_ssim": [
+          0.09867168156061268,
+          0.0
+        ]
+      },
+      "tier3": {
+        "corpus_bleu": [
+          3.0600621677903165e-05,
+          5.085751583012002e-05
+        ],
+        "mean_geometric_edit_distance": [
+          0.9199749322165761,
+          0.025161513152918244
+        ],
+        "mean_graph_edit_distance": [
+          0.8716076427302454,
+          0.0
+        ],
+        "compilation_rate": [
+          1.0,
+          0.0
+        ],
+        "mean_ssim": [
+          0.12839235726975462,
+          0.0
+        ]
+      }
+    }
+  },
+  "ablation_study": {
+    "Full": {
+      "corpus_bleu": 9.414576184550137e-06,
+      "mean_geometric_edit_distance": 0.906739134679216,
+      "mean_graph_edit_distance": 0.8716076427302454,
+      "compilation_rate": 1.0,
+      "mean_ssim": 0.12839235726975462
+    },
+    "No-Aug": {
+      "corpus_bleu": 8.10979237057778e-11,
+      "mean_geometric_edit_distance": 0.9476009379467019,
+      "mean_graph_edit_distance": 0.8716076427302454,
+      "compilation_rate": 1.0,
+      "mean_ssim": 0.12839235726975462
+    },
+    "Tier1-Only": {
+      "corpus_bleu": 8.10979237057778e-11,
+      "mean_geometric_edit_distance": 0.9476009379467019,
+      "mean_graph_edit_distance": 0.8716076427302454,
+      "compilation_rate": 1.0,
+      "mean_ssim": 0.12839235726975462
+    },
+    "Decoder-Only": {
+      "corpus_bleu": 8.180626193921547e-11,
+      "mean_geometric_edit_distance": 0.9478282106739746,
+      "mean_graph_edit_distance": 0.8716076427302454,
+      "compilation_rate": 1.0,
+      "mean_ssim": 0.12839235726975462
+    }
+  },
+  "best_checkpoint": "/home/antoniomachuca/tikzfy/results/checkpoints/best_model.pt"
+}

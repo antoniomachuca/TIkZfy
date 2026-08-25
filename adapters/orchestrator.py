@@ -138,11 +138,28 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
         )
 
         cfg: dict[str, Any] = config or {}
+        state = checkpoint.model_state
+
+        # Auto-infer topology dimensions from checkpoint state dict if not explicitly overridden
+        inferred_dim = int(cfg.get("model_dimension", 256))
+        if "model_dimension" not in cfg and "decoder.output_projection.weight" in state:
+            inferred_dim = state["decoder.output_projection.weight"].shape[1]
+
+        inferred_layers = int(cfg.get("num_layers", 2))
+        if "num_layers" not in cfg:
+            layer_keys = [k for k in state.keys() if k.startswith("decoder.transformer.layers.")]
+            if layer_keys:
+                inferred_layers = max(int(k.split(".")[3]) for k in layer_keys) + 1
+
+        inferred_heads = int(cfg.get("num_heads", 4))
+        if "num_heads" not in cfg:
+            inferred_heads = 8 if inferred_dim >= 256 else 4
+
         input_channels: int = int(cfg.get("input_channels", 3))
-        model_dimension: int = int(cfg.get("model_dimension", 256))
+        model_dimension: int = inferred_dim
         cfg_max_length: int = int(cfg.get("max_length", max_length))
-        num_layers: int = int(cfg.get("num_layers", 2))
-        num_heads: int = int(cfg.get("num_heads", 4))
+        num_layers: int = inferred_layers
+        num_heads: int = inferred_heads
 
         model: VisionAutoregressiveModel = VisionAutoregressiveModel(
             vocabulary=vocabulary,

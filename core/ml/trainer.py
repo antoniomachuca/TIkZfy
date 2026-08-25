@@ -66,14 +66,20 @@ def train_one_epoch(
     if shuffle:
         generator: torch.Generator | None = None
         if seed is not None:
-            generator = torch.Generator(device=images.device)
+            generator = torch.Generator()
             generator.manual_seed(seed)
-        order: torch.Tensor = torch.randperm(dataset_size, generator=generator)
+        order: torch.Tensor = torch.randperm(dataset_size, generator=generator).to(images.device)
     else:
         order = torch.arange(dataset_size, device=images.device)
 
     images = images[order]
     tokens = tokens[order]
+
+    model_device: torch.device = next(model.parameters()).device
+    if images.device != model_device:
+        images = images.to(model_device)
+    if tokens.device != model_device:
+        tokens = tokens.to(model_device)
 
     model.train()
     step_losses: list[float] = []

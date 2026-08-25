@@ -1,0 +1,19 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Multi-Tier Experimental Evaluation across 3 Random Seeds ($\mu \pm \sigma$).}
+\label{tab:multitier_evaluation}
+\begin{tabular}{llccccc}
+\toprule
+Model & Evaluation Tier & BLEU $\uparrow$ & Token GED $\downarrow$ & Hungarian GED $\downarrow$ & CR (\%) $\uparrow$ & SSIM $\uparrow$ \\
+\midrule
+\textbf{Baseline} & TIER1 & 0.081 \pm 0.041 & 0.612 \pm 0.014 & 0.256 \pm 0.000 & 100.0 \pm 0.0 & 0.744 \pm 0.000 \\
+ & TIER2 & 0.000 \pm 0.001 & 0.912 \pm 0.060 & 0.901 \pm 0.000 & 100.0 \pm 0.0 & 0.099 \pm 0.000 \\
+ & TIER3 & 0.000 \pm 0.000 & 0.930 \pm 0.031 & 0.872 \pm 0.000 & 100.0 \pm 0.0 & 0.128 \pm 0.000 \\
+\midrule
+\textbf{Mixed} & TIER1 & 0.103 \pm 0.046 & 0.592 \pm 0.040 & 0.256 \pm 0.000 & 100.0 \pm 0.0 & 0.744 \pm 0.000 \\
+ & TIER2 & 0.000 \pm 0.001 & 0.898 \pm 0.053 & 0.901 \pm 0.000 & 100.0 \pm 0.0 & 0.099 \pm 0.000 \\
+ & TIER3 & 0.000 \pm 0.000 & 0.920 \pm 0.025 & 0.872 \pm 0.000 & 100.0 \pm 0.0 & 0.128 \pm 0.000 \\
+\bottomrule
+\end{tabular}
+\end{table*}

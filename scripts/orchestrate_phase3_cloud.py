@@ -112,6 +112,11 @@ def evaluate_split_loss(
 ) -> float:
     """Evaluate teacher-forced cross-entropy loss without gradient tracing."""
     model.eval()
+    model_device: torch.device = next(model.parameters()).device
+    if images.device != model_device:
+        images = images.to(model_device)
+    if tokens.device != model_device:
+        tokens = tokens.to(model_device)
     losses: list[float] = []
     with torch.no_grad():
         for start, end in iter_batch_bounds(images.shape[0], batch_size):
@@ -161,6 +166,16 @@ def train_single_run(
     """Execute training loop for one model and seed, saving best checkpoint."""
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     best_checkpoint_path: Path = checkpoint_dir / f"{run_name}_best.pt"
+
+    model_device: torch.device = next(model.parameters()).device
+    if train_images.device != model_device:
+        train_images = train_images.to(model_device)
+    if train_tokens.device != model_device:
+        train_tokens = train_tokens.to(model_device)
+    if val_images.device != model_device:
+        val_images = val_images.to(model_device)
+    if val_tokens.device != model_device:
+        val_tokens = val_tokens.to(model_device)
 
     torch.manual_seed(seed)
     optimizer: torch.optim.AdamW = build_adamw_optimizer(
@@ -225,6 +240,12 @@ def evaluate_split_metrics(
 ) -> dict[str, float]:
     """Compute full 6 scientific metrics on an evaluation split in O(N)."""
     model.eval()
+    model_device: torch.device = next(model.parameters()).device
+    if eval_images.device != model_device:
+        eval_images = eval_images.to(model_device)
+    if eval_tokens.device != model_device:
+        eval_tokens = eval_tokens.to(model_device)
+
     sample_count: int = min(eval_images.shape[0], max_eval_samples)
     references: list[list[str]] = []
     candidates: list[list[str]] = []
