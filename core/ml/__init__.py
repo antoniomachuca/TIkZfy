@@ -1,4 +1,4 @@
-from .checkpoint import restore_checkpoint, snapshot_checkpoint
+from .dpo import DirectPreferenceOptimizationLoss
 from .generation import (
     BeamHypothesis,
     beam_search,
@@ -8,6 +8,7 @@ from .generation import (
 from .loss import (
     SpatialAwareHybridLoss,
     TeacherForcingCrossEntropy,
+    apply_word_dropout,
     build_adamw_optimizer,
     build_cosine_warmup_scheduler,
     build_teacher_forcing_pair,
@@ -45,12 +46,14 @@ __all__ = [
     "BeamHypothesis",
     "ConvResidualBlock",
     "DEFAULT_COORDINATE_SCALE",
+    "DirectPreferenceOptimizationLoss",
     "EvaluationMetrics",
     "GeometricPrimitive",
     "SpatialAwareHybridLoss",
     "TeacherForcingCrossEntropy",
     "VisionAutoregressiveModel",
     "VisionEncoder",
+    "apply_word_dropout",
     "resolve_device",
     "TrainingMetrics",
     "batch_geometric_edit_distance",
