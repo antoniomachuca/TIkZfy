@@ -39,6 +39,35 @@ def build_teacher_forcing_pair(tokens: torch.Tensor) -> tuple[torch.Tensor, torc
     return tokens[:, :-1], tokens[:, 1:]
 
 
+def apply_word_dropout(
+    decoder_input: torch.Tensor,
+    unk_index: int = 3,
+    dropout_probability: float = 0.35,
+    bos_index: int = 1,
+) -> torch.Tensor:
+    """Randomly replace decoder input tokens with UNK to mitigate posterior collapse.
+
+    Forces the autoregressive decoder to attend to visual encoder features rather
+    than relying exclusively on autoregressive language priors.
+    """
+    if decoder_input.ndim != 2:
+        raise TensorTopologyError("decoder_input must be a rank-2 tensor (B, L).")
+    if decoder_input.dtype != torch.long:
+        raise TensorTopologyError("decoder_input must have torch.long dtype.")
+    if not (0.0 <= dropout_probability <= 1.0):
+        raise TensorTopologyError("dropout_probability must be in the range [0.0, 1.0].")
+    if dropout_probability == 0.0:
+        return decoder_input
+    # Shape: (B, L)
+    mask: torch.Tensor = (
+        torch.rand_like(decoder_input, dtype=torch.float32) < dropout_probability
+    ) & (decoder_input != bos_index)
+    masked_input: torch.Tensor = torch.where(
+        mask, torch.full_like(decoder_input, unk_index), decoder_input
+    )
+    return masked_input
+
+
 class TeacherForcingCrossEntropy(nn.Module):
     """Mean token-level cross-entropy over causally shifted targets.
 

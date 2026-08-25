@@ -82,7 +82,10 @@ def ensure_white_background(pil_img: Image.Image) -> Image.Image:
 
 async def render_markup_to_png(markup: TikzTokens, dpi: int = 140) -> Image.Image:
     """Compile TikZ markup to PDF and rasterize to a clean white-background PIL Image."""
-    compiler: AsyncTexLiveAdapter = AsyncTexLiveAdapter(engine="pdflatex")
+    compiler: AsyncTexLiveAdapter = AsyncTexLiveAdapter(
+        engine="pdflatex",
+        tikz_libraries=("arrows.meta", "positioning", "patterns", "calc"),
+    )
     rasterizer: GhostscriptRasterizer = GhostscriptRasterizer()
     compilation = await compiler.compile_tikz(markup)
     if not compilation.is_successful:
@@ -153,7 +156,7 @@ def contrastive_visual_decode(
 
 
 def generate_showcase(
-    checkpoint_path: str = "checkpoints/spatial_best_model.pt",
+    checkpoint_path: str = "checkpoints/grounded_best_model.pt",
     vocabulary_path: str = "dataset/encoded/vocabulary.json",
     output_dir: str = "results/showcase",
 ) -> None:
