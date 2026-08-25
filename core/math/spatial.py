@@ -5,6 +5,7 @@ Each function is a pure, side-effect-free operation on tensors. Functions
 whose output does not have the (B, C, H, W) shape required by ImageTensor
 return a raw torch.Tensor instead.
 """
+
 import torch
 import torch.nn.functional as F
 from einops import rearrange, repeat
@@ -116,17 +117,13 @@ def tile_batch_dimension(image: ImageTensor, repeats: int) -> ImageTensor:
     Temporal complexity: O(N) where N is the output size (memory allocation).
     """
     if repeats <= 0:
-        raise TensorTopologyError(
-            f"Repeat factor must be positive. Got repeats={repeats}."
-        )
+        raise TensorTopologyError(f"Repeat factor must be positive. Got repeats={repeats}.")
 
     if not isinstance(image, ImageTensor):
         raise TypeError("Input must be an ImageTensor instance.")
 
     # (B, C, H, W) → (B*repeats, C, H, W)
-    tiled: torch.Tensor = repeat(
-        image.raw_tensor, "b c h w -> (b repeat) c h w", repeat=repeats
-    )
+    tiled: torch.Tensor = repeat(image.raw_tensor, "b c h w -> (b repeat) c h w", repeat=repeats)
 
     return ImageTensor(raw_tensor=tiled)
 

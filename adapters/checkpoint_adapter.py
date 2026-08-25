@@ -22,9 +22,7 @@ from ports.outbound import CheckpointPersistencePort
 class AtomicCheckpointAdapter(CheckpointPersistencePort):
     """PyTorch checkpoint adapter with atomic, corruption-safe persistence."""
 
-    def save_checkpoint(
-        self, checkpoint: TrainingCheckpoint, destination_path: str
-    ) -> None:
+    def save_checkpoint(self, checkpoint: TrainingCheckpoint, destination_path: str) -> None:
         """Serialize a checkpoint atomically to ``destination_path``.
 
         The payload is written to a temporary sibling file and renamed onto the
@@ -52,9 +50,7 @@ class AtomicCheckpointAdapter(CheckpointPersistencePort):
                 temporary_path.unlink(missing_ok=True)
             except OSError:
                 pass
-            raise DomainError(
-                f"Failed to save checkpoint to '{destination_path}': {str(e)}"
-            ) from e
+            raise DomainError(f"Failed to save checkpoint to '{destination_path}': {str(e)}") from e
 
     def load_checkpoint(self, source_path: str) -> TrainingCheckpoint:
         """Load and validate a checkpoint from ``source_path``.
@@ -76,8 +72,6 @@ class AtomicCheckpointAdapter(CheckpointPersistencePort):
                 epoch=payload["epoch"],
             )
         except (OSError, RuntimeError, KeyError, TypeError, EOFError, pickle.UnpicklingError) as e:
-            raise DomainError(
-                f"Failed to load checkpoint from '{source_path}': {str(e)}"
-            ) from e
+            raise DomainError(f"Failed to load checkpoint from '{source_path}': {str(e)}") from e
         except TensorTopologyError as e:
             raise DomainError(f"Loaded checkpoint violates invariants: {str(e)}") from e

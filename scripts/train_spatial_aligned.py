@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 
 from adapters.checkpoint_adapter import AtomicCheckpointAdapter
 from adapters.vocabulary_persistence import JsonVocabularyAdapter
-from core.dataset.augmentation import augment_batch
+from core.math.augmentation import add_gaussian_noise, jitter_contrast
 from core.ml.loss import (
     SpatialAwareHybridLoss,
     build_adamw_optimizer,
@@ -37,6 +37,16 @@ from core.ml.loss import (
 )
 from core.ml.model import VisionAutoregressiveModel, resolve_device
 from core.models import TrainingCheckpoint
+
+
+def apply_photometric_augmentation(images: torch.Tensor, p: float = 0.4) -> torch.Tensor:
+    """Apply vectorized photometric noise and contrast jitter with probability p."""
+    augmented = images
+    if float(torch.rand(1).item()) < p:
+        augmented = add_gaussian_noise(augmented, sigma=0.02)
+    if float(torch.rand(1).item()) < p:
+        augmented = jitter_contrast(augmented, alpha=1.05)
+    return augmented
 
 
 def train_epoch(
@@ -69,7 +79,7 @@ def train_epoch(
         batch_toks = shuffled_tokens[step_start:step_end].to(target_device)
 
         if use_augmentation:
-            batch_imgs = augment_batch(batch_imgs, p=0.4)
+            batch_imgs = apply_photometric_augmentation(batch_imgs, p=0.4)
 
         decoder_input, targets = build_teacher_forcing_pair(batch_toks)
         optimizer.zero_grad()

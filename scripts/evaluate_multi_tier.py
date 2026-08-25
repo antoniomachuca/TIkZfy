@@ -86,21 +86,15 @@ def load_tier_tensors(
     """Load or encode the ``(images, tokens)`` tensors for one tier split."""
     if tier_name == "tier1":
         split: str = TIER_SPLITS[tier_name]
-        images: torch.Tensor = torch.load(
-            encoded_dir / f"{split}_images.pt", weights_only=True
-        )
-        tokens: torch.Tensor = torch.load(
-            encoded_dir / f"{split}_tokens.pt", weights_only=True
-        )
+        images: torch.Tensor = torch.load(encoded_dir / f"{split}_images.pt", weights_only=True)
+        tokens: torch.Tensor = torch.load(encoded_dir / f"{split}_tokens.pt", weights_only=True)
         return images, tokens
 
     split = TIER_SPLITS[tier_name]
     split_dir: Path = processed_dirs[tier_name] / split
     corpus: list[TikzTokens] = load_markup_corpus(split_dir)
     token_tensor: torch.Tensor = batch_encode(corpus, vocabulary, max_length)
-    image_tensor: torch.Tensor = load_image_batch(
-        split_dir, target_height, target_width
-    )
+    image_tensor: torch.Tensor = load_image_batch(split_dir, target_height, target_width)
     return image_tensor, token_tensor
 
 
@@ -140,21 +134,14 @@ async def compilation_and_ssim(
                 return False, None
             try:
                 png: bytes = await rasterizer.rasterize_pdf(compilation.pdf_data)
-                predicted: torch.Tensor = decode_png_bytes(
-                    png, target_height, target_width
-                )
-                ssim: float = structural_similarity(
-                    ground_truth_images[index], predicted
-                )
+                predicted: torch.Tensor = decode_png_bytes(png, target_height, target_width)
+                ssim: float = structural_similarity(ground_truth_images[index], predicted)
             except DomainError:
                 return True, None
             return True, ssim
 
     results = await asyncio.gather(
-        *[
-            process(index, markup)
-            for index, markup in enumerate(candidate_markups)
-        ],
+        *[process(index, markup) for index, markup in enumerate(candidate_markups)],
         return_exceptions=True,
     )
 
@@ -228,9 +215,7 @@ async def evaluate_tier(
     }
 
 
-def generalization_gap(
-    baseline: dict[str, Any], target: dict[str, Any]
-) -> dict[str, float]:
+def generalization_gap(baseline: dict[str, Any], target: dict[str, Any]) -> dict[str, float]:
     """Return per-metric ``baseline - target`` degradation (generalization gap)."""
     metric_keys: tuple[str, ...] = (
         "corpus_bleu",
@@ -239,10 +224,7 @@ def generalization_gap(
         "compilation_rate",
         "mean_ssim",
     )
-    return {
-        key: float(baseline.get(key, 0.0)) - float(target.get(key, 0.0))
-        for key in metric_keys
-    }
+    return {key: float(baseline.get(key, 0.0)) - float(target.get(key, 0.0)) for key in metric_keys}
 
 
 def evaluate(arguments: argparse.Namespace) -> None:
@@ -322,21 +304,15 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Multi-tier evaluation with generalization-gap quantification."
     )
-    parser.add_argument(
-        "--encoded-dir", type=Path, default=repo_root / "dataset" / "encoded"
-    )
+    parser.add_argument("--encoded-dir", type=Path, default=repo_root / "dataset" / "encoded")
     parser.add_argument("--results-dir", type=Path, default=repo_root / "results")
     parser.add_argument(
         "--checkpoint",
         type=Path,
         default=repo_root / "results" / "checkpoints" / "checkpoint_epoch_020.pt",
     )
-    parser.add_argument(
-        "--tier2-dir", type=Path, default=repo_root / "dataset" / "processed_tier2"
-    )
-    parser.add_argument(
-        "--tier3-dir", type=Path, default=repo_root / "dataset" / "processed_tier3"
-    )
+    parser.add_argument("--tier2-dir", type=Path, default=repo_root / "dataset" / "processed_tier2")
+    parser.add_argument("--tier3-dir", type=Path, default=repo_root / "dataset" / "processed_tier3")
     parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--max-samples", type=int, default=501)
     parser.add_argument("--target-height", type=int, default=64)

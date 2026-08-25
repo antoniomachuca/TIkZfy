@@ -73,9 +73,7 @@ class VisionEncoder(nn.Module):
     ) -> None:
         super().__init__()
         if input_channels <= 0 or model_dimension <= 0:
-            raise VocabularyInvariantError(
-                "input_channels and model_dimension must be positive."
-            )
+            raise VocabularyInvariantError("input_channels and model_dimension must be positive.")
         if num_blocks < 0:
             raise VocabularyInvariantError("num_blocks must be non-negative.")
 
@@ -114,9 +112,7 @@ class VisionEncoder(nn.Module):
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         """Encode images into visual tokens with shape ``(B, S, D)``."""
-        x: torch.Tensor = (
-            self._add_coordinate_channels(images) if self.use_coord_conv else images
-        )
+        x: torch.Tensor = self._add_coordinate_channels(images) if self.use_coord_conv else images
         # Shape: (B, C_in + 2, H, W) -> (B, D, H/4, W/4)
         features: torch.Tensor = cast(torch.Tensor, self.stem(x))
         # Shape: (B, D, H/4, W/4) -> (B, D, H/4, W/4)
@@ -164,9 +160,7 @@ class AutoregressiveDecoder(nn.Module):
             raise VocabularyInvariantError(
                 "model_dimension must be divisible by a positive num_heads."
             )
-        ff_dimension: int = (
-            dim_feedforward if dim_feedforward is not None else model_dimension * 4
-        )
+        ff_dimension: int = dim_feedforward if dim_feedforward is not None else model_dimension * 4
         if ff_dimension <= 0:
             raise VocabularyInvariantError("dim_feedforward must be positive.")
         if not 0.0 <= dropout <= 1.0:
@@ -194,9 +188,7 @@ class AutoregressiveDecoder(nn.Module):
         self.normalization: nn.LayerNorm = nn.LayerNorm(model_dimension)
         self.output_projection: nn.Linear = nn.Linear(model_dimension, vocabulary_size)
 
-    def forward(
-        self, visual_tokens: torch.Tensor, target_tokens: torch.Tensor
-    ) -> torch.Tensor:
+    def forward(self, visual_tokens: torch.Tensor, target_tokens: torch.Tensor) -> torch.Tensor:
         """Return causal token logits with shape ``(B, L, V)``."""
         sequence_length: int = target_tokens.shape[1]
         if sequence_length > self.max_length:
@@ -228,9 +220,7 @@ class AutoregressiveDecoder(nn.Module):
                 tgt_mask=causal_mask,
             ),
         )
-        normalized_tokens: torch.Tensor = cast(
-            torch.Tensor, self.normalization(decoded_tokens)
-        )
+        normalized_tokens: torch.Tensor = cast(torch.Tensor, self.normalization(decoded_tokens))
         return cast(torch.Tensor, self.output_projection(normalized_tokens))
 
 

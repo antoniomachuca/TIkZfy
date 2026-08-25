@@ -89,12 +89,7 @@ class AsyncTexLiveAdapter(TexCompilerPort):
 
             if "\\documentclass" not in markup:
                 preamble: str = build_preamble(tokens.packages, self.tikz_libraries)
-                markup = (
-                    f"{preamble}"
-                    "\\begin{document}\n"
-                    f"{markup}\n"
-                    "\\end{document}\n"
-                )
+                markup = f"{preamble}\\begin{{document}}\n{markup}\n\\end{{document}}\n"
 
             with open(tex_file_path, "w", encoding="utf-8") as tex_file:
                 tex_file.write(markup)
@@ -103,16 +98,17 @@ class AsyncTexLiveAdapter(TexCompilerPort):
                 self.engine,
                 "-interaction=nonstopmode",
                 "-halt-on-error",
-                "-output-directory", temp_dir,
+                "-output-directory",
+                temp_dir,
                 "document.tex",
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                cwd=temp_dir
+                cwd=temp_dir,
             )
 
             stdout_data, stderr_data = await process.communicate()
 
-            is_successful: bool = (process.returncode == 0)
+            is_successful: bool = process.returncode == 0
             pdf_data: bytes = b""
 
             pdf_file_path: str = os.path.join(temp_dir, "document.pdf")

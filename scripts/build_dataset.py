@@ -30,9 +30,7 @@ from core.parser import extract_tikz_graphs
 EXTERNAL_STRATUM: int = len(FAMILY_NAMES)
 
 
-def generate_procedural_corpus(
-    per_family_count: int, seed: int
-) -> tuple[list[str], NDArray[Any]]:
+def generate_procedural_corpus(per_family_count: int, seed: int) -> tuple[list[str], NDArray[Any]]:
     """
     Draws a balanced procedural corpus across every template family.
 
@@ -65,11 +63,7 @@ def collect_external_candidates(external_dirs: list[str], cap: int) -> list[str]
         if name.endswith(".tex")
     ]
 
-    extracted: list[TikzTokens] = [
-        block
-        for path in tex_paths
-        for block in _safe_extract(path)
-    ]
+    extracted: list[TikzTokens] = [block for path in tex_paths for block in _safe_extract(path)]
     budgeted: list[str] = [
         tokens.markup for tokens in extracted if within_length_budget(tokens.markup)
     ]
@@ -133,9 +127,7 @@ async def render_corpus(
     success_mask: NDArray[Any] = np.array(
         [isinstance(result, bytes) for result in results], dtype=bool
     )
-    payloads: list[bytes] = [
-        result if isinstance(result, bytes) else b"" for result in results
-    ]
+    payloads: list[bytes] = [result if isinstance(result, bytes) else b"" for result in results]
     return payloads, success_mask
 
 
@@ -172,18 +164,14 @@ def extract_showcase_markup(source_path: str) -> str:
         r"\\definecolor\{[^}]*\}\{[^}]*\}\{[^}]*\}", raw_text
     ) + re.findall(r"\\def\s*\\globalscale\s*\{[^}]*\}", raw_text)
 
-    blocks: list[TikzTokens] = extract_tikz_graphs(
-        RawLatexDocument(raw_text=raw_text)
-    )
+    blocks: list[TikzTokens] = extract_tikz_graphs(RawLatexDocument(raw_text=raw_text))
     if not blocks:
         raise DomainError(f"No tikzpicture block found in showcase '{source_path}'.")
 
     return "\n".join(definitions) + "\n" + blocks[0].markup
 
 
-async def render_showcase(
-    source_path: str | None, showcase_dir: str, workers: int
-) -> bool:
+async def render_showcase(source_path: str | None, showcase_dir: str, workers: int) -> bool:
     """
     Compiles and rasterizes the showcase figure outside train/val.
     """
@@ -199,7 +187,9 @@ async def render_showcase(
 
     semaphore: asyncio.Semaphore = asyncio.Semaphore(workers)
     payload: bytes | None = await render_sample(
-        semaphore, AsyncTexLiveAdapter(engine="pdflatex"), GhostscriptRasterizer(),
+        semaphore,
+        AsyncTexLiveAdapter(engine="pdflatex"),
+        GhostscriptRasterizer(),
         TikzTokens(markup=markup),
     )
     if payload is None:
@@ -250,34 +240,24 @@ async def orchestrate_dataset_build(args: argparse.Namespace) -> None:
     ]
     kept_labels: NDArray[Any] = all_labels[success_mask]
 
-    external_success: int = int(
-        np.sum(kept_labels == EXTERNAL_STRATUM)
-    )
+    external_success: int = int(np.sum(kept_labels == EXTERNAL_STRATUM))
     print(
         f"[*] Rendered {len(kept_markups)}/{len(all_markups)} samples "
         f"({external_success} external successes)."
     )
 
-    train_idx, val_idx = stratified_train_val_split(
-        kept_labels, args.val_ratio, args.seed
-    )
+    train_idx, val_idx = stratified_train_val_split(kept_labels, args.val_ratio, args.seed)
 
     output_dir: str = args.output_dir
     persist_split(output_dir, "train", train_idx, kept_markups, kept_payloads)
     persist_split(output_dir, "val", val_idx, kept_markups, kept_payloads)
 
     print("[*] Rendering showcase figure...")
-    showcase_ok: bool = await render_showcase(
-        args.showcase_source, args.showcase_dir, args.workers
-    )
+    showcase_ok: bool = await render_showcase(args.showcase_source, args.showcase_dir, args.workers)
 
     # Shape: (n_strata + 1,) per split
-    train_counts: NDArray[Any] = np.bincount(
-        kept_labels[train_idx], minlength=EXTERNAL_STRATUM + 1
-    )
-    val_counts: NDArray[Any] = np.bincount(
-        kept_labels[val_idx], minlength=EXTERNAL_STRATUM + 1
-    )
+    train_counts: NDArray[Any] = np.bincount(kept_labels[train_idx], minlength=EXTERNAL_STRATUM + 1)
+    val_counts: NDArray[Any] = np.bincount(kept_labels[val_idx], minlength=EXTERNAL_STRATUM + 1)
 
     manifest: dict[str, Any] = {
         "seed": args.seed,
@@ -306,9 +286,7 @@ async def orchestrate_dataset_build(args: argparse.Namespace) -> None:
         },
         "showcase_rendered": showcase_ok,
         "duration_seconds": round(time.time() - started_at, 2),
-        "fingerprints_sample": [
-            markup_fingerprint(markup) for markup in kept_markups[:8]
-        ],
+        "fingerprints_sample": [markup_fingerprint(markup) for markup in kept_markups[:8]],
     }
 
     manifest_path: str = args.manifest_path

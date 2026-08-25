@@ -16,8 +16,7 @@ def test_affine_transformation_valid() -> None:
     image = ImageTensor(raw_tensor=raw)
 
     # Identity transformation matrix: Shape (1, 2, 3)
-    theta = torch.tensor([[[1.0, 0.0, 0.0],
-                           [0.0, 1.0, 0.0]]])
+    theta = torch.tensor([[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]])
 
     transformed_image = apply_affine_transformation(image, theta)
 

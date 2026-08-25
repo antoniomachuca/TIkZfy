@@ -35,6 +35,7 @@ class ModelInferencePort(ABC):
         """
         pass
 
+
 class LatexSourcePort(ABC):
     """
     Outbound port defining the infrastructural contract for fetching LaTeX sources.
@@ -60,6 +61,7 @@ class LatexSourcePort(ABC):
         """
         pass
 
+
 class TexCompilerPort(ABC):
     """
     Outbound port defining the infrastructural contract for TeX Live compilation.
@@ -70,7 +72,6 @@ class TexCompilerPort(ABC):
 
     @abstractmethod
     async def compile_tikz(self, tokens: TikzTokens) -> CompilationResult:
-
         """
         Compiles the bounded syntactic sequence into a binary artifact (e.g., PDF).
 
@@ -151,6 +152,7 @@ class VocabularyPersistencePort(ABC):
         """
         pass
 
+
 class CheckpointPersistencePort(ABC):
     """
     Outbound port for atomic persistence of model and optimizer training state.
@@ -188,6 +190,7 @@ class CheckpointPersistencePort(ABC):
             DomainError: If retrieval fails or the payload violates invariants.
         """
         pass
+
 
 class TensorPersistencePort(ABC):
     """

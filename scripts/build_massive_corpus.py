@@ -65,9 +65,7 @@ def _coerce_to_three_channels(image: torch.Tensor) -> torch.Tensor:
     raise ValueError(f"Unsupported channel count {image.shape[1]}.")
 
 
-def load_split_image_tensor(
-    split_dir: Path, target_height: int, target_width: int
-) -> torch.Tensor:
+def load_split_image_tensor(split_dir: Path, target_height: int, target_width: int) -> torch.Tensor:
     """Load, normalize, and resize all PNG images in split_dir into (N, 3, H, W)."""
     image_paths: list[Path] = sorted(split_dir.glob("*.png"))
     if not image_paths:
@@ -80,9 +78,7 @@ def load_split_image_tensor(
             loader.load_image(str(img_path)).raw_tensor
         )
         norm_img: ImageTensor = normalize_channels(ImageTensor(rgb_tensor))
-        resized: ImageTensor = resize_spatial_dimensions(
-            norm_img, target_height, target_width
-        )
+        resized: ImageTensor = resize_spatial_dimensions(norm_img, target_height, target_width)
         resized_tensors.append(resized.raw_tensor)
     return torch.cat(resized_tensors, dim=0)
 
@@ -106,8 +102,7 @@ async def generate_tier1_dataset(
     print(f"\n[*] === Generating Tier 1 Procedural Dataset ({target_count} target) ===")
     per_family: int = max(1, target_count // len(FAMILY_NAMES))
     batches: list[list[str]] = [
-        generate_batch(fam, per_family, seed + idx)
-        for idx, fam in enumerate(FAMILY_NAMES)
+        generate_batch(fam, per_family, seed + idx) for idx, fam in enumerate(FAMILY_NAMES)
     ]
     all_markups: list[str] = [m for b in batches for m in b]
     labels: NDArray[Any] = np.repeat(np.arange(len(FAMILY_NAMES)), per_family)
@@ -115,12 +110,8 @@ async def generate_tier1_dataset(
     print(f"[*] Rendering {len(all_markups)} Tier 1 markups with {workers} workers...")
     payloads, success_mask = await render_corpus(all_markups, workers)
 
-    kept_markups: list[str] = [
-        m for m, keep in zip(all_markups, success_mask, strict=True) if keep
-    ]
-    kept_payloads: list[bytes] = [
-        p for p, keep in zip(payloads, success_mask, strict=True) if keep
-    ]
+    kept_markups: list[str] = [m for m, keep in zip(all_markups, success_mask, strict=True) if keep]
+    kept_payloads: list[bytes] = [p for p, keep in zip(payloads, success_mask, strict=True) if keep]
     kept_labels: NDArray[Any] = labels[success_mask]
 
     print(f"[*] Compiled {len(kept_markups)}/{len(all_markups)} Tier 1 samples.")
@@ -148,12 +139,8 @@ async def generate_tier2_dataset(
         markups, workers, tikz_libraries=BASE_TIKZ_LIBRARIES
     )
 
-    kept_markups: list[str] = [
-        m for m, keep in zip(markups, success_mask, strict=True) if keep
-    ]
-    kept_payloads: list[bytes] = [
-        p for p, keep in zip(payloads, success_mask, strict=True) if keep
-    ]
+    kept_markups: list[str] = [m for m, keep in zip(markups, success_mask, strict=True) if keep]
+    kept_payloads: list[bytes] = [p for p, keep in zip(payloads, success_mask, strict=True) if keep]
     kept_labels: NDArray[Any] = labels[success_mask]
 
     print(f"[*] Compiled {len(kept_markups)}/{len(markups)} Tier 2 samples.")
@@ -219,9 +206,7 @@ def encode_all_corpora(
         tier2_dir / "train", target_height, target_width
     )
     train_images: torch.Tensor = torch.cat([t1_train_img, t2_train_img], dim=0)
-    train_tokens: torch.Tensor = batch_encode(
-        combined_train_markups, vocabulary, max_length
-    )
+    train_tokens: torch.Tensor = batch_encode(combined_train_markups, vocabulary, max_length)
 
     torch.save(train_images, encoded_dir / "train_images.pt")
     torch.save(train_tokens, encoded_dir / "train_tokens.pt")
@@ -262,9 +247,7 @@ def encode_all_corpora(
     print("[*] Encoding Tier 3 OOD Test...")
     t3_test_dir: Path = tier3_dir / "test"
     t3_test_markups: list[TikzTokens] = load_split_markup_corpus(t3_test_dir)
-    t3_test_img: torch.Tensor = load_split_image_tensor(
-        t3_test_dir, target_height, target_width
-    )
+    t3_test_img: torch.Tensor = load_split_image_tensor(t3_test_dir, target_height, target_width)
     t3_test_tok: torch.Tensor = batch_encode(t3_test_markups, vocabulary, max_length)
     torch.save(t3_test_img, encoded_dir / "tier3_test_images.pt")
     torch.save(t3_test_tok, encoded_dir / "tier3_test_tokens.pt")
@@ -287,9 +270,7 @@ async def main() -> None:
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--max-length", type=int, default=512)
-    parser.add_argument(
-        "--dataset-root", type=Path, default=repo_root / "dataset"
-    )
+    parser.add_argument("--dataset-root", type=Path, default=repo_root / "dataset")
     args: argparse.Namespace = parser.parse_args()
 
     t1_dir: Path = args.dataset_root / "processed_tier1"

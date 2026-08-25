@@ -133,9 +133,7 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
         vocabulary: TokenVocabulary = vocab_adapter.load_vocabulary(str(vocabulary_path))
 
         checkpoint_adapter: AtomicCheckpointAdapter = AtomicCheckpointAdapter()
-        checkpoint: TrainingCheckpoint = checkpoint_adapter.load_checkpoint(
-            str(checkpoint_path)
-        )
+        checkpoint: TrainingCheckpoint = checkpoint_adapter.load_checkpoint(str(checkpoint_path))
 
         cfg: dict[str, Any] = config or {}
         state = checkpoint.model_state

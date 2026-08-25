@@ -49,9 +49,7 @@ async def orchestrate_data_generation(uris: list[str], output_dir: str) -> None:
 
     success_count: int = 0
 
-    for idx, (result, tokens) in enumerate(
-        zip(compilation_results, tokens_list, strict=True)
-    ):
+    for idx, (result, tokens) in enumerate(zip(compilation_results, tokens_list, strict=True)):
         if isinstance(result, CompilationResult) and result.is_successful:
             base_filename: str = os.path.join(output_dir, f"sample_{success_count:04d}")
 
@@ -63,7 +61,7 @@ async def orchestrate_data_generation(uris: list[str], output_dir: str) -> None:
 
             success_count += 1
         elif isinstance(result, Exception):
-             print(f"[!] Compilation strictly failed for item {idx}: {result}")
+            print(f"[!] Compilation strictly failed for item {idx}: {result}")
 
     print(
         f"[*] Orchestration completed. Persisted {success_count} structural "
@@ -71,26 +69,19 @@ async def orchestrate_data_generation(uris: list[str], output_dir: str) -> None:
     )
 
 
-
 parser: argparse.ArgumentParser = argparse.ArgumentParser(
     description="Deterministic Dataset Orchestrator for Image-to-TikZ"
 )
 parser.add_argument(
-    "--uris",
-    nargs="*",
-    default=[],
-    help="List of HTTP URIs to fetch raw TikZ sources from."
+    "--uris", nargs="*", default=[], help="List of HTTP URIs to fetch raw TikZ sources from."
 )
 parser.add_argument(
     "--output-dir",
     type=str,
     default=os.path.join(os.path.dirname(__file__), "..", "dataset", "raw"),
-    help="Target directory for the generated PDF and TEX files."
+    help="Target directory for the generated PDF and TEX files.",
 )
 
 args = parser.parse_args()
 
 asyncio.run(orchestrate_data_generation(args.uris, args.output_dir))
-
-
-

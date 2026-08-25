@@ -68,8 +68,7 @@ class GhostscriptRasterizer(ImageRasterizerPort):
             if process.returncode != 0 or not os.path.exists(png_path):
                 error_context: str = stderr_data.decode("utf-8", errors="replace")
                 raise DomainError(
-                    "Ghostscript rasterization failed. Process output:\n"
-                    f"{error_context}"
+                    f"Ghostscript rasterization failed. Process output:\n{error_context}"
                 )
 
             with open(png_path, "rb") as png_file:

@@ -5,6 +5,7 @@ Reference: R. C. Martin, Clean Architecture — the dependency arrow points inwa
 `adapters` may depend on `core` and `ports`; neither `core` nor `ports` may
 depend on `adapters` or third-party I/O modules.
 """
+
 import ast
 from pathlib import Path
 
@@ -25,9 +26,7 @@ def _python_files(root: Path) -> list[Path]:
 
 def _imported_top_level_modules(file_path: Path) -> set[str]:
     """Extracts the top-level module names statically imported by a source file."""
-    tree: ast.Module = ast.parse(
-        file_path.read_text(encoding="utf-8"), filename=str(file_path)
-    )
+    tree: ast.Module = ast.parse(file_path.read_text(encoding="utf-8"), filename=str(file_path))
     imported: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
@@ -63,8 +62,8 @@ def test_ports_layer_has_no_adapters_import() -> None:
         imported: set[str] = _imported_top_level_modules(file_path)
         if "adapters" in imported:
             offenders.append(file_path.name)
-    assert not offenders, (
-        "Ports layer violated — concrete adapter imports detected: " + ", ".join(offenders)
+    assert not offenders, "Ports layer violated — concrete adapter imports detected: " + ", ".join(
+        offenders
     )
 
 

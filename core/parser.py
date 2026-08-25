@@ -1,6 +1,7 @@
 """
 Syntactic parsing operations for geometric graph extraction.
 """
+
 import re
 
 from core.models.value_objects import RawLatexDocument, TikzTokens

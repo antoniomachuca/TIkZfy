@@ -13,6 +13,7 @@ References:
     Graves, Sequence Transduction with Recurrent Neural Networks — accumulated
         log-probability scoring and length normalization of beam hypotheses.
 """
+
 from dataclasses import dataclass
 from typing import cast
 
@@ -52,9 +53,7 @@ class BeamHypothesis:
             raise TensorTopologyError("Beam hypothesis tokens must be integer indices.")
 
 
-def _encode_single_image(
-    model: VisionAutoregressiveModel, image: ImageTensor
-) -> torch.Tensor:
+def _encode_single_image(model: VisionAutoregressiveModel, image: ImageTensor) -> torch.Tensor:
     """Return the visual memory ``(1, S, D)`` for a single-image batch."""
     if not isinstance(image, ImageTensor):
         raise TypeError("image must be an ImageTensor instance.")
@@ -102,9 +101,7 @@ def greedy_search(
     if max_length < 2:
         raise ValueError(f"max_length must be at least 2. Got {max_length}.")
     if max_length > model.max_length:
-        raise ValueError(
-            f"max_length {max_length} exceeds model.max_length {model.max_length}."
-        )
+        raise ValueError(f"max_length {max_length} exceeds model.max_length {model.max_length}.")
 
     visual_tokens: torch.Tensor = _encode_single_image(model, image)
     generated: torch.Tensor = torch.full(
@@ -115,9 +112,7 @@ def greedy_search(
     while step < max_length - 1 and not bool(finished.all().item()):
         logits: torch.Tensor = model.decoder(visual_tokens, generated)
         next_token: torch.Tensor = logits[:, -1, :].argmax(dim=-1)
-        next_token = torch.where(
-            finished, torch.full_like(next_token, EOS_INDEX), next_token
-        )
+        next_token = torch.where(finished, torch.full_like(next_token, EOS_INDEX), next_token)
         generated = torch.cat((generated, next_token.unsqueeze(1)), dim=1)
         finished = finished | next_token.eq(EOS_INDEX)
         step += 1
@@ -165,9 +160,7 @@ def beam_search(
     if max_length < 2:
         raise ValueError(f"max_length must be at least 2. Got {max_length}.")
     if max_length > model.max_length:
-        raise ValueError(
-            f"max_length {max_length} exceeds model.max_length {model.max_length}."
-        )
+        raise ValueError(f"max_length {max_length} exceeds model.max_length {model.max_length}.")
     if length_penalty < 0.0:
         raise ValueError(f"length_penalty must be non-negative. Got {length_penalty}.")
 
@@ -194,9 +187,7 @@ def beam_search(
 
         next_sequences: list[list[int]] = []
         next_scores: list[float] = []
-        for rank_score, flat_index in zip(
-            top_scores.tolist(), top_indices.tolist(), strict=True
-        ):
+        for rank_score, flat_index in zip(top_scores.tolist(), top_indices.tolist(), strict=True):
             parent: int = flat_index // vocabulary_size
             token: int = flat_index % vocabulary_size
             candidate: list[int] = active_sequences[parent] + [token]
@@ -218,8 +209,9 @@ def beam_search(
     ]
     ranked: list[BeamHypothesis] = sorted(
         completed + truncated,
-        key=lambda hypothesis: hypothesis.log_probability
-        / (len(hypothesis.tokens) ** length_penalty),
+        key=lambda hypothesis: (
+            hypothesis.log_probability / (len(hypothesis.tokens) ** length_penalty)
+        ),
         reverse=True,
     )
     return ranked[:beam_width]
@@ -269,9 +261,7 @@ def _reconstruct_environment_markup(
             final_tokens = [t for t in final_tokens if t != end_tag] + [end_tag]
     else:
         # Wrap bare drawing content in canonical tikzpicture delimiters
-        filtered_content: list[str] = [
-            t for t in final_tokens if t not in (_BEGIN_TIKZ, _END_TIKZ)
-        ]
+        filtered_content: list[str] = [t for t in final_tokens if t not in (_BEGIN_TIKZ, _END_TIKZ)]
         final_tokens = [_BEGIN_TIKZ, *filtered_content, _END_TIKZ]
 
     reconstructed_markup: str = " ".join(final_tokens)
@@ -279,9 +269,7 @@ def _reconstruct_environment_markup(
     return reconstructed_markup, detected_packages
 
 
-def decode_indices_to_markup(
-    vocabulary: TokenVocabulary, indices: tuple[int, ...]
-) -> TikzTokens:
+def decode_indices_to_markup(vocabulary: TokenVocabulary, indices: tuple[int, ...]) -> TikzTokens:
     """
     Map a generated token index sequence onto a validated ``TikzTokens`` value object.
 
@@ -303,14 +291,10 @@ def decode_indices_to_markup(
     """
     if not isinstance(vocabulary, TokenVocabulary):
         raise TypeError("vocabulary must be a TokenVocabulary instance.")
-    if not isinstance(indices, tuple) or not all(
-        isinstance(index, int) for index in indices
-    ):
+    if not isinstance(indices, tuple) or not all(isinstance(index, int) for index in indices):
         raise TensorTopologyError("indices must be a tuple of integer token indices.")
 
-    special_indices: frozenset[int] = frozenset(
-        {BOS_INDEX, EOS_INDEX, PAD_INDEX, UNK_INDEX}
-    )
+    special_indices: frozenset[int] = frozenset({BOS_INDEX, EOS_INDEX, PAD_INDEX, UNK_INDEX})
     decoded_tokens: list[str] = [
         vocabulary.index_to_token[index]
         for index in indices

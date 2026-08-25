@@ -130,9 +130,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Evaluate a trained image-to-TikZ baseline."
     )
-    parser.add_argument(
-        "--encoded-dir", type=Path, default=repo_root / "dataset" / "encoded"
-    )
+    parser.add_argument("--encoded-dir", type=Path, default=repo_root / "dataset" / "encoded")
     parser.add_argument("--results-dir", type=Path, default=repo_root / "results")
     parser.add_argument(
         "--checkpoint",

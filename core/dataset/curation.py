@@ -8,6 +8,7 @@ with zero scalar iteration over sample contents.
 Reference: Golub & Van Loan, Matrix Computations — index arithmetic over
 sorted grouped arrays as a vectorized alternative to per-group loops.
 """
+
 import hashlib
 from typing import Any
 

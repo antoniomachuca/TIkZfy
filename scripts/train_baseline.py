@@ -93,12 +93,8 @@ def save_loss_curve(
 def train(arguments: argparse.Namespace) -> None:
     """Run the full training loop and persist checkpoints and results."""
     encoded_dir: Path = arguments.encoded_dir
-    train_tokens: torch.Tensor = torch.load(
-        encoded_dir / "train_tokens.pt", weights_only=True
-    )
-    train_images: torch.Tensor = torch.load(
-        encoded_dir / "train_images.pt", weights_only=True
-    )
+    train_tokens: torch.Tensor = torch.load(encoded_dir / "train_tokens.pt", weights_only=True)
+    train_images: torch.Tensor = torch.load(encoded_dir / "train_images.pt", weights_only=True)
     val_tokens: torch.Tensor = torch.load(encoded_dir / "val_tokens.pt", weights_only=True)
     val_images: torch.Tensor = torch.load(encoded_dir / "val_images.pt", weights_only=True)
     vocabulary: TokenVocabulary = JsonVocabularyAdapter().load_vocabulary(
@@ -187,9 +183,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Train a small image-to-TikZ baseline model."
     )
-    parser.add_argument(
-        "--encoded-dir", type=Path, default=repo_root / "dataset" / "encoded"
-    )
+    parser.add_argument("--encoded-dir", type=Path, default=repo_root / "dataset" / "encoded")
     parser.add_argument("--output-dir", type=Path, default=repo_root / "results")
     parser.add_argument("--num-epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=16)

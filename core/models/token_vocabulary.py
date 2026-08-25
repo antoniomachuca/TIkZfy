@@ -25,6 +25,7 @@ class TokenVocabulary:
 
     Spatial complexity: O(|V|) where |V| is the vocabulary size.
     """
+
     token_to_index: dict[str, int]
     index_to_token: dict[int, str]
 
@@ -36,7 +37,6 @@ class TokenVocabulary:
             raise VocabularyInvariantError(
                 "Vocabulary mappings violate bijectivity cardinality equality."
             )
-
 
         # Validate reserved tokens
         reserved_tokens: list[tuple[str, int]] = [

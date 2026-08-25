@@ -43,8 +43,8 @@ def apply_affine_transformation(image: ImageTensor, theta: torch.Tensor) -> Imag
     transformed_raw = F.grid_sample(
         image.raw_tensor,
         grid,
-        mode='bilinear',
-        padding_mode='zeros',
+        mode="bilinear",
+        padding_mode="zeros",
         align_corners=False,
     )
 

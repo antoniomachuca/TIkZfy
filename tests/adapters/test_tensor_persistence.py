@@ -12,16 +12,16 @@ from core.models.value_objects import ImageTensor
 def tensor_adapter() -> PyTorchTensorAdapter:
     return PyTorchTensorAdapter()
 
+
 @pytest.fixture
 def valid_image_tensor() -> ImageTensor:
     # Shape: (B, C, H, W)
     raw = torch.randn(2, 3, 64, 64)
     return ImageTensor(raw_tensor=raw)
 
+
 def test_save_and_load_tensor_success(
-    tensor_adapter: PyTorchTensorAdapter,
-    valid_image_tensor: ImageTensor,
-    tmp_path: Path
+    tensor_adapter: PyTorchTensorAdapter, valid_image_tensor: ImageTensor, tmp_path: Path
 ) -> None:
     """
     Saving then loading preserves the tensor values.
@@ -42,6 +42,7 @@ def test_save_and_load_tensor_success(
     assert loaded_tensor.raw_tensor.shape == valid_image_tensor.raw_tensor.shape
     assert torch.equal(loaded_tensor.raw_tensor, valid_image_tensor.raw_tensor)
 
+
 def test_save_tensor_invalid_type(tensor_adapter: PyTorchTensorAdapter, tmp_path: Path) -> None:
     """
     Saving a non-ImageTensor raises DomainError.
@@ -52,12 +53,14 @@ def test_save_tensor_invalid_type(tensor_adapter: PyTorchTensorAdapter, tmp_path
     with pytest.raises(DomainError, match="Input must be an ImageTensor instance."):
         tensor_adapter.save_tensor("not_a_tensor", file_path)  # type: ignore
 
+
 def test_load_tensor_nonexistent_file(tensor_adapter: PyTorchTensorAdapter) -> None:
     """
     Loading from a missing file raises DomainError.
     """
     with pytest.raises(DomainError, match="Source path does not exist"):
         tensor_adapter.load_tensor("/path/that/does/not/exist.pt")
+
 
 def test_load_tensor_invalid_payload(tensor_adapter: PyTorchTensorAdapter, tmp_path: Path) -> None:
     """
@@ -71,6 +74,7 @@ def test_load_tensor_invalid_payload(tensor_adapter: PyTorchTensorAdapter, tmp_p
 
     with pytest.raises(DomainError, match="Failed to load tensor"):
         tensor_adapter.load_tensor(file_path)
+
 
 def test_load_tensor_invalid_topology(tensor_adapter: PyTorchTensorAdapter, tmp_path: Path) -> None:
     """

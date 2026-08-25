@@ -37,8 +37,7 @@ from core.models import RawLatexDocument, TikzTokens
 from core.parser import extract_tikz_graphs
 
 SHARD_URL_TEMPLATE: str = (
-    "https://huggingface.co/datasets/nllg/DaTikZ-V4/resolve/main/"
-    "data/train-{index:05d}.parquet"
+    "https://huggingface.co/datasets/nllg/DaTikZ-V4/resolve/main/data/train-{index:05d}.parquet"
 )
 SHARD_COUNT: int = 86
 
@@ -148,9 +147,7 @@ async def compile_one(
             tokens: TikzTokens = TikzTokens(
                 markup=full_code, packages=detect_required_packages(full_code)
             )
-            compilation = await asyncio.wait_for(
-                compiler.compile_tikz(tokens), timeout=timeout
-            )
+            compilation = await asyncio.wait_for(compiler.compile_tikz(tokens), timeout=timeout)
             return await asyncio.wait_for(
                 rasterizer.rasterize_pdf(compilation.pdf_data), timeout=timeout
             )
@@ -192,9 +189,7 @@ async def compile_candidates(
     return kept_markups, kept_payloads
 
 
-def persist_test_set(
-    output_dir: str, markups: list[str], payloads: list[bytes]
-) -> None:
+def persist_test_set(output_dir: str, markups: list[str], payloads: list[bytes]) -> None:
     """Persist the compiled Tier 3 test samples as ``(image, markup)`` pairs."""
     test_dir: str = os.path.join(output_dir, "test")
     os.makedirs(test_dir, exist_ok=True)
@@ -214,9 +209,7 @@ async def orchestrate_tier3_ingestion(args: argparse.Namespace) -> None:
     rows: Iterator[dict[str, Any]] = iter_datikz_rows(
         args.max_rows, args.shard_start, args.shard_count
     )
-    candidates: list[tuple[str, str]] = filter_candidates(
-        rows, args.max_rows, args.candidate_cap
-    )
+    candidates: list[tuple[str, str]] = filter_candidates(rows, args.max_rows, args.candidate_cap)
     print(f"[*] {len(candidates)} unique candidates after filtering/dedup.")
 
     print(f"[*] Compiling candidates (target={args.target}, workers={args.workers})...")
@@ -235,9 +228,7 @@ async def orchestrate_tier3_ingestion(args: argparse.Namespace) -> None:
         "compiled": len(kept_markups),
         "tikz_libraries": list(BASE_TIKZ_LIBRARIES),
         "duration_seconds": round(time.time() - started_at, 2),
-        "fingerprints_sample": [
-            markup_fingerprint(markup) for markup in kept_markups[:8]
-        ],
+        "fingerprints_sample": [markup_fingerprint(markup) for markup in kept_markups[:8]],
     }
 
     manifest_path: str = args.manifest_path

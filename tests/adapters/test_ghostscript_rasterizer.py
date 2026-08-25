@@ -9,11 +9,7 @@ from core.models import TikzTokens
 
 PNG_MAGIC_BYTES: bytes = b"\x89PNG\r\n\x1a\n"
 
-MINIMAL_MARKUP: str = (
-    "\\begin{tikzpicture}\n"
-    "\\draw (0,0) -- (1,1);\n"
-    "\\end{tikzpicture}"
-)
+MINIMAL_MARKUP: str = "\\begin{tikzpicture}\n\\draw (0,0) -- (1,1);\n\\end{tikzpicture}"
 
 
 @pytest.mark.infrastructure

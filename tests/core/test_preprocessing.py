@@ -7,6 +7,7 @@ Each test enforces end-to-end pipeline correctness:
 - Domain type boundary (ImageTensor) is maintained
 - Invalid dimensions are rejected at the guard clause
 """
+
 import pytest
 import torch
 
