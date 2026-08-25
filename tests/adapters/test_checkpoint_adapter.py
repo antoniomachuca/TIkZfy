@@ -60,9 +60,7 @@ def test_restore_checkpoint_resumes_model_state(tmp_path: Path) -> None:
 
     restored_model = _tiny_model()
     restored_optimizer = build_adamw_optimizer(restored_model, learning_rate=1e-3)
-    restore_checkpoint(
-        restored_model, restored_optimizer, adapter.load_checkpoint(file_path)
-    )
+    restore_checkpoint(restored_model, restored_optimizer, adapter.load_checkpoint(file_path))
 
     for name, tensor in model.state_dict().items():
         assert torch.equal(restored_model.state_dict()[name], tensor)

@@ -15,6 +15,7 @@ class ImageTensor:
     """
     Immutable image batch tensor of shape (B, C, H, W).
     """
+
     raw_tensor: torch.Tensor
 
     def __post_init__(self) -> None:
@@ -27,6 +28,7 @@ class ImageTensor:
                 f"Invalid tensor topology: expected 4D (B,C,H,W), got {self.raw_tensor.ndim}D"
             )
 
+
 @dataclass(frozen=True)
 class TikzTokens:
     """
@@ -37,6 +39,7 @@ class TikzTokens:
     Declared package dependencies are validated against the package catalog so
     compilation can resolve the correct preamble.
     """
+
     markup: str
     packages: tuple[str, ...] = ()
 
@@ -49,8 +52,7 @@ class TikzTokens:
             raise SyntaxTopologicalError("Generative markup cannot be an empty sequence.")
 
         if not any(
-            f"\\begin{{{environment}}}" in stripped_markup
-            for environment in ROOT_ENVIRONMENTS
+            f"\\begin{{{environment}}}" in stripped_markup for environment in ROOT_ENVIRONMENTS
         ):
             raise SyntaxTopologicalError(
                 "Markup sequence lacks a supported root environment "
@@ -72,28 +74,32 @@ class TikzTokens:
         for package in packages:
             if not isinstance(package, str) or package not in PACKAGE_CATALOG:
                 raise SyntaxTopologicalError(
-                    f"Unknown package '{package}'. Known packages: "
-                    f"{tuple(PACKAGE_CATALOG)}."
+                    f"Unknown package '{package}'. Known packages: {tuple(PACKAGE_CATALOG)}."
                 )
+
 
 @dataclass(frozen=True)
 class CompilationResult:
     """
     Immutable product of the external TeX compilation sub-process.
     """
+
     pdf_data: bytes
     is_successful: bool
+
 
 @dataclass(frozen=True)
 class RawLatexDocument:
     """
     Immutable unparsed LaTeX source text.
     """
+
     raw_text: str
 
     def __post_init__(self) -> None:
         if not isinstance(self.raw_text, str):
             raise SyntaxTopologicalError("Raw document payload must be a pure string.")
+
 
 @dataclass(frozen=True)
 class TrainingCheckpoint:
@@ -106,6 +112,7 @@ class TrainingCheckpoint:
 
     Spatial complexity: O(P) where P is the number of model parameters.
     """
+
     model_state: dict[str, torch.Tensor]
     optimizer_state: dict[str, Any]
     epoch: int = 0

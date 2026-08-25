@@ -65,12 +65,8 @@ def load_mixed_train_tensors(
         tier1_train_tokens = batch_encode(tier1_corpus, vocabulary, max_length)
         tier1_train_images = load_image_batch(tier1_train_dir, target_height, target_width)
 
-    val_images: torch.Tensor = torch.load(
-        encoded_dir / "val_images.pt", weights_only=True
-    )
-    val_tokens: torch.Tensor = torch.load(
-        encoded_dir / "val_tokens.pt", weights_only=True
-    )
+    val_images: torch.Tensor = torch.load(encoded_dir / "val_images.pt", weights_only=True)
+    val_tokens: torch.Tensor = torch.load(encoded_dir / "val_tokens.pt", weights_only=True)
 
     tier2_train_dir: Path = tier2_dir / "train"
     print(f"[*] Encoding Tier 2 train tensors from '{tier2_train_dir}'...")
@@ -80,12 +76,8 @@ def load_mixed_train_tensors(
         tier2_train_dir, target_height, target_width
     )
 
-    train_images: torch.Tensor = torch.cat(
-        (tier1_train_images, tier2_train_images), dim=0
-    )
-    train_tokens: torch.Tensor = torch.cat(
-        (tier1_train_tokens, tier2_train_tokens), dim=0
-    )
+    train_images: torch.Tensor = torch.cat((tier1_train_images, tier2_train_images), dim=0)
+    train_tokens: torch.Tensor = torch.cat((tier1_train_tokens, tier2_train_tokens), dim=0)
     print(f"[*] Mixed training corpus ready: {train_images.shape[0]} total samples.")
     return train_images, train_tokens, val_images, val_tokens
 
@@ -108,14 +100,10 @@ def train(arguments: argparse.Namespace) -> tuple[dict[str, object], Path]:
 
     torch.manual_seed(arguments.seed)
     model: VisionAutoregressiveModel = build_model(vocabulary, arguments)
-    optimizer: torch.optim.AdamW = build_adamw_optimizer(
-        model, learning_rate=arguments.lr
-    )
+    optimizer: torch.optim.AdamW = build_adamw_optimizer(model, learning_rate=arguments.lr)
     criterion: nn.Module = TeacherForcingCrossEntropy()
 
-    steps_per_epoch: int = len(
-        iter_batch_bounds(train_images.shape[0], arguments.batch_size)
-    )
+    steps_per_epoch: int = len(iter_batch_bounds(train_images.shape[0], arguments.batch_size))
     total_steps: int = arguments.num_epochs * steps_per_epoch
     scheduler = build_cosine_warmup_scheduler(
         optimizer,
@@ -130,9 +118,7 @@ def train(arguments: argparse.Namespace) -> tuple[dict[str, object], Path]:
 
     epoch_losses: list[float] = []
     val_losses: list[float] = []
-    final_checkpoint: Path = checkpoint_dir / (
-        f"checkpoint_epoch_{arguments.num_epochs:03d}.pt"
-    )
+    final_checkpoint: Path = checkpoint_dir / (f"checkpoint_epoch_{arguments.num_epochs:03d}.pt")
 
     for epoch in range(arguments.num_epochs):
         epoch_steps: list[float] = train_one_epoch(
@@ -192,9 +178,7 @@ async def evaluate_mixed(
     vocabulary: TokenVocabulary = JsonVocabularyAdapter().load_vocabulary(
         str(arguments.encoded_dir / "vocabulary.json")
     )
-    model: VisionAutoregressiveModel = load_model(
-        arguments.encoded_dir, checkpoint, config
-    )
+    model: VisionAutoregressiveModel = load_model(arguments.encoded_dir, checkpoint, config)
     processed_dirs: dict[str, Path] = {
         "tier2": arguments.tier2_dir,
         "tier3": arguments.tier3_dir,
@@ -269,9 +253,7 @@ def compare_against_baseline(
 def orchestrate(arguments: argparse.Namespace) -> None:
     """Run training, evaluation, and baseline comparison for the mixed model."""
     checkpoint: Path = (
-        arguments.output_dir
-        / "checkpoints"
-        / f"checkpoint_epoch_{arguments.num_epochs:03d}.pt"
+        arguments.output_dir / "checkpoints" / f"checkpoint_epoch_{arguments.num_epochs:03d}.pt"
     )
     results_path: Path = arguments.output_dir / "training_results.json"
 
@@ -312,19 +294,11 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Re-train the image-to-TikZ model on Tier 1 + Tier 2 data."
     )
-    parser.add_argument(
-        "--encoded-dir", type=Path, default=repo_root / "dataset" / "encoded"
-    )
+    parser.add_argument("--encoded-dir", type=Path, default=repo_root / "dataset" / "encoded")
     parser.add_argument("--results-dir", type=Path, default=repo_root / "results")
-    parser.add_argument(
-        "--output-dir", type=Path, default=repo_root / "results" / "mixed"
-    )
-    parser.add_argument(
-        "--tier2-dir", type=Path, default=repo_root / "dataset" / "processed_tier2"
-    )
-    parser.add_argument(
-        "--tier3-dir", type=Path, default=repo_root / "dataset" / "processed_tier3"
-    )
+    parser.add_argument("--output-dir", type=Path, default=repo_root / "results" / "mixed")
+    parser.add_argument("--tier2-dir", type=Path, default=repo_root / "dataset" / "processed_tier2")
+    parser.add_argument("--tier3-dir", type=Path, default=repo_root / "dataset" / "processed_tier3")
     parser.add_argument("--num-epochs", type=int, default=20)
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--model-dim", type=int, default=128)

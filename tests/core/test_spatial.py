@@ -8,6 +8,7 @@ Each test enforces a specific mathematical property:
 - Type boundary compliance (ImageTensor vs raw Tensor)
 - Guard clause rejection of invalid parameters
 """
+
 import pytest
 import torch
 
@@ -24,6 +25,7 @@ from core.models.value_objects import ImageTensor
 # ---------------------------------------------------------------------------
 # normalize_channels
 # ---------------------------------------------------------------------------
+
 
 def test_normalize_channels_range() -> None:
     """Output values must lie within the continuous manifold [0.0, 1.0]."""
@@ -72,6 +74,7 @@ def test_normalize_channels_idempotence() -> None:
 # resize_spatial_dimensions
 # ---------------------------------------------------------------------------
 
+
 def test_resize_spatial_dimensions_shape() -> None:
     """Output H, W must match the target parameters exactly."""
     # Shape: (1, 3, 64, 64)
@@ -112,6 +115,7 @@ def test_resize_spatial_dimensions_invalid_target() -> None:
 # rearrange_channels_last
 # ---------------------------------------------------------------------------
 
+
 def test_rearrange_channels_last_shape() -> None:
     """Output shape must be (B, H, W, C) after axis transposition."""
     # Shape: (2, 3, 16, 32)
@@ -138,6 +142,7 @@ def test_rearrange_channels_last_returns_raw_tensor() -> None:
 # ---------------------------------------------------------------------------
 # tile_batch_dimension
 # ---------------------------------------------------------------------------
+
 
 def test_tile_batch_dimension_shape() -> None:
     """Output batch dimension must equal B * repeats."""
@@ -166,6 +171,7 @@ def test_tile_batch_dimension_invalid_repeats() -> None:
 # ---------------------------------------------------------------------------
 # flatten_spatial_grid
 # ---------------------------------------------------------------------------
+
 
 def test_flatten_spatial_grid_shape() -> None:
     """Output shape must be (B, C, H*W) after spatial collapse."""

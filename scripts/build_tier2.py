@@ -65,9 +65,7 @@ async def orchestrate_tier2_build(args: argparse.Namespace) -> None:
         f"(compilation rate {compilation_rate:.2%})."
     )
 
-    train_idx, val_idx = stratified_train_val_split(
-        kept_labels, args.val_ratio, args.seed
-    )
+    train_idx, val_idx = stratified_train_val_split(kept_labels, args.val_ratio, args.seed)
 
     output_dir: str = args.output_dir
     persist_split(output_dir, "train", train_idx, kept_markups, kept_payloads)
@@ -87,9 +85,7 @@ async def orchestrate_tier2_build(args: argparse.Namespace) -> None:
         },
         "tikz_libraries": list(BASE_TIKZ_LIBRARIES),
         "duration_seconds": round(time.time() - started_at, 2),
-        "fingerprints_sample": [
-            markup_fingerprint(markup) for markup in kept_markups[:8]
-        ],
+        "fingerprints_sample": [markup_fingerprint(markup) for markup in kept_markups[:8]],
     }
 
     manifest_path: str = args.manifest_path

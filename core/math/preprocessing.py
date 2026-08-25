@@ -7,6 +7,7 @@ Pure function: no I/O, no side effects, no global state.
 Reference: Goodfellow et al., Deep Learning, Ch. 8 — input normalization
 for stable training of neural networks.
 """
+
 from core.exceptions import TensorTopologyError
 from core.math.spatial import normalize_channels, resize_spatial_dimensions
 from core.models.value_objects import ImageTensor
@@ -55,8 +56,6 @@ def preprocess_for_encoder(
     normalized: ImageTensor = normalize_channels(image)
 
     # Step 2: resize. Shape: (B, C, H, W) → (B, C, tH, tW).
-    resized: ImageTensor = resize_spatial_dimensions(
-        normalized, target_height, target_width
-    )
+    resized: ImageTensor = resize_spatial_dimensions(normalized, target_height, target_width)
 
     return resized

@@ -15,7 +15,14 @@ def test_package_catalog_has_minimum_entries() -> None:
     """Verify the catalog declares at least the 8 required package entries."""
     assert len(PACKAGE_CATALOG) >= 8
     required_names = (
-        "tikz", "pgfplots", "circuitikz", "tikz-cd", "tikz-3dplot", "amsmath", "siunitx", "xcolor",
+        "tikz",
+        "pgfplots",
+        "circuitikz",
+        "tikz-cd",
+        "tikz-3dplot",
+        "amsmath",
+        "siunitx",
+        "xcolor",
     )
     for name in required_names:
         assert name in PACKAGE_CATALOG

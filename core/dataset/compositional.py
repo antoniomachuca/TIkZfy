@@ -65,7 +65,10 @@ _PATTERN_WEIGHTS: tuple[float, ...] = (0.7, 0.15, 0.1, 0.05)
 
 # Weighted plot basis expressions, mirroring ``templates._function_plot``.
 _PLOT_BASIS_OPTIONS: tuple[str, ...] = (
-    "sin", "cos", "quadratic", "linear",
+    "sin",
+    "cos",
+    "quadratic",
+    "linear",
 )
 _PLOT_BASIS_WEIGHTS: tuple[float, ...] = (0.3, 0.3, 0.2, 0.2)
 
@@ -123,10 +126,7 @@ def _arc_spec(rng: np.random.Generator) -> str:
     start: float = float(rng.uniform(0.0, 360.0))
     end: float = start + float(rng.uniform(30.0, 330.0))
     radius: float = float(rng.uniform(0.5, 3.5))
-    return (
-        f"arc ({_format_scalar(start)}:{_format_scalar(end)}:"
-        f"{_format_scalar(radius)})"
-    )
+    return f"arc ({_format_scalar(start)}:{_format_scalar(end)}:{_format_scalar(radius)})"
 
 
 def _path_expr(rng: np.random.Generator, close: bool = False) -> str:
@@ -257,18 +257,14 @@ def generate_compositional_sample(
     """
     minimum, maximum = depth_range
     if minimum < 1 or maximum < minimum:
-        raise DomainError(
-            f"Invalid depth_range {depth_range}; expected 1 <= min <= max."
-        )
+        raise DomainError(f"Invalid depth_range {depth_range}; expected 1 <= min <= max.")
 
     scope_count: int = int(rng.integers(minimum, maximum + 1))
     commands: list[str] = [_scope(rng) for _ in range(scope_count)]
     markup: str = _wrap_picture(commands)
 
     if not within_length_budget(markup):
-        raise DomainError(
-            "Generated compositional markup exceeded the decoder length budget."
-        )
+        raise DomainError("Generated compositional markup exceeded the decoder length budget.")
     return markup
 
 

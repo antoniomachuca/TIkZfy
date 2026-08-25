@@ -42,9 +42,7 @@ def load_markup_corpus(split_directory: Path) -> list[TikzTokens]:
     return [TikzTokens(markup=path.read_text(encoding="utf-8")) for path in markup_paths]
 
 
-def load_image_batch(
-    split_directory: Path, target_height: int, target_width: int
-) -> torch.Tensor:
+def load_image_batch(split_directory: Path, target_height: int, target_width: int) -> torch.Tensor:
     """Load, channel-normalize, resize, and stack a split's image payloads.
 
     Returns:
@@ -60,16 +58,12 @@ def load_image_batch(
         rgb: torch.Tensor = _coerce_to_three_channels(loader.load_image(str(path)).raw_tensor)
         batch: ImageTensor = ImageTensor(raw_tensor=rgb)
         normalized: ImageTensor = normalize_channels(batch)
-        resized: ImageTensor = resize_spatial_dimensions(
-            normalized, target_height, target_width
-        )
+        resized: ImageTensor = resize_spatial_dimensions(normalized, target_height, target_width)
         resized_images.append(resized.raw_tensor)
     return torch.cat(resized_images, dim=0)
 
 
-def build_or_load_vocabulary(
-    train_directory: Path, vocabulary_path: Path
-) -> TokenVocabulary:
+def build_or_load_vocabulary(train_directory: Path, vocabulary_path: Path) -> TokenVocabulary:
     """Build and persist a vocabulary from the train split, or reload it."""
     if vocabulary_path.exists():
         return JsonVocabularyAdapter().load_vocabulary(str(vocabulary_path))
@@ -89,9 +83,7 @@ def encode_and_persist_split(
     """Encode and persist a split's tokens and images; return the token count."""
     corpus: list[TikzTokens] = load_markup_corpus(split_directory)
     token_tensor: torch.Tensor = batch_encode(corpus, vocabulary, max_length)
-    image_tensor: torch.Tensor = load_image_batch(
-        split_directory, target_height, target_width
-    )
+    image_tensor: torch.Tensor = load_image_batch(split_directory, target_height, target_width)
     if token_tensor.shape[0] != image_tensor.shape[0]:
         raise ValueError(
             "Image/token sample count mismatch in "
@@ -138,12 +130,8 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Persist the vocabulary and encoded image/token tensors."
     )
-    parser.add_argument(
-        "--dataset-dir", type=Path, default=repo_root / "dataset" / "processed"
-    )
-    parser.add_argument(
-        "--output-dir", type=Path, default=repo_root / "dataset" / "encoded"
-    )
+    parser.add_argument("--dataset-dir", type=Path, default=repo_root / "dataset" / "processed")
+    parser.add_argument("--output-dir", type=Path, default=repo_root / "dataset" / "encoded")
     parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--target-height", type=int, default=64)
     parser.add_argument("--target-width", type=int, default=64)

@@ -19,9 +19,7 @@ def load_markup_corpus(split_directory: Path) -> list[TikzTokens]:
     return [TikzTokens(markup=path.read_text(encoding="utf-8")) for path in markup_paths]
 
 
-def build_and_persist_vocabulary(
-    train_directory: Path, vocabulary_path: Path
-) -> int:
+def build_and_persist_vocabulary(train_directory: Path, vocabulary_path: Path) -> int:
     """Build the training vocabulary and return its size."""
     training_corpus: list[TikzTokens] = load_markup_corpus(train_directory)
     vocabulary = build_vocabulary(training_corpus)

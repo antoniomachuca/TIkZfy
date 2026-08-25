@@ -176,9 +176,7 @@ def test_metrics_operate_on_tokenized_markup() -> None:
     from core.models import TikzTokens
 
     reference = TikzTokens(markup=r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}")
-    candidate = TikzTokens(
-        markup=r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}"
-    )
+    candidate = TikzTokens(markup=r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}")
 
     reference_tokens: list[str] = tokenize_tikz_markup(reference)
     candidate_tokens: list[str] = tokenize_tikz_markup(candidate)
@@ -344,12 +342,8 @@ def test_geometric_graph_edit_distance_primitive_type_mismatch() -> None:
 
 
 def test_geometric_graph_edit_distance_supports_tikz_tokens() -> None:
-    ref_tokens = TikzTokens(
-        markup=r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}"
-    )
-    cand_tokens = TikzTokens(
-        markup=r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}"
-    )
+    ref_tokens = TikzTokens(markup=r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}")
+    cand_tokens = TikzTokens(markup=r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}")
 
     assert geometric_graph_edit_distance(ref_tokens, cand_tokens) == pytest.approx(0.0)
 
@@ -382,4 +376,3 @@ def test_batch_geometric_graph_edit_distance_rejects_invalid_inputs() -> None:
         geometric_graph_edit_distance(r"\draw (0,0);", r"\draw (0,0);", coordinate_scale=-2.0)
     with pytest.raises(TypeError):
         geometric_graph_edit_distance(123, r"\draw (0,0);")  # type: ignore[arg-type]
-

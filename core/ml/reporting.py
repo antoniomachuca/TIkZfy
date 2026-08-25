@@ -28,9 +28,7 @@ def compute_mean_and_std(values: list[float]) -> tuple[float, float]:
         return 0.0, 0.0
     count: int = len(values)
     mean_val: float = sum(values) / count
-    variance: float = (
-        sum((x - mean_val) ** 2 for x in values) / (count - 1) if count > 1 else 0.0
-    )
+    variance: float = sum((x - mean_val) ** 2 for x in values) / (count - 1) if count > 1 else 0.0
     return mean_val, math.sqrt(max(0.0, variance))
 
 
@@ -73,19 +71,13 @@ def generate_multitier_latex_table(
         for tier_idx, tier_name in enumerate(tiers):
             metrics = tier_data[tier_name]
             bleu_str: str = format_mean_std(*metrics.get("corpus_bleu", (0.0, 0.0)))
-            ged_str: str = format_mean_std(
-                *metrics.get("mean_geometric_edit_distance", (0.0, 0.0))
-            )
-            h_ged_str: str = format_mean_std(
-                *metrics.get("mean_graph_edit_distance", (0.0, 0.0))
-            )
+            ged_str: str = format_mean_std(*metrics.get("mean_geometric_edit_distance", (0.0, 0.0)))
+            h_ged_str: str = format_mean_std(*metrics.get("mean_graph_edit_distance", (0.0, 0.0)))
             cr_mean, cr_std = metrics.get("compilation_rate", (0.0, 0.0))
             cr_str: str = f"{cr_mean * 100.0:.1f} \\pm {cr_std * 100.0:.1f}"
             ssim_str: str = format_mean_std(*metrics.get("mean_ssim", (0.0, 0.0)))
 
-            model_label: str = (
-                f"\\textbf{{{model_name.capitalize()}}}" if tier_idx == 0 else ""
-            )
+            model_label: str = f"\\textbf{{{model_name.capitalize()}}}" if tier_idx == 0 else ""
             rows.append(
                 f"{model_label} & {tier_name.upper()} & {bleu_str} & {ged_str} & "
                 f"{h_ged_str} & {cr_str} & {ssim_str} \\\\"
@@ -96,11 +88,7 @@ def generate_multitier_latex_table(
     if rows and rows[-1] == "\\midrule":
         rows.pop()
 
-    footer: str = (
-        "\n\\bottomrule\n"
-        "\\end{tabular}\n"
-        "\\end{table*}\n"
-    )
+    footer: str = "\n\\bottomrule\n\\end{tabular}\n\\end{table*}\n"
     return headers + "\n".join(rows) + footer
 
 
@@ -157,11 +145,7 @@ def generate_ablation_latex_table(
             f"{ssim:.3f}{delta_ssim_str} \\\\"
         )
 
-    footer: str = (
-        "\n\\bottomrule\n"
-        "\\end{tabular}\n"
-        "\\end{table}\n"
-    )
+    footer: str = "\n\\bottomrule\n\\end{tabular}\n\\end{table}\n"
     return headers + "\n".join(rows) + footer
 
 

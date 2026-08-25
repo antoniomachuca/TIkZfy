@@ -19,6 +19,7 @@ def test_torchvision_loader_success() -> None:
 
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
         import torchvision.io as io
+
         io.write_png(dummy_tensor, tmp.name)
         tmp_path = tmp.name
 

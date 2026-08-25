@@ -61,11 +61,8 @@ class JsonVocabularyAdapter(VocabularyPersistencePort):
                 f"Invalid vocabulary payload in '{source_path}'. Expected dictionary."
             )
 
-
         token_to_index: dict[str, int] = raw_payload
-        index_to_token: dict[int, str] = {
-            int(idx): token for token, idx in token_to_index.items()
-        }
+        index_to_token: dict[int, str] = {int(idx): token for token, idx in token_to_index.items()}
 
         try:
             return TokenVocabulary(token_to_index=token_to_index, index_to_token=index_to_token)

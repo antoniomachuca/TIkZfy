@@ -11,6 +11,7 @@ References:
     Goodfellow et al., Deep Learning — autoregressive sequence modeling,
         vocabulary construction, and token embedding layers.
 """
+
 import re
 
 import torch
@@ -37,8 +38,7 @@ NUM_COORDINATE_BINS: int = 100
 
 # Pre-computed spatial coordinate bins: 101 discrete points spanning [-5.0, 5.0]
 COORDINATE_BINS: tuple[str, ...] = tuple(
-    f"{round(CANVAS_MIN + idx * COORDINATE_STEP, 1):g}"
-    for idx in range(NUM_COORDINATE_BINS + 1)
+    f"{round(CANVAS_MIN + idx * COORDINATE_STEP, 1):g}" for idx in range(NUM_COORDINATE_BINS + 1)
 )
 
 # Regex pattern matching discrete TikZ tokens, environments, operators, and identifiers
@@ -256,9 +256,11 @@ def encode_to_tensor(
         raise TypeError("Vocabulary must be a TokenVocabulary instance.")
 
     string_tokens: list[str] = tokenize_tikz_markup(tokens, quantize=quantize)
-    token_indices: list[int] = [BOS_INDEX] + [
-        vocabulary.token_to_index.get(token, UNK_INDEX) for token in string_tokens
-    ] + [EOS_INDEX]
+    token_indices: list[int] = (
+        [BOS_INDEX]
+        + [vocabulary.token_to_index.get(token, UNK_INDEX) for token in string_tokens]
+        + [EOS_INDEX]
+    )
 
     sequence_len: int = len(token_indices)
     if sequence_len > max_length:

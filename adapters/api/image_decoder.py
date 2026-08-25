@@ -80,9 +80,7 @@ def decode_image_bytes_to_tensor(
         raise TensorTopologyError(f"Unsupported image channel count: {channels}.")
 
     # Shape: (1, 3, H, W)
-    batched_tensor: ImageTensor = ImageTensor(
-        raw_tensor=normalized_channels.unsqueeze(0)
-    )
+    batched_tensor: ImageTensor = ImageTensor(raw_tensor=normalized_channels.unsqueeze(0))
 
     return resize_spatial_dimensions(
         image=batched_tensor,

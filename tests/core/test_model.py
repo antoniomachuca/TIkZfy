@@ -37,9 +37,11 @@ def test_decoder_is_causally_masked() -> None:
     model = _model(max_length=8)
     model.eval()
     images = torch.randn(1, 3, 32, 32)
-    baseline_targets = torch.arange(8, dtype=torch.long).remainder(
-        len(model.vocabulary.token_to_index)
-    ).unsqueeze(0)
+    baseline_targets = (
+        torch.arange(8, dtype=torch.long)
+        .remainder(len(model.vocabulary.token_to_index))
+        .unsqueeze(0)
+    )
     modified_targets = baseline_targets.clone()
     modified_targets[:, 5:] = 0
 
@@ -176,5 +178,3 @@ def test_vision_autoregressive_model_scaled_architecture() -> None:
 
     assert logits.shape == (2, 16, len(vocab.token_to_index))
     assert model.target_device == torch.device("cpu")
-
-

@@ -9,6 +9,7 @@ sample stays well under the 512-token encoder budget (proxy: 4000 chars).
 Reference: Golub & Van Loan, Matrix Computations — vectorized sampling of
 vertex coordinates via trigonometric evaluation over batched angle arrays.
 """
+
 from collections.abc import Callable
 from typing import Any
 
@@ -18,8 +19,16 @@ from numpy.typing import NDArray
 from core.exceptions import DomainError
 
 NAMED_COLORS: tuple[str, ...] = (
-    "red", "blue", "green", "black", "orange",
-    "purple", "brown", "cyan", "magenta", "gray",
+    "red",
+    "blue",
+    "green",
+    "black",
+    "orange",
+    "purple",
+    "brown",
+    "cyan",
+    "magenta",
+    "gray",
 )
 LINE_STYLES: tuple[str, ...] = ("solid", "dashed", "dotted")
 LINE_WIDTHS: tuple[str, ...] = ("thin", "thick", "very thick")
@@ -85,9 +94,7 @@ def _point_chain(points: NDArray[Any]) -> str:
 
     Temporal complexity: O(k) where k is the number of points (k <= 12).
     """
-    return " -- ".join(
-        _format_point(float(point[0]), float(point[1])) for point in points
-    )
+    return " -- ".join(_format_point(float(point[0]), float(point[1])) for point in points)
 
 
 def _wrap_picture(*commands: str) -> str:
@@ -123,8 +130,7 @@ def _polyline(rng: np.random.Generator) -> str:
     vertex_count: int = int(rng.integers(3, 7))
     points: NDArray[Any] = _sample_points(rng, vertex_count)
     command: str = (
-        f"\\draw[{_choice(rng, LINE_WIDTHS)}, {_choice(rng, NAMED_COLORS)}] "
-        f"{_point_chain(points)};"
+        f"\\draw[{_choice(rng, LINE_WIDTHS)}, {_choice(rng, NAMED_COLORS)}] {_point_chain(points)};"
     )
     return _wrap_picture(command)
 
@@ -146,9 +152,7 @@ def _polygon(rng: np.random.Generator) -> str:
     # Shape: (sides,)
     angles: NDArray[Any] = rotation + 2.0 * np.pi * np.arange(sides) / sides
     # Shape: (sides, 2)
-    vertices: NDArray[Any] = center + radius * np.column_stack(
-        (np.cos(angles), np.sin(angles))
-    )
+    vertices: NDArray[Any] = center + radius * np.column_stack((np.cos(angles), np.sin(angles)))
 
     command: str = (
         f"\\draw[{_choice(rng, LINE_WIDTHS)}, {_choice(rng, NAMED_COLORS)}] "
@@ -164,9 +168,7 @@ def _circle_arc(rng: np.random.Generator) -> str:
     Temporal complexity: O(1).
     """
     center: NDArray[Any] = _sample_points(rng, 1)[0]
-    style: str = (
-        f"{_choice(rng, LINE_WIDTHS)}, {_choice(rng, NAMED_COLORS)}"
-    )
+    style: str = f"{_choice(rng, LINE_WIDTHS)}, {_choice(rng, NAMED_COLORS)}"
     variant: int = int(rng.integers(0, 3))
 
     if variant == 0:
@@ -213,9 +215,7 @@ def _grid_axes(rng: np.random.Generator) -> str:
         f"\\draw[->, thick] {_format_point(0.0, -CANVAS_BOUND)} -- "
         f"{_format_point(0.0, CANVAS_BOUND)};"
     )
-    grid: str = (
-        f"\\draw[step={_format_scalar(step)}, gray, thin] {corner_lo} grid {corner_hi};"
-    )
+    grid: str = f"\\draw[step={_format_scalar(step)}, gray, thin] {corner_lo} grid {corner_hi};"
     return _wrap_picture(grid, axis_h, axis_v)
 
 
@@ -295,8 +295,7 @@ def _composed(rng: np.random.Generator) -> str:
     selected: NDArray[Any] = rng.choice(len(primitive_pool), size=primitive_count)
 
     commands: list[str] = [
-        _extract_body(primitive_pool[int(primitive_idx)](rng))
-        for primitive_idx in selected
+        _extract_body(primitive_pool[int(primitive_idx)](rng)) for primitive_idx in selected
     ]
     return _wrap_picture(*commands)
 
@@ -332,8 +331,7 @@ def generate_sample(family: str, rng: np.random.Generator) -> str:
     generator: Callable[[np.random.Generator], str] | None = _GENERATORS.get(family)
     if generator is None:
         raise DomainError(
-            f"Unknown template family '{family}'. "
-            f"Valid families: {list(FAMILY_NAMES)}."
+            f"Unknown template family '{family}'. Valid families: {list(FAMILY_NAMES)}."
         )
     return generator(rng)
 
@@ -379,7 +377,6 @@ def family_index(family: str) -> int:
     """
     if family not in FAMILY_NAMES:
         raise DomainError(
-            f"Unknown template family '{family}'. "
-            f"Valid families: {list(FAMILY_NAMES)}."
+            f"Unknown template family '{family}'. Valid families: {list(FAMILY_NAMES)}."
         )
     return FAMILY_NAMES.index(family)

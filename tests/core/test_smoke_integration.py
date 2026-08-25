@@ -59,9 +59,7 @@ def test_smoke_mini_batch_forward_backward_cpu() -> None:
 
     # Synthetic mini-batch tensors: Shape (B, C, H, W) and (B, L)
     images: torch.Tensor = torch.randn(batch_size, 3, height, width)
-    tokens: torch.Tensor = torch.randint(
-        1, vocab_size, (batch_size, seq_length), dtype=torch.long
-    )
+    tokens: torch.Tensor = torch.randint(1, vocab_size, (batch_size, seq_length), dtype=torch.long)
     # Ensure BOS token is at index 0
     tokens[:, 0] = 0
 
@@ -86,9 +84,9 @@ def test_smoke_mini_batch_forward_backward_cpu() -> None:
     for name, parameter in model.named_parameters():
         if parameter.requires_grad:
             assert parameter.grad is not None, f"Parameter {name} did not receive gradients."
-            assert (
-                torch.isfinite(parameter.grad).all()
-            ), f"Parameter {name} has non-finite gradients."
+            assert torch.isfinite(parameter.grad).all(), (
+                f"Parameter {name} has non-finite gradients."
+            )
 
     optimizer.step()
 

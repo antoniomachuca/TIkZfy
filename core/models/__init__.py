@@ -35,4 +35,3 @@ __all__ = [
     "EOS_INDEX",
     "UNK_INDEX",
 ]
-

@@ -84,9 +84,7 @@ class Phase3Config:
     device: str | None = None
 
 
-def load_dataset_split(
-    encoded_dir: Path, split_prefix: str
-) -> tuple[torch.Tensor, torch.Tensor]:
+def load_dataset_split(encoded_dir: Path, split_prefix: str) -> tuple[torch.Tensor, torch.Tensor]:
     """Load pre-encoded images and token tensors from disk.
 
     Returns:
@@ -95,9 +93,7 @@ def load_dataset_split(
     images_path: Path = encoded_dir / f"{split_prefix}_images.pt"
     tokens_path: Path = encoded_dir / f"{split_prefix}_tokens.pt"
     if not images_path.exists() or not tokens_path.exists():
-        raise FileNotFoundError(
-            f"Dataset split '{split_prefix}' not found under '{encoded_dir}'."
-        )
+        raise FileNotFoundError(f"Dataset split '{split_prefix}' not found under '{encoded_dir}'.")
     images: torch.Tensor = torch.load(images_path, weights_only=True)
     tokens: torch.Tensor = torch.load(tokens_path, weights_only=True)
     return images, tokens
@@ -178,14 +174,10 @@ def train_single_run(
         val_tokens = val_tokens.to(model_device)
 
     torch.manual_seed(seed)
-    optimizer: torch.optim.AdamW = build_adamw_optimizer(
-        model, learning_rate=config.learning_rate
-    )
+    optimizer: torch.optim.AdamW = build_adamw_optimizer(model, learning_rate=config.learning_rate)
     criterion: nn.Module = TeacherForcingCrossEntropy()
 
-    steps_per_epoch: int = len(
-        iter_batch_bounds(train_images.shape[0], config.batch_size)
-    )
+    steps_per_epoch: int = len(iter_batch_bounds(train_images.shape[0], config.batch_size))
     total_steps: int = max(1, config.num_epochs * steps_per_epoch)
     scheduler = build_cosine_warmup_scheduler(
         optimizer,
@@ -262,9 +254,7 @@ def evaluate_split_metrics(
             pred_indices: tuple[int, ...] = greedy_search(
                 model, img_input, max_length=config.max_length
             )
-            pred_markup: TikzTokens = decode_indices_to_markup(
-                vocabulary, pred_indices
-            )
+            pred_markup: TikzTokens = decode_indices_to_markup(vocabulary, pred_indices)
             candidate_markups.append(pred_markup)
             candidates.append(tokenize_tikz_markup(pred_markup))
 
@@ -272,9 +262,7 @@ def evaluate_split_metrics(
     graph_distances: tuple[float, ...] = batch_geometric_graph_edit_distance(
         reference_markups, candidate_markups
     )
-    mean_graph_ged: float = (
-        sum(graph_distances) / len(graph_distances) if graph_distances else 0.0
-    )
+    mean_graph_ged: float = sum(graph_distances) / len(graph_distances) if graph_distances else 0.0
 
     # Fast compilation check
     successful_compiles: int = 0
@@ -282,9 +270,7 @@ def evaluate_split_metrics(
         if "\\begin{tikzpicture}" in markup.markup and "\\end{tikzpicture}" in markup.markup:
             successful_compiles += 1
 
-    compilation_rate: float = (
-        successful_compiles / sample_count if sample_count > 0 else 0.0
-    )
+    compilation_rate: float = successful_compiles / sample_count if sample_count > 0 else 0.0
     # Estimate visual fidelity SSIM based on token alignment when no rasterizer is present
     estimated_ssim: float = max(0.0, min(1.0, 1.0 - mean_graph_ged))
 
@@ -352,9 +338,7 @@ def orchestrate_phase3(
     print(f"[*] Starting Phase 3 Orchestration on Device: {device}")
 
     vocabulary_path: Path = encoded_dir / "vocabulary.json"
-    vocabulary: TokenVocabulary = JsonVocabularyAdapter().load_vocabulary(
-        str(vocabulary_path)
-    )
+    vocabulary: TokenVocabulary = JsonVocabularyAdapter().load_vocabulary(str(vocabulary_path))
     print(f"[*] Vocabulary loaded: {len(vocabulary.token_to_index)} tokens.")
 
     # Load splits
@@ -407,9 +391,7 @@ def orchestrate_phase3(
 
         for seed in config.seeds:
             run_name: str = f"{model_type}_seed_{seed}"
-            model: VisionAutoregressiveModel = build_model_instance(
-                vocabulary, config, device
-            )
+            model: VisionAutoregressiveModel = build_model_instance(vocabulary, config, device)
             val_loss, checkpoint_path = train_single_run(
                 model=model,
                 train_images=tier1_train_img,
@@ -436,15 +418,13 @@ def orchestrate_phase3(
                     f"[{run_name}] {tier_name.upper()} | BLEU: {metrics['corpus_bleu']:.3f} "
                     f"| GED: {metrics['mean_geometric_edit_distance']:.3f} "
                     f"| Hungarian GED: {metrics['mean_graph_edit_distance']:.3f} "
-                    f"| CR: {metrics['compilation_rate']*100:.1f}%"
+                    f"| CR: {metrics['compilation_rate'] * 100:.1f}%"
                 )
 
             seed_evaluations.append(run_tier_evals)
 
         all_results["multiseed_runs"][model_type] = seed_evaluations
-        all_results["aggregated_metrics"][model_type] = aggregate_seed_metrics(
-            seed_evaluations
-        )
+        all_results["aggregated_metrics"][model_type] = aggregate_seed_metrics(seed_evaluations)
 
     # Step 3: Run Ablation Studies on Tier 3
     ablation_summary: dict[str, dict[str, float]] = {}
@@ -462,9 +442,7 @@ def orchestrate_phase3(
 
         for variant_name, is_dec_only in ablation_configs:
             run_name = f"ablation_{variant_name}"
-            model = build_model_instance(
-                vocabulary, config, device, is_decoder_only=is_dec_only
-            )
+            model = build_model_instance(vocabulary, config, device, is_decoder_only=is_dec_only)
             val_loss, checkpoint_path = train_single_run(
                 model=model,
                 train_images=tier1_train_img,
@@ -484,7 +462,7 @@ def orchestrate_phase3(
             print(
                 f"[Ablation: {variant_name}] Tier 3 | BLEU: {ablation_metrics['corpus_bleu']:.3f} "
                 f"| Hungarian GED: {ablation_metrics['mean_graph_edit_distance']:.3f} "
-                f"| CR: {ablation_metrics['compilation_rate']*100:.1f}%"
+                f"| CR: {ablation_metrics['compilation_rate'] * 100:.1f}%"
             )
 
         all_results["ablation_study"] = ablation_summary
@@ -519,9 +497,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser: argparse.ArgumentParser = argparse.ArgumentParser(
         description="Master Phase 3 Cloud Training & Multi-Tier Evaluation Orchestrator."
     )
-    parser.add_argument(
-        "--encoded-dir", type=Path, default=repo_root / "dataset" / "encoded"
-    )
+    parser.add_argument("--encoded-dir", type=Path, default=repo_root / "dataset" / "encoded")
     parser.add_argument("--results-dir", type=Path, default=repo_root / "results")
     parser.add_argument("--num-epochs", type=int, default=60)
     parser.add_argument("--batch-size", type=int, default=32)

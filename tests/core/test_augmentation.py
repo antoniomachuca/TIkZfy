@@ -79,9 +79,7 @@ def test_gaussian_blur_preserves_shape_and_range() -> None:
 def test_augment_image_composed_pipeline() -> None:
     batch: torch.Tensor = _batch()
 
-    augmented: torch.Tensor = augment_image(
-        batch, noise_sigma=0.02, contrast_alpha=1.1, blur=True
-    )
+    augmented: torch.Tensor = augment_image(batch, noise_sigma=0.02, contrast_alpha=1.1, blur=True)
 
     assert augmented.shape == batch.shape
     assert augmented.min().item() >= 0.0

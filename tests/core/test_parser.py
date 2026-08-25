@@ -39,4 +39,4 @@ def test_extract_tikz_graphs_type_error() -> None:
     Confirms type invariance when receiving invalid parameters.
     """
     with pytest.raises(TypeError):
-        extract_tikz_graphs("Invalid string payload") # type: ignore
+        extract_tikz_graphs("Invalid string payload")  # type: ignore

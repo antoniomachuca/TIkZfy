@@ -37,9 +37,7 @@ from core.models.value_objects import TikzTokens
 # substitution cost, so closer points interpolate the cost linearly in [0, 1].
 DEFAULT_COORDINATE_SCALE: float = 10.0 * math.sqrt(2.0)
 
-_COORDINATE_PATTERN: re.Pattern[str] = re.compile(
-    r"\((-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\)"
-)
+_COORDINATE_PATTERN: re.Pattern[str] = re.compile(r"\((-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\)")
 
 
 _NUMERIC_PATTERN: re.Pattern[str] = re.compile(r"^-?\d+(?:\.\d+)?$")
@@ -116,9 +114,7 @@ def _substitution_costs(
     """
     reference_length: int = len(reference)
     candidate_length: int = len(candidate)
-    costs: NDArray[np.float64] = np.ones(
-        (reference_length, candidate_length), dtype=np.float64
-    )
+    costs: NDArray[np.float64] = np.ones((reference_length, candidate_length), dtype=np.float64)
     if reference_length == 0 or candidate_length == 0:
         return costs
 
@@ -158,9 +154,7 @@ def _raw_geometric_edit_distance(
     column: NDArray[np.float64] = offsets.copy()
     for column_index in range(1, candidate_length + 1):
         deletion: NDArray[np.float64] = column + 1.0
-        substitution: NDArray[np.float64] = (
-            column[:-1] + substitution_costs[:, column_index - 1]
-        )
+        substitution: NDArray[np.float64] = column[:-1] + substitution_costs[:, column_index - 1]
         merged: NDArray[np.float64] = np.empty(reference_length + 1, dtype=np.float64)
         merged[0] = float(column_index)
         merged[1:] = np.minimum(deletion[1:], substitution)
@@ -195,9 +189,7 @@ def geometric_edit_distance(
     substitution_costs: NDArray[np.float64] = _substitution_costs(
         reference, candidate, coordinate_scale
     )
-    raw_distance: float = _raw_geometric_edit_distance(
-        reference, candidate, substitution_costs
-    )
+    raw_distance: float = _raw_geometric_edit_distance(reference, candidate, substitution_costs)
     return raw_distance / max(len(reference), len(candidate), 1)
 
 
@@ -223,10 +215,7 @@ def _ngram_counts(tokens: Sequence[str], order: int) -> Counter[tuple[str, ...]]
     """Count the ``order``-grams of a token sequence."""
     if len(tokens) < order:
         return Counter()
-    return Counter(
-        tuple(tokens[index : index + order])
-        for index in range(len(tokens) - order + 1)
-    )
+    return Counter(tuple(tokens[index : index + order]) for index in range(len(tokens) - order + 1))
 
 
 def _brevity_penalty(reference_length: int, candidate_length: int) -> float:
@@ -276,8 +265,7 @@ def corpus_bleu(
             reference_counts: Counter[tuple[str, ...]] = _ngram_counts(reference, order)
             candidate_counts: Counter[tuple[str, ...]] = _ngram_counts(candidate, order)
             clipped_counts[order - 1] += sum(
-                min(candidate_counts[ngram], reference_counts[ngram])
-                for ngram in candidate_counts
+                min(candidate_counts[ngram], reference_counts[ngram]) for ngram in candidate_counts
             )
             total_counts[order - 1] += sum(candidate_counts.values())
 
@@ -307,14 +295,11 @@ class EvaluationMetrics:
             raise ValueError(f"bleu_score must lie in [0, 1]. Got {self.bleu_score}.")
         if not 0.0 <= self.mean_geometric_distance <= 1.0:
             raise ValueError(
-                f"mean_geometric_distance must lie in [0, 1]. "
-                f"Got {self.mean_geometric_distance}."
+                f"mean_geometric_distance must lie in [0, 1]. Got {self.mean_geometric_distance}."
             )
         if not self.per_sample_geometric_distance:
             raise ValueError("per_sample_geometric_distance must be non-empty.")
-        if not all(
-            0.0 <= distance <= 1.0 for distance in self.per_sample_geometric_distance
-        ):
+        if not all(0.0 <= distance <= 1.0 for distance in self.per_sample_geometric_distance):
             raise ValueError("Every per-sample distance must lie in [0, 1].")
 
 
@@ -426,16 +411,12 @@ def structural_similarity(
     b: torch.Tensor = _to_batch_channels(image_b)
     channels: int = a.shape[1]
 
-    window: torch.Tensor = _gaussian_window(
-        window_size, SSIM_SIGMA, dtype=a.dtype, device=a.device
-    )
+    window: torch.Tensor = _gaussian_window(window_size, SSIM_SIGMA, dtype=a.dtype, device=a.device)
     # Shape: (channels, 1, window_size, window_size) so each channel convolves
     # with its own single-channel window via grouped convolution. A valid (zero
     # padding) convolution keeps the statistics fully-supported, so border
     # pixels never see truncated windows.
-    kernel: torch.Tensor = window.view(1, 1, window_size, window_size).repeat(
-        channels, 1, 1, 1
-    )
+    kernel: torch.Tensor = window.view(1, 1, window_size, window_size).repeat(channels, 1, 1, 1)
 
     c1: float = (k1 * data_range) ** 2
     c2: float = (k2 * data_range) ** 2
@@ -478,8 +459,7 @@ def batch_visual_similarity(
         raise ValueError("pairs must be non-empty.")
 
     per_sample: tuple[float, ...] = tuple(
-        structural_similarity(ground_truth, predicted)
-        for ground_truth, predicted in pairs
+        structural_similarity(ground_truth, predicted) for ground_truth, predicted in pairs
     )
     return sum(per_sample) / len(per_sample), per_sample
 
@@ -564,9 +544,7 @@ def _parse_tikz_primitives(
                     (float(m.group(1)), float(m.group(2)))
                     for m in _COORDINATE_PATTERN.finditer(stmt)
                 )
-                primitives.append(
-                    GeometricPrimitive(kind=kind, coordinates=coordinates)
-                )
+                primitives.append(GeometricPrimitive(kind=kind, coordinates=coordinates))
 
     return primitives
 

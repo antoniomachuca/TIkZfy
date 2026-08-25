@@ -125,9 +125,7 @@ def _resolve_packages(packages: tuple[str, ...]) -> list[str]:
     return resolved
 
 
-def build_preamble(
-    packages: tuple[str, ...], tikz_libraries: tuple[str, ...] = ()
-) -> str:
+def build_preamble(packages: tuple[str, ...], tikz_libraries: tuple[str, ...] = ()) -> str:
     """
     Builds a complete standalone document preamble from declared packages.
 

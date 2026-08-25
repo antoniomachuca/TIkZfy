@@ -29,8 +29,7 @@ def test_compositional_sample_is_valid_tikz_token() -> None:
     """Every generated figure is accepted by the domain value object."""
     rng: np.random.Generator = np.random.default_rng(7)
     samples: list[str] = [
-        generate_compositional_sample(rng, depth_range=DEFAULT_DEPTH_RANGE)
-        for _ in range(64)
+        generate_compositional_sample(rng, depth_range=DEFAULT_DEPTH_RANGE) for _ in range(64)
     ]
     assert all(isinstance(TikzTokens(markup=sample), TikzTokens) for sample in samples)
 

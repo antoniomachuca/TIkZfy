@@ -21,15 +21,11 @@ def test_build_encoded_dataset_persists_tensors(tmp_path: Path) -> None:
     train_directory.mkdir(parents=True)
     val_directory.mkdir(parents=True)
 
-    _write_sample(
-        train_directory, 0, r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}"
-    )
+    _write_sample(train_directory, 0, r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}")
     _write_sample(
         train_directory, 1, r"\begin{tikzpicture}\draw[red] (0,0) circle (1);\end{tikzpicture}"
     )
-    _write_sample(
-        val_directory, 0, r"\begin{tikzpicture}\draw (0,0) -- (2,2);\end{tikzpicture}"
-    )
+    _write_sample(val_directory, 0, r"\begin{tikzpicture}\draw (0,0) -- (2,2);\end{tikzpicture}")
 
     output_directory = tmp_path / "encoded"
     shapes = build_encoded_dataset(

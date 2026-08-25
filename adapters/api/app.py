@@ -73,9 +73,7 @@ def create_app(
 
     if active_orchestrator is None:
         checkpoint_env: str = os.getenv("CHECKPOINT_PATH", "checkpoints/best_model.pt")
-        vocab_env: str = os.getenv(
-            "VOCABULARY_PATH", "dataset/encoded/vocabulary.json"
-        )
+        vocab_env: str = os.getenv("VOCABULARY_PATH", "dataset/encoded/vocabulary.json")
         if Path(checkpoint_env).exists() and Path(vocab_env).exists():
             try:
                 active_orchestrator = ImageToTikzOrchestrator.from_checkpoint(
@@ -149,9 +147,7 @@ def create_app(
         try:
             compilation_result = await active_compiler.compile_tikz(tokens)
             if compilation_result.is_successful and compilation_result.pdf_data:
-                png_bytes = await active_rasterizer.rasterize_pdf(
-                    compilation_result.pdf_data
-                )
+                png_bytes = await active_rasterizer.rasterize_pdf(compilation_result.pdf_data)
                 b64_str = base64.b64encode(png_bytes).decode("ascii")
                 preview_url = f"data:image/png;base64,{b64_str}"
             else:
@@ -188,9 +184,7 @@ def create_app(
         try:
             compilation_result = await active_compiler.compile_tikz(tokens)
             if compilation_result.is_successful and compilation_result.pdf_data:
-                png_bytes = await active_rasterizer.rasterize_pdf(
-                    compilation_result.pdf_data
-                )
+                png_bytes = await active_rasterizer.rasterize_pdf(compilation_result.pdf_data)
                 b64_str = base64.b64encode(png_bytes).decode("ascii")
                 return CompileResponse(
                     success=True,
