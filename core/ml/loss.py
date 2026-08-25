@@ -9,14 +9,14 @@ References:
 
 import math
 from functools import partial
-from typing import Any
+from typing import Any, cast
 
 import torch
 import torch.nn.functional as F
 from torch import nn
 
 from core.exceptions import TensorTopologyError
-from core.models import PAD_INDEX
+from core.models import PAD_INDEX, TokenVocabulary
 
 
 def build_teacher_forcing_pair(tokens: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
@@ -71,6 +71,78 @@ class TeacherForcingCrossEntropy(nn.Module):
             logits.transpose(1, 2), target_tokens, ignore_index=self.ignore_index
         )
         return loss
+
+
+class SpatialAwareHybridLoss(nn.Module):
+    """Hybrid objective combining token cross-entropy with continuous coordinate Huber loss.
+
+    Penalizes syntax and structure errors via Cross-Entropy while computing continuous
+    Smooth L1 spatial distance over numerical coordinate predictions.
+    """
+
+    def __init__(
+        self,
+        vocabulary: TokenVocabulary,
+        spatial_weight: float = 0.5,
+        ignore_index: int = PAD_INDEX,
+    ) -> None:
+        super().__init__()
+        self.spatial_weight: float = spatial_weight
+        self.ignore_index: int = ignore_index
+
+        vocab_size: int = len(vocabulary.token_to_index)
+        is_coord: list[bool] = [False] * vocab_size
+        coord_values: list[float] = [0.0] * vocab_size
+
+        for token, idx in vocabulary.token_to_index.items():
+            try:
+                val: float = float(token)
+                is_coord[idx] = True
+                coord_values[idx] = val
+            except ValueError:
+                pass
+
+        self.register_buffer("is_coord_mask", torch.tensor(is_coord, dtype=torch.bool))
+        self.register_buffer("coord_values", torch.tensor(coord_values, dtype=torch.float32))
+
+    def forward(self, logits: torch.Tensor, target_tokens: torch.Tensor) -> torch.Tensor:
+        """Return scalar hybrid loss = CrossEntropy + lambda * SmoothL1(coords)."""
+        if logits.ndim != 3:
+            raise TensorTopologyError("Logits must be a rank-3 tensor with shape (B, L, V).")
+        if target_tokens.ndim != 2 or target_tokens.dtype != torch.long:
+            raise TensorTopologyError("Target tokens must be a rank-2 torch.long tensor.")
+        if tuple(logits.shape[:2]) != tuple(target_tokens.shape):
+            raise TensorTopologyError("Logit and target batch/sequence dimensions must match.")
+
+        ce_loss: torch.Tensor = F.cross_entropy(
+            logits.transpose(1, 2), target_tokens, ignore_index=self.ignore_index
+        )
+
+        if self.spatial_weight <= 0.0:
+            return ce_loss
+
+        is_coord_mask: torch.Tensor = cast(torch.Tensor, self.is_coord_mask)
+        coord_values: torch.Tensor = cast(torch.Tensor, self.coord_values)
+
+        is_target_coord: torch.Tensor = is_coord_mask[target_tokens]
+        if not bool(is_target_coord.any().item()):
+            return ce_loss
+
+        probs: torch.Tensor = F.softmax(logits, dim=-1)
+        coord_probs: torch.Tensor = probs * is_coord_mask.unsqueeze(0).unsqueeze(0)
+        coord_sum: torch.Tensor = coord_probs.sum(dim=-1, keepdim=True).clamp(min=1e-6)
+        normalized_coord_probs: torch.Tensor = coord_probs / coord_sum
+
+        pred_coords: torch.Tensor = (
+            normalized_coord_probs * coord_values.unsqueeze(0).unsqueeze(0)
+        ).sum(dim=-1)
+        gt_coords: torch.Tensor = coord_values[target_tokens]
+
+        coord_loss: torch.Tensor = F.smooth_l1_loss(
+            pred_coords[is_target_coord], gt_coords[is_target_coord], beta=0.1
+        )
+
+        return ce_loss + self.spatial_weight * coord_loss
 
 
 def build_adamw_optimizer(

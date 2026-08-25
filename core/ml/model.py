@@ -54,10 +54,11 @@ class ConvResidualBlock(nn.Module):
 
 
 class VisionEncoder(nn.Module):
-    """Deep convolutional image encoder returning normalized visual tokens.
+    """Deep convolutional image encoder with CoordConv returning normalized visual tokens.
 
-    Downsamples the input image through a 2-stage convolutional stem and
-    processes the feature maps through a sequence of residual blocks.
+    Downsamples the input image through a 2-stage convolutional stem conditioned on
+    spatial coordinate planes (X, Y in [-1, 1]) and processes the feature maps
+    through a sequence of residual blocks.
 
     Input shape: ``(B, C_{in}, H, W)``
     Output shape: ``(B, S, D)`` where ``S = (H / 4) * (W / 4)`` and ``D = model_dimension``.
@@ -68,6 +69,7 @@ class VisionEncoder(nn.Module):
         input_channels: int,
         model_dimension: int,
         num_blocks: int = 6,
+        use_coord_conv: bool = True,
     ) -> None:
         super().__init__()
         if input_channels <= 0 or model_dimension <= 0:
@@ -77,8 +79,11 @@ class VisionEncoder(nn.Module):
         if num_blocks < 0:
             raise VocabularyInvariantError("num_blocks must be non-negative.")
 
+        self.use_coord_conv: bool = use_coord_conv
+        stem_in_channels: int = input_channels + 2 if use_coord_conv else input_channels
+
         self.stem: nn.Sequential = nn.Sequential(
-            nn.Conv2d(input_channels, model_dimension, kernel_size=3, stride=2, padding=1),
+            nn.Conv2d(stem_in_channels, model_dimension, kernel_size=3, stride=2, padding=1),
             nn.GELU(),
             nn.Conv2d(model_dimension, model_dimension, kernel_size=3, stride=2, padding=1),
             nn.GELU(),
@@ -88,10 +93,32 @@ class VisionEncoder(nn.Module):
         )
         self.normalization: nn.LayerNorm = nn.LayerNorm(model_dimension)
 
+    @staticmethod
+    def _add_coordinate_channels(images: torch.Tensor) -> torch.Tensor:
+        """Inject normalized [-1, 1] Cartesian coordinate planes (X, Y) into channels."""
+        batch_size, _, height, width = images.shape
+        y_coords: torch.Tensor = torch.linspace(
+            -1.0, 1.0, steps=height, device=images.device, dtype=images.dtype
+        )
+        x_coords: torch.Tensor = torch.linspace(
+            -1.0, 1.0, steps=width, device=images.device, dtype=images.dtype
+        )
+        grid_y, grid_x = torch.meshgrid(y_coords, x_coords, indexing="ij")
+        coord_x: torch.Tensor = (
+            grid_x.unsqueeze(0).unsqueeze(0).expand(batch_size, 1, height, width)
+        )
+        coord_y: torch.Tensor = (
+            grid_y.unsqueeze(0).unsqueeze(0).expand(batch_size, 1, height, width)
+        )
+        return torch.cat((images, coord_x, coord_y), dim=1)
+
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         """Encode images into visual tokens with shape ``(B, S, D)``."""
-        # Shape: (B, C_in, H, W) -> (B, D, H/4, W/4)
-        features: torch.Tensor = cast(torch.Tensor, self.stem(images))
+        x: torch.Tensor = (
+            self._add_coordinate_channels(images) if self.use_coord_conv else images
+        )
+        # Shape: (B, C_in + 2, H, W) -> (B, D, H/4, W/4)
+        features: torch.Tensor = cast(torch.Tensor, self.stem(x))
         # Shape: (B, D, H/4, W/4) -> (B, D, H/4, W/4)
         features = cast(torch.Tensor, self.residual_blocks(features))
         batch_size, channels, height, width = features.shape
@@ -225,6 +252,7 @@ class VisionAutoregressiveModel(nn.Module):
         num_heads: int = 4,
         dim_feedforward: int | None = None,
         num_encoder_blocks: int = 6,
+        use_coord_conv: bool = True,
         dropout: float = 0.0,
         device: torch.device | str | None = None,
     ) -> None:
@@ -250,12 +278,14 @@ class VisionAutoregressiveModel(nn.Module):
         self.num_layers: int = num_layers
         self.num_heads: int = num_heads
         self.num_encoder_blocks: int = num_encoder_blocks
+        self.use_coord_conv: bool = use_coord_conv
         self.target_device: torch.device = resolve_device(device)
 
         self.encoder: VisionEncoder = VisionEncoder(
             input_channels=input_channels,
             model_dimension=model_dimension,
             num_blocks=num_encoder_blocks,
+            use_coord_conv=use_coord_conv,
         )
         self.decoder: AutoregressiveDecoder = AutoregressiveDecoder(
             vocabulary_size=len(vocabulary.token_to_index),

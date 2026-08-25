@@ -6,6 +6,7 @@ from .generation import (
     greedy_search,
 )
 from .loss import (
+    SpatialAwareHybridLoss,
     TeacherForcingCrossEntropy,
     build_adamw_optimizer,
     build_cosine_warmup_scheduler,
@@ -46,6 +47,7 @@ __all__ = [
     "DEFAULT_COORDINATE_SCALE",
     "EvaluationMetrics",
     "GeometricPrimitive",
+    "SpatialAwareHybridLoss",
     "TeacherForcingCrossEntropy",
     "VisionAutoregressiveModel",
     "VisionEncoder",
