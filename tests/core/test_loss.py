@@ -194,3 +194,24 @@ def test_training_steps_reduce_teacher_forced_loss() -> None:
     final_loss = criterion(model(images, decoder_input), targets).item()
 
     assert final_loss < initial_loss
+
+
+def test_build_token_loss_weights_and_weighted_loss() -> None:
+    from core.ml.loss import SpatialAwareHybridLoss, build_token_loss_weights
+
+    vocab = build_vocabulary([TikzTokens(markup=SAMPLE_MARKUP)])
+    weights = build_token_loss_weights(
+        vocab, coordinate_weight=5.0, geometric_weight=3.0, boilerplate_weight=0.5
+    )
+
+    assert weights.shape == (len(vocab.token_to_index),)
+    assert (weights > 0).all()
+
+    criterion = SpatialAwareHybridLoss(vocabulary=vocab, spatial_weight=1.0)
+    logits = torch.randn(2, 6, len(vocab.token_to_index))
+    targets = torch.randint(0, len(vocab.token_to_index), (2, 6))
+
+    loss = criterion(logits, targets)
+    assert loss.ndim == 0
+    assert not torch.isnan(loss)
+

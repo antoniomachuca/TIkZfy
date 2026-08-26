@@ -12,6 +12,7 @@ from .loss import (
     build_adamw_optimizer,
     build_cosine_warmup_scheduler,
     build_teacher_forcing_pair,
+    build_token_loss_weights,
     warmup_cosine_ratio,
 )
 from .metrics import (
@@ -31,6 +32,7 @@ from .model import (
     ConvResidualBlock,
     VisionAutoregressiveModel,
     VisionEncoder,
+    build_2d_sinusoidal_positional_encoding,
     resolve_device,
 )
 from .reporting import (
@@ -54,6 +56,8 @@ __all__ = [
     "VisionAutoregressiveModel",
     "VisionEncoder",
     "apply_word_dropout",
+    "build_2d_sinusoidal_positional_encoding",
+    "build_token_loss_weights",
     "resolve_device",
     "TrainingMetrics",
     "batch_geometric_edit_distance",

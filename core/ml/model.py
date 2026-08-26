@@ -3,6 +3,7 @@
 from typing import cast
 
 import torch
+import torch.nn.functional as F
 from torch import nn
 
 from core.exceptions import TensorTopologyError, VocabularyInvariantError
@@ -53,8 +54,69 @@ class ConvResidualBlock(nn.Module):
         return residual + activated
 
 
+def build_2d_sinusoidal_positional_encoding(
+    height: int,
+    width: int,
+    dimension: int,
+    device: torch.device,
+    dtype: torch.dtype = torch.float32,
+) -> torch.Tensor:
+    """Compute 2D sinusoidal (sine/cosine) positional encodings for a 2D spatial grid.
+
+    Generates separable spatial frequency bases for Y and X Cartesian axes in logical O(1):
+        PE_Y(y, 2i)   = sin(y / 10000^(4i/D)), PE_Y(y, 2i+1) = cos(y / 10000^(4i/D))
+        PE_X(x, 2i)   = sin(x / 10000^(4i/D)), PE_X(x, 2i+1) = cos(x / 10000^(4i/D))
+        PE_2D(y, x, :) = [PE_Y(y, :), PE_X(x, :)]
+
+    Args:
+        height (int): Grid spatial height H'.
+        width (int): Grid spatial width W'.
+        dimension (int): Feature channel dimension D.
+        device (torch.device): Target execution device.
+        dtype (torch.dtype): Floating-point tensor precision.
+
+    Returns:
+        torch.Tensor: Positional encoding tensor with shape ``(1, H' * W', D)``.
+
+    Spatial complexity: O(H' * W' * D).
+    Temporal complexity: O(1) logical GPU parallel algebra.
+    """
+    if dimension % 4 != 0:
+        raise TensorTopologyError(
+            "dimension must be divisible by 4 for balanced 2D sinusoidal encodings."
+        )
+
+    dim_y: int = dimension // 2
+    dim_x: int = dimension - dim_y
+
+    freq_indices_y: torch.Tensor = torch.arange(0, dim_y, 2, device=device, dtype=dtype)
+    omega_y: torch.Tensor = 1.0 / (10000.0 ** (freq_indices_y / dim_y))
+
+    freq_indices_x: torch.Tensor = torch.arange(0, dim_x, 2, device=device, dtype=dtype)
+    omega_x: torch.Tensor = 1.0 / (10000.0 ** (freq_indices_x / dim_x))
+
+    pos_y: torch.Tensor = torch.arange(height, device=device, dtype=dtype)
+    pos_x: torch.Tensor = torch.arange(width, device=device, dtype=dtype)
+
+    out_y: torch.Tensor = torch.einsum("h,d->hd", pos_y, omega_y)
+    out_x: torch.Tensor = torch.einsum("w,d->wd", pos_x, omega_x)
+
+    pe_y: torch.Tensor = torch.stack((torch.sin(out_y), torch.cos(out_y)), dim=-1).reshape(
+        height, dim_y
+    )
+    pe_x: torch.Tensor = torch.stack((torch.sin(out_x), torch.cos(out_x)), dim=-1).reshape(
+        width, dim_x
+    )
+
+    pe_y_grid: torch.Tensor = pe_y.unsqueeze(1).expand(height, width, dim_y)
+    pe_x_grid: torch.Tensor = pe_x.unsqueeze(0).expand(height, width, dim_x)
+
+    pe_2d: torch.Tensor = torch.cat((pe_y_grid, pe_x_grid), dim=-1)
+    return pe_2d.reshape(1, height * width, dimension)
+
+
 class VisionEncoder(nn.Module):
-    """Deep convolutional image encoder with CoordConv returning normalized visual tokens.
+    """Deep convolutional image encoder with CoordConv and 2D Positional Encoding.
 
     Downsamples the input image through a 2-stage convolutional stem conditioned on
     spatial coordinate planes (X, Y in [-1, 1]) and processes the feature maps
@@ -70,6 +132,7 @@ class VisionEncoder(nn.Module):
         model_dimension: int,
         num_blocks: int = 6,
         use_coord_conv: bool = True,
+        use_2d_pos_encoding: bool = True,
     ) -> None:
         super().__init__()
         if input_channels <= 0 or model_dimension <= 0:
@@ -78,6 +141,7 @@ class VisionEncoder(nn.Module):
             raise VocabularyInvariantError("num_blocks must be non-negative.")
 
         self.use_coord_conv: bool = use_coord_conv
+        self.use_2d_pos_encoding: bool = use_2d_pos_encoding
         stem_in_channels: int = input_channels + 2 if use_coord_conv else input_channels
 
         self.stem: nn.Sequential = nn.Sequential(
@@ -122,6 +186,15 @@ class VisionEncoder(nn.Module):
         visual_tokens: torch.Tensor = features.reshape(
             batch_size, channels, height * width
         ).transpose(1, 2)
+        if self.use_2d_pos_encoding:
+            pos_encoding: torch.Tensor = build_2d_sinusoidal_positional_encoding(
+                height=height,
+                width=width,
+                dimension=channels,
+                device=features.device,
+                dtype=features.dtype,
+            )
+            visual_tokens = visual_tokens + pos_encoding
         return cast(torch.Tensor, self.normalization(visual_tokens))
 
 
@@ -147,7 +220,7 @@ class AutoregressiveDecoder(nn.Module):
         num_layers: int,
         num_heads: int,
         dim_feedforward: int | None = None,
-        dropout: float = 0.0,
+        dropout: float = 0.1,
     ) -> None:
         super().__init__()
         if vocabulary_size <= 0 or model_dimension <= 0 or num_layers <= 0:
@@ -171,6 +244,7 @@ class AutoregressiveDecoder(nn.Module):
         self.num_layers: int = num_layers
         self.num_heads: int = num_heads
         self.dim_feedforward: int = ff_dimension
+        self.dropout_p: float = dropout
         self.token_embedding: nn.Embedding = nn.Embedding(vocabulary_size, model_dimension)
         self.position_embedding: nn.Embedding = nn.Embedding(max_length, model_dimension)
         decoder_layer: nn.TransformerDecoderLayer = nn.TransformerDecoderLayer(
@@ -204,6 +278,8 @@ class AutoregressiveDecoder(nn.Module):
         token_embeddings: torch.Tensor = self.token_embedding(target_tokens)
         position_embeddings: torch.Tensor = self.position_embedding(positions)
         decoder_input: torch.Tensor = token_embeddings + position_embeddings
+        # Embedding dropout: prevents memorization of autoregressive token sequences
+        decoder_input = F.dropout(decoder_input, p=self.dropout_p, training=self.training)
         causal_mask: torch.Tensor = torch.triu(
             torch.ones(
                 (sequence_length, sequence_length),
@@ -243,7 +319,8 @@ class VisionAutoregressiveModel(nn.Module):
         dim_feedforward: int | None = None,
         num_encoder_blocks: int = 6,
         use_coord_conv: bool = True,
-        dropout: float = 0.0,
+        use_2d_pos_encoding: bool = True,
+        dropout: float = 0.1,
         device: torch.device | str | None = None,
     ) -> None:
         super().__init__()
@@ -269,6 +346,7 @@ class VisionAutoregressiveModel(nn.Module):
         self.num_heads: int = num_heads
         self.num_encoder_blocks: int = num_encoder_blocks
         self.use_coord_conv: bool = use_coord_conv
+        self.use_2d_pos_encoding: bool = use_2d_pos_encoding
         self.target_device: torch.device = resolve_device(device)
 
         self.encoder: VisionEncoder = VisionEncoder(
@@ -276,6 +354,7 @@ class VisionAutoregressiveModel(nn.Module):
             model_dimension=model_dimension,
             num_blocks=num_encoder_blocks,
             use_coord_conv=use_coord_conv,
+            use_2d_pos_encoding=use_2d_pos_encoding,
         )
         self.decoder: AutoregressiveDecoder = AutoregressiveDecoder(
             vocabulary_size=len(vocabulary.token_to_index),

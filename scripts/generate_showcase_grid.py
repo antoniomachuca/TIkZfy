@@ -100,7 +100,7 @@ def pil_image_to_tensor(
 ) -> torch.Tensor:
     """Convert a PIL Image into a normalized (1, 3, H, W) float tensor."""
     rgb_img: Image.Image = pil_img.convert("RGB")
-    np_array: np.ndarray = np.asarray(rgb_img, dtype=np.float32) / 255.0  # Shape: (H, W, 3)
+    np_array = np.asarray(rgb_img, dtype=np.float32) / 255.0  # Shape: (H, W, 3)
     tensor_chw: torch.Tensor = (
         torch.from_numpy(np_array).permute(2, 0, 1).unsqueeze(0)
     )  # Shape: (1, 3, H, W)
