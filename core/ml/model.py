@@ -118,12 +118,13 @@ def build_2d_sinusoidal_positional_encoding(
 class VisionEncoder(nn.Module):
     """Deep convolutional image encoder with CoordConv and 2D Positional Encoding.
 
-    Downsamples the input image through a 2-stage convolutional stem conditioned on
+    Downsamples the input image through a configurable convolutional stem conditioned on
     spatial coordinate planes (X, Y in [-1, 1]) and processes the feature maps
     through a sequence of residual blocks.
 
     Input shape: ``(B, C_{in}, H, W)``
-    Output shape: ``(B, S, D)`` where ``S = (H / 4) * (W / 4)`` and ``D = model_dimension``.
+    Output shape: ``(B, S, D)`` where ``S`` reflects the configured stride and
+    ``D = model_dimension``.
     """
 
     def __init__(
@@ -133,23 +134,35 @@ class VisionEncoder(nn.Module):
         num_blocks: int = 6,
         use_coord_conv: bool = True,
         use_2d_pos_encoding: bool = True,
+        num_downsampling_stages: int = 2,
     ) -> None:
         super().__init__()
         if input_channels <= 0 or model_dimension <= 0:
             raise VocabularyInvariantError("input_channels and model_dimension must be positive.")
         if num_blocks < 0:
             raise VocabularyInvariantError("num_blocks must be non-negative.")
+        if num_downsampling_stages < 1:
+            raise VocabularyInvariantError("num_downsampling_stages must be positive.")
 
         self.use_coord_conv: bool = use_coord_conv
         self.use_2d_pos_encoding: bool = use_2d_pos_encoding
         stem_in_channels: int = input_channels + 2 if use_coord_conv else input_channels
 
-        self.stem: nn.Sequential = nn.Sequential(
-            nn.Conv2d(stem_in_channels, model_dimension, kernel_size=3, stride=2, padding=1),
-            nn.GELU(),
-            nn.Conv2d(model_dimension, model_dimension, kernel_size=3, stride=2, padding=1),
-            nn.GELU(),
-        )
+        stem_layers: list[nn.Module] = []
+        for stage in range(num_downsampling_stages):
+            stem_layers.extend(
+                [
+                    nn.Conv2d(
+                        stem_in_channels if stage == 0 else model_dimension,
+                        model_dimension,
+                        kernel_size=3,
+                        stride=2,
+                        padding=1,
+                    ),
+                    nn.GELU(),
+                ]
+            )
+        self.stem: nn.Sequential = nn.Sequential(*stem_layers)
         self.residual_blocks: nn.Sequential = nn.Sequential(
             *[ConvResidualBlock(channels=model_dimension) for _ in range(num_blocks)]
         )
@@ -320,6 +333,7 @@ class VisionAutoregressiveModel(nn.Module):
         num_encoder_blocks: int = 6,
         use_coord_conv: bool = True,
         use_2d_pos_encoding: bool = True,
+        num_downsampling_stages: int = 2,
         dropout: float = 0.1,
         device: torch.device | str | None = None,
     ) -> None:
@@ -332,6 +346,8 @@ class VisionAutoregressiveModel(nn.Module):
             )
         if num_encoder_blocks < 0:
             raise VocabularyInvariantError("num_encoder_blocks must be non-negative.")
+        if num_downsampling_stages < 1:
+            raise VocabularyInvariantError("num_downsampling_stages must be positive.")
         if max_length < 2:
             raise VocabularyInvariantError("max_length must be at least 2.")
         if num_heads <= 0 or model_dimension % num_heads != 0:
@@ -347,6 +363,7 @@ class VisionAutoregressiveModel(nn.Module):
         self.num_encoder_blocks: int = num_encoder_blocks
         self.use_coord_conv: bool = use_coord_conv
         self.use_2d_pos_encoding: bool = use_2d_pos_encoding
+        self.num_downsampling_stages: int = num_downsampling_stages
         self.target_device: torch.device = resolve_device(device)
 
         self.encoder: VisionEncoder = VisionEncoder(
@@ -355,6 +372,7 @@ class VisionAutoregressiveModel(nn.Module):
             num_blocks=num_encoder_blocks,
             use_coord_conv=use_coord_conv,
             use_2d_pos_encoding=use_2d_pos_encoding,
+            num_downsampling_stages=num_downsampling_stages,
         )
         self.decoder: AutoregressiveDecoder = AutoregressiveDecoder(
             vocabulary_size=len(vocabulary.token_to_index),

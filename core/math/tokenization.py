@@ -1,9 +1,9 @@
 """
 Bidirectional tokenization primitives (markup text <-> integer indices).
 
-Provides coordinate quantization over the continuous canvas [-5, 5]^2 into
-uniform spatial bins with step 0.1, compacting the vocabulary from O(|coords|^2)
-unbounded combinations down to a bounded O(|V|) token space (approx. 350-400 tokens).
+Provides configurable coordinate quantization over the continuous canvas [-5, 5]^2.
+The V3 profile uses 0.05-spaced bins (201 values per axis), compacting the
+vocabulary from unbounded coordinate combinations to a bounded token space.
 
 References:
     Golub & Van Loan, Matrix Computations — discrete quantization, uniform
@@ -35,10 +35,16 @@ CANVAS_MIN: float = -5.0
 CANVAS_MAX: float = 5.0
 COORDINATE_STEP: float = 0.1
 NUM_COORDINATE_BINS: int = 100
+V3_COORDINATE_STEP: float = 0.05
+V3_NUM_COORDINATE_BINS: int = 200
 
 # Pre-computed spatial coordinate bins: 101 discrete points spanning [-5.0, 5.0]
 COORDINATE_BINS: tuple[str, ...] = tuple(
     f"{round(CANVAS_MIN + idx * COORDINATE_STEP, 1):g}" for idx in range(NUM_COORDINATE_BINS + 1)
+)
+V3_COORDINATE_BINS: tuple[str, ...] = tuple(
+    f"{round(CANVAS_MIN + idx * V3_COORDINATE_STEP, 2):g}"
+    for idx in range(V3_NUM_COORDINATE_BINS + 1)
 )
 
 # Regex pattern matching discrete TikZ tokens, environments, operators, and identifiers
@@ -131,14 +137,18 @@ def quantize_coordinate_tuple(
     )
 
 
-def tokenize_tikz_markup(tokens: TikzTokens, quantize: bool = True) -> list[str]:
+def tokenize_tikz_markup(
+    tokens: TikzTokens,
+    quantize: bool = True,
+    coordinate_step: float = COORDINATE_STEP,
+) -> list[str]:
     """
     Splits TikZ markup into discrete tokens with coordinate quantization.
 
     Args:
         tokens (TikzTokens): Input markup value object.
         quantize (bool): When True, discretizes real-valued floating literals
-            onto the 0.1-spaced canvas grid. Default: True.
+            onto the configured canvas grid. Default: True.
 
     Returns:
         list[str]: Extracted token strings.
@@ -158,7 +168,7 @@ def tokenize_tikz_markup(tokens: TikzTokens, quantize: bool = True) -> list[str]
     processed_tokens: list[str] = []
     for token in raw_tokens:
         if _FLOAT_PATTERN.fullmatch(token):
-            quantized_val: float = quantize_coordinate_scalar(float(token))
+            quantized_val: float = quantize_coordinate_scalar(float(token), step=coordinate_step)
             processed_tokens.append(f"{quantized_val:g}")
         else:
             processed_tokens.append(token)
@@ -170,6 +180,7 @@ def build_vocabulary(
     corpus: list[TikzTokens],
     include_spatial_grid: bool = True,
     quantize: bool = True,
+    coordinate_step: float = COORDINATE_STEP,
 ) -> TokenVocabulary:
     """
     Constructs the TokenVocabulary from a TikZ corpus with bounded spatial support.
@@ -192,12 +203,17 @@ def build_vocabulary(
         raise TypeError("Corpus must be a list of TikzTokens instances.")
 
     all_token_lists: list[list[str]] = [
-        tokenize_tikz_markup(doc, quantize=quantize) for doc in corpus
+        tokenize_tikz_markup(doc, quantize=quantize, coordinate_step=coordinate_step)
+        for doc in corpus
     ]
     flat_tokens: set[str] = {token for sublist in all_token_lists for token in sublist}
 
     if include_spatial_grid:
-        flat_tokens.update(COORDINATE_BINS)
+        bin_count = round((CANVAS_MAX - CANVAS_MIN) / coordinate_step)
+        flat_tokens.update(
+            f"{round(CANVAS_MIN + idx * coordinate_step, 4):g}"
+            for idx in range(bin_count + 1)
+        )
 
     reserved_set: set[str] = {PAD_TOKEN, BOS_TOKEN, EOS_TOKEN, UNK_TOKEN}
     unique_tokens: list[str] = sorted(flat_tokens - reserved_set)
@@ -227,6 +243,7 @@ def encode_to_tensor(
     vocabulary: TokenVocabulary,
     max_length: int = 512,
     quantize: bool = True,
+    coordinate_step: float = COORDINATE_STEP,
 ) -> torch.Tensor:
     """
     Encodes markup tokens into a rank-1 integer index tensor.
@@ -255,7 +272,9 @@ def encode_to_tensor(
     if not isinstance(vocabulary, TokenVocabulary):
         raise TypeError("Vocabulary must be a TokenVocabulary instance.")
 
-    string_tokens: list[str] = tokenize_tikz_markup(tokens, quantize=quantize)
+    string_tokens: list[str] = tokenize_tikz_markup(
+        tokens, quantize=quantize, coordinate_step=coordinate_step
+    )
     token_indices: list[int] = (
         [BOS_INDEX]
         + [vocabulary.token_to_index.get(token, UNK_INDEX) for token in string_tokens]
@@ -317,6 +336,7 @@ def batch_encode(
     vocabulary: TokenVocabulary,
     max_length: int = 512,
     quantize: bool = True,
+    coordinate_step: float = COORDINATE_STEP,
 ) -> torch.Tensor:
     """
     Encodes a batch of TikZ documents into a 2D integer index tensor.
@@ -343,7 +363,13 @@ def batch_encode(
         raise VocabularyInvariantError("Corpus cannot be empty for batch encoding.")
 
     tensors: list[torch.Tensor] = [
-        encode_to_tensor(doc, vocabulary, max_length=max_length, quantize=quantize)
+        encode_to_tensor(
+            doc,
+            vocabulary,
+            max_length=max_length,
+            quantize=quantize,
+            coordinate_step=coordinate_step,
+        )
         for doc in corpus
     ]
 

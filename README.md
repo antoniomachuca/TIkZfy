@@ -15,6 +15,13 @@ TikZfy is an end-to-end multimodal deep learning engine designed to translate ra
 - `scripts/`: Production training pipelines, multi-tier benchmark evaluations, and artifact generation workflows.
 - `frontend/`: Interactive client interface built with Astro, Tailwind CSS, and vector animations via anime.js.
 
+### V3 high-resolution training profile
+
+The curriculum trainer now exposes the V3 profile from `scripts/train_curriculum_v2.py`:
+128×128 renders, a 3-stage convolutional stem (256 visual tokens), 0.05 coordinate
+quantization (201 bins per axis), and an 8-layer, 512-dimensional decoder. Legacy
+callers retain the original 64×64, 0.1-step defaults unless these options are enabled.
+
 ---
 
 ## Model Benchmarks and Spatial Alignment Evaluation
