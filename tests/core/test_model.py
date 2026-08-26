@@ -178,3 +178,16 @@ def test_vision_autoregressive_model_scaled_architecture() -> None:
 
     assert logits.shape == (2, 16, len(vocab.token_to_index))
     assert model.target_device == torch.device("cpu")
+
+
+def test_build_2d_sinusoidal_positional_encoding() -> None:
+    from core.ml.model import build_2d_sinusoidal_positional_encoding
+
+    pe = build_2d_sinusoidal_positional_encoding(
+        height=8, width=8, dimension=64, device=torch.device("cpu")
+    )
+    assert pe.shape == (1, 64, 64)
+    assert not torch.isnan(pe).any()
+    # Ensure non-trivial distinct spatial embeddings across different positions
+    assert not torch.allclose(pe[0, 0, :], pe[0, 1, :])
+    assert not torch.allclose(pe[0, 0, :], pe[0, 8, :])

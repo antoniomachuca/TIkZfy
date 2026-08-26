@@ -68,15 +68,116 @@ def apply_word_dropout(
     return masked_input
 
 
+def build_token_loss_weights(
+    vocabulary: TokenVocabulary,
+    coordinate_weight: float = 6.0,
+    geometric_weight: float = 2.5,
+    boilerplate_weight: float = 0.3,
+    default_weight: float = 1.0,
+) -> torch.Tensor:
+    """Compute per-class cross-entropy loss weights to counteract token distribution imbalance.
+
+    Heavily penalizes errors on continuous spatial coordinate bins and geometric operators,
+    preventing the model from settling into trivial local minima dictated by boilerplate.
+
+    Args:
+        vocabulary (TokenVocabulary): Discrete token vocabulary instance.
+        coordinate_weight (float): Multiplier for numerical coordinate bins (default: 6.0).
+        geometric_weight (float): Multiplier for geometric operators (default: 2.5).
+        boilerplate_weight (float): Multiplier for boilerplate delimiters (default: 0.3).
+        default_weight (float): Baseline multiplier for intermediate tokens (default: 1.0).
+
+    Returns:
+        torch.Tensor: Shape ``(V,)`` tensor of per-class positive scalar loss weights.
+
+    Temporal complexity: O(|V|).
+    Spatial complexity: O(|V|).
+    """
+    vocab_size: int = len(vocabulary.token_to_index)
+    weights: torch.Tensor = torch.full((vocab_size,), default_weight, dtype=torch.float32)
+
+    geometric_keywords: set[str] = {
+        "--",
+        "->",
+        "<-",
+        "<->",
+        "|-",
+        "-|",
+        "circle",
+        "arc",
+        "plot",
+        "grid",
+        "node",
+        "fill",
+        "rectangle",
+        "draw",
+        "dashed",
+        "thick",
+        "thin",
+        "very",
+        "ultra",
+        "smooth",
+        "red",
+        "blue",
+        "cyan",
+        "magenta",
+        "orange",
+        "green",
+        "black",
+        "gray",
+        "brown",
+        "domain",
+        "step",
+        "scale",
+        "rotate",
+        "at",
+        "cos",
+        "sin",
+        "exp",
+        "tan",
+        "\\x",
+    }
+    boilerplate_keywords: set[str] = {
+        r"\begin{tikzpicture}",
+        r"\end{tikzpicture}",
+        ";",
+        r"\draw",
+    }
+
+    for token, idx in vocabulary.token_to_index.items():
+        try:
+            _ = float(token)
+            weights[idx] = coordinate_weight
+        except ValueError:
+            if token in geometric_keywords:
+                weights[idx] = geometric_weight
+            elif token in boilerplate_keywords:
+                weights[idx] = boilerplate_weight
+
+    return weights
+
+
 class TeacherForcingCrossEntropy(nn.Module):
-    """Mean token-level cross-entropy over causally shifted targets.
+    """Mean token-level cross-entropy over causally shifted targets with optional class weights.
 
     Padding positions are excluded from the average via ``ignore_index``.
     """
 
-    def __init__(self, ignore_index: int = PAD_INDEX) -> None:
+    def __init__(
+        self,
+        ignore_index: int = PAD_INDEX,
+        token_weights: torch.Tensor | None = None,
+        label_smoothing: float = 0.0,
+    ) -> None:
         super().__init__()
         self.ignore_index: int = ignore_index
+        self.label_smoothing: float = label_smoothing
+        if token_weights is not None:
+            if token_weights.ndim != 1:
+                raise TensorTopologyError("token_weights must be a rank-1 tensor (V,).")
+            self.register_buffer("token_weights", token_weights)
+        else:
+            self.token_weights: torch.Tensor | None = None
 
     def forward(self, logits: torch.Tensor, target_tokens: torch.Tensor) -> torch.Tensor:
         """Return the mean cross-entropy over non-ignored target positions.
@@ -97,27 +198,35 @@ class TeacherForcingCrossEntropy(nn.Module):
         if tuple(logits.shape[:2]) != tuple(target_tokens.shape):
             raise TensorTopologyError("Logit and target batch/sequence dimensions must match.")
         loss: torch.Tensor = F.cross_entropy(
-            logits.transpose(1, 2), target_tokens, ignore_index=self.ignore_index
+            logits.transpose(1, 2),
+            target_tokens,
+            weight=self.token_weights,
+            ignore_index=self.ignore_index,
+            label_smoothing=self.label_smoothing,
         )
         return loss
 
 
 class SpatialAwareHybridLoss(nn.Module):
-    """Hybrid objective combining token cross-entropy with continuous coordinate Huber loss.
+    """Hybrid objective combining token cross-entropy with continuous Huber coordinate loss.
 
-    Penalizes syntax and structure errors via Cross-Entropy while computing continuous
+    Penalizes syntax and structure errors via Weighted Cross-Entropy while computing continuous
     Smooth L1 spatial distance over numerical coordinate predictions.
     """
 
     def __init__(
         self,
         vocabulary: TokenVocabulary,
-        spatial_weight: float = 0.5,
+        spatial_weight: float = 1.5,
+        token_weights: torch.Tensor | None = None,
+        use_automatic_reweighting: bool = True,
         ignore_index: int = PAD_INDEX,
+        label_smoothing: float = 0.0,
     ) -> None:
         super().__init__()
         self.spatial_weight: float = spatial_weight
         self.ignore_index: int = ignore_index
+        self.label_smoothing: float = label_smoothing
 
         vocab_size: int = len(vocabulary.token_to_index)
         is_coord: list[bool] = [False] * vocab_size
@@ -134,8 +243,17 @@ class SpatialAwareHybridLoss(nn.Module):
         self.register_buffer("is_coord_mask", torch.tensor(is_coord, dtype=torch.bool))
         self.register_buffer("coord_values", torch.tensor(coord_values, dtype=torch.float32))
 
+        resolved_weights: torch.Tensor | None = token_weights
+        if resolved_weights is None and use_automatic_reweighting:
+            resolved_weights = build_token_loss_weights(vocabulary)
+
+        if resolved_weights is not None:
+            self.register_buffer("token_weights", resolved_weights)
+        else:
+            self.token_weights = None
+
     def forward(self, logits: torch.Tensor, target_tokens: torch.Tensor) -> torch.Tensor:
-        """Return scalar hybrid loss = CrossEntropy + lambda * SmoothL1(coords)."""
+        """Return scalar hybrid loss = WeightedCrossEntropy + lambda * SmoothL1(coords)."""
         if logits.ndim != 3:
             raise TensorTopologyError("Logits must be a rank-3 tensor with shape (B, L, V).")
         if target_tokens.ndim != 2 or target_tokens.dtype != torch.long:
@@ -143,8 +261,15 @@ class SpatialAwareHybridLoss(nn.Module):
         if tuple(logits.shape[:2]) != tuple(target_tokens.shape):
             raise TensorTopologyError("Logit and target batch/sequence dimensions must match.")
 
+        token_weights: torch.Tensor | None = (
+            cast(torch.Tensor, self.token_weights) if self.token_weights is not None else None
+        )
         ce_loss: torch.Tensor = F.cross_entropy(
-            logits.transpose(1, 2), target_tokens, ignore_index=self.ignore_index
+            logits.transpose(1, 2),
+            target_tokens,
+            weight=token_weights,
+            ignore_index=self.ignore_index,
+            label_smoothing=self.label_smoothing,
         )
 
         if self.spatial_weight <= 0.0:

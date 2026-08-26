@@ -100,7 +100,7 @@ def pil_image_to_tensor(
 ) -> torch.Tensor:
     """Convert a PIL Image into a normalized (1, 3, H, W) float tensor."""
     rgb_img: Image.Image = pil_img.convert("RGB")
-    np_array: np.ndarray = np.asarray(rgb_img, dtype=np.float32) / 255.0  # Shape: (H, W, 3)
+    np_array = np.asarray(rgb_img, dtype=np.float32) / 255.0  # Shape: (H, W, 3)
     tensor_chw: torch.Tensor = (
         torch.from_numpy(np_array).permute(2, 0, 1).unsqueeze(0)
     )  # Shape: (1, 3, H, W)
@@ -335,4 +335,32 @@ def generate_showcase(
 
 
 if __name__ == "__main__":
-    generate_showcase()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate showcase comparison grid")
+    parser.add_argument(
+        "--checkpoint",
+        type=str,
+        default="results/checkpoints/curriculum_v2_best.pt"
+        if os.path.exists("results/checkpoints/curriculum_v2_best.pt")
+        else "checkpoints/grounded_best_model.pt",
+        help="Path to trained model checkpoint",
+    )
+    parser.add_argument(
+        "--vocab",
+        type=str,
+        default="dataset/encoded/vocabulary.json",
+        help="Path to vocabulary JSON",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="results/showcase",
+        help="Output directory for grid",
+    )
+    args = parser.parse_args()
+    generate_showcase(
+        checkpoint_path=args.checkpoint,
+        vocabulary_path=args.vocab,
+        output_dir=args.output_dir,
+    )
