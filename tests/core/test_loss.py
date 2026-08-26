@@ -214,4 +214,3 @@ def test_build_token_loss_weights_and_weighted_loss() -> None:
     loss = criterion(logits, targets)
     assert loss.ndim == 0
     assert not torch.isnan(loss)
-

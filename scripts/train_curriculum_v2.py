@@ -59,10 +59,10 @@ from core.ml.loss import (
 from core.ml.model import VisionAutoregressiveModel, resolve_device
 from core.models import ImageTensor, TikzTokens, TokenVocabulary, TrainingCheckpoint
 
-
 # ---------------------------------------------------------------------------
 # Dataset Generation with Real Rendered Images
 # ---------------------------------------------------------------------------
+
 
 async def _render_single_markup(
     code: str,
@@ -86,9 +86,7 @@ async def _render_single_markup(
             return torch.ones((3, 64, 64), dtype=torch.float32)
 
 
-async def _render_batch_async(
-    markups: list[str], max_concurrency: int = 32
-) -> list[torch.Tensor]:
+async def _render_batch_async(markups: list[str], max_concurrency: int = 32) -> list[torch.Tensor]:
     """Compile all markups in parallel with bounded concurrency."""
     compiler = AsyncTexLiveAdapter()
     rasterizer = GhostscriptRasterizer()
@@ -156,8 +154,10 @@ def build_stage_dataset(
             train_data = torch.load(train_cache, map_location="cpu", weights_only=False)
             val_data = torch.load(val_cache, map_location="cpu", weights_only=False)
             return (
-                train_data["images"], train_data["tokens"],
-                val_data["images"], val_data["tokens"],
+                train_data["images"],
+                train_data["tokens"],
+                val_data["images"],
+                val_data["tokens"],
             )
 
     print(f"[*] Generating {num_samples} markups for Stage {stage_id}...")
@@ -192,6 +192,7 @@ def build_stage_dataset(
 # ---------------------------------------------------------------------------
 # Training Loops
 # ---------------------------------------------------------------------------
+
 
 def apply_photometric_augmentation(images: torch.Tensor, p: float = 0.5) -> torch.Tensor:
     """Apply vectorized photometric noise and contrast jitter with probability p."""
@@ -338,8 +339,14 @@ CURRICULUM_STAGES: list[dict[str, object]] = [
     {
         "name": "Stage 4: Full Complexity (All Families + SCFG)",
         "families": [
-            "line_segment", "circle_arc", "grid_axes", "function_plot",
-            "polyline", "polygon", "node_arrow", "compositional",
+            "line_segment",
+            "circle_arc",
+            "grid_axes",
+            "function_plot",
+            "polyline",
+            "polygon",
+            "node_arrow",
+            "compositional",
         ],
         "epochs": 25,
         "samples": 15000,
@@ -427,7 +434,8 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
         print(f"[*] {stage_name}")
         print(f"    Samples: {stage_samples:,} | Epochs: {stage_epochs} | LR: {stage_lr}")
         print(f"    Families: {stage_families}")
-        print(f"    Effective Batch: {args.micro_batch_size} x {accumulation_steps} = {args.micro_batch_size * accumulation_steps}")
+        eff_bs = args.micro_batch_size * accumulation_steps
+        print(f"    Effective Batch: {args.micro_batch_size} x {accumulation_steps} = {eff_bs}")
         print("=" * 72)
 
         # Build or load dataset with real rendered images
@@ -441,13 +449,23 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
             cache_dir=cache_dir,
             stage_id=stage_idx,
         )
-        print(f"[+] Stage {stage_idx} Data: {train_images.shape[0]:,} Train | {val_images.shape[0]:,} Val")
+        n_tr = train_images.shape[0]
+        n_vl = val_images.shape[0]
+        print(f"[+] Stage {stage_idx} Data: {n_tr:,} Train | {n_vl:,} Val")
 
         # Per-stage optimizer with warm restart
-        optimizer = build_adamw_optimizer(model, learning_rate=stage_lr, weight_decay=args.weight_decay)
-        total_steps = stage_epochs * ((int(train_images.shape[0]) + args.micro_batch_size - 1) // args.micro_batch_size) // accumulation_steps
+        optimizer = build_adamw_optimizer(
+            model, learning_rate=stage_lr, weight_decay=args.weight_decay
+        )
+        total_steps = (
+            stage_epochs
+            * ((int(train_images.shape[0]) + args.micro_batch_size - 1) // args.micro_batch_size)
+            // accumulation_steps
+        )
         warmup_steps = max(10, int(total_steps * 0.08))
-        scheduler = build_cosine_warmup_scheduler(optimizer, warmup_steps=warmup_steps, total_steps=total_steps)
+        scheduler = build_cosine_warmup_scheduler(
+            optimizer, warmup_steps=warmup_steps, total_steps=total_steps
+        )
 
         stage_best_val = float("inf")
         for epoch in range(1, stage_epochs + 1):

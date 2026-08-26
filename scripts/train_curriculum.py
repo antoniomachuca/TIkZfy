@@ -284,22 +284,40 @@ def run_curriculum_training(args: argparse.Namespace) -> None:
             train_images, train_tokens = train_data["images"], train_data["tokens"]
             val_images, val_tokens = val_data["images"], val_data["tokens"]
         else:
-            print(f"[*] Generating synthetic Stage {stage_idx} dataset ({stage_samples:,} samples)...")
+            print(
+                f"[*] Generating synthetic Stage {stage_idx} dataset ({stage_samples:,} samples)..."
+            )
             num_val = max(100, int(stage_samples * 0.1))
             num_train = stage_samples - num_val
             train_images, train_tokens = generate_curriculum_dataset(
-                stage_families, num_train, vocabulary, max_length=args.max_length, seed=42 + stage_idx
+                stage_families,
+                num_train,
+                vocabulary,
+                max_length=args.max_length,
+                seed=42 + stage_idx,
             )
             val_images, val_tokens = generate_curriculum_dataset(
-                stage_families, num_val, vocabulary, max_length=args.max_length, seed=999 + stage_idx
+                stage_families,
+                num_val,
+                vocabulary,
+                max_length=args.max_length,
+                seed=999 + stage_idx,
             )
 
-        print(f"[+] Stage {stage_idx} Data: {train_images.shape[0]:,} Train | {val_images.shape[0]:,} Val")
+        n_tr = train_images.shape[0]
+        n_vl = val_images.shape[0]
+        print(f"[+] Stage {stage_idx} Data: {n_tr:,} Train | {n_vl:,} Val")
 
-        optimizer = build_adamw_optimizer(model, learning_rate=stage_lr, weight_decay=args.weight_decay)
-        total_steps = stage_epochs * ((int(train_images.shape[0]) + args.batch_size - 1) // args.batch_size)
+        optimizer = build_adamw_optimizer(
+            model, learning_rate=stage_lr, weight_decay=args.weight_decay
+        )
+        total_steps = stage_epochs * (
+            (int(train_images.shape[0]) + args.batch_size - 1) // args.batch_size
+        )
         warmup_steps = max(10, int(total_steps * 0.08))
-        scheduler = build_cosine_warmup_scheduler(optimizer, warmup_steps=warmup_steps, total_steps=total_steps)
+        scheduler = build_cosine_warmup_scheduler(
+            optimizer, warmup_steps=warmup_steps, total_steps=total_steps
+        )
 
         stage_best_val = float("inf")
         for epoch in range(1, stage_epochs + 1):
@@ -332,7 +350,11 @@ def run_curriculum_training(args: argparse.Namespace) -> None:
                 stage_best_val = val_loss
                 stage_ckpt_path = checkpoints_dir / f"stage{stage_idx}_best_model.pt"
                 checkpoint_adapter.save_checkpoint(
-                    TrainingCheckpoint(model_state=model.state_dict(), optimizer_state=optimizer.state_dict(), epoch=epoch),
+                    TrainingCheckpoint(
+                        model_state=model.state_dict(),
+                        optimizer_state=optimizer.state_dict(),
+                        epoch=epoch,
+                    ),
                     str(stage_ckpt_path),
                 )
                 saved_marker = f"-> Saved [Stage {stage_idx} Best]"
@@ -341,7 +363,11 @@ def run_curriculum_training(args: argparse.Namespace) -> None:
                 best_global_loss = val_loss
                 global_ckpt_path = checkpoints_dir / "curriculum_best_model.pt"
                 checkpoint_adapter.save_checkpoint(
-                    TrainingCheckpoint(model_state=model.state_dict(), optimizer_state=optimizer.state_dict(), epoch=epoch),
+                    TrainingCheckpoint(
+                        model_state=model.state_dict(),
+                        optimizer_state=optimizer.state_dict(),
+                        epoch=epoch,
+                    ),
                     str(global_ckpt_path),
                 )
                 saved_marker += " -> [GLOBAL BEST]"
