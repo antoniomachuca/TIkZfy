@@ -1,0 +1,55 @@
+{
+  "checkpoint_path": "/Users/antoniomachuca/Projects/image-to-tikz-engine/results/checkpoints/curriculum_v3_best.pt",
+  "checkpoint_sha256": "66dfe88c2b583e86a8e620cf22e85f0df81295488e659f69ba4bbca7704fd367",
+  "vocabulary_path": "/Users/antoniomachuca/Projects/image-to-tikz-engine/dataset/encoded/vocabulary_v3.json",
+  "vocabulary_sha256": "aa82908a4ddad812879603ed29995f317c2ca5ddab13e5b33ff7a599b4aabe68",
+  "model_architecture": {
+    "model_dimension": 512,
+    "num_layers": 8,
+    "num_heads": 8,
+    "dim_feedforward": 2048,
+    "num_encoder_blocks": 8,
+    "num_downsampling_stages": 3,
+    "max_length": 512,
+    "coordinate_step": 0.05,
+    "image_size": 128
+  },
+  "benchmark_families": [
+    "line_segment",
+    "circle_arc",
+    "grid_axes",
+    "node_arrow",
+    "composed"
+  ],
+  "samples_per_family": 20,
+  "total_samples": 100,
+  "base_seed": 42000,
+  "decoding_policies": {
+    "greedy": {
+      "type": "greedy_search",
+      "max_length": 128
+    },
+    "beam_search": {
+      "type": "beam_search",
+      "beam_width": 3,
+      "length_penalty": 0.0,
+      "max_length": 128
+    },
+    "sampling_gamma0": {
+      "type": "nucleus_sampling",
+      "gamma": 0.0,
+      "temperature": 0.7,
+      "top_p": 0.9,
+      "max_length": 128
+    },
+    "cfg_gamma32": {
+      "type": "contrastive_sampling",
+      "gamma": 3.2,
+      "temperature": 0.7,
+      "top_p": 0.9,
+      "max_length": 128
+    }
+  },
+  "device": "mps",
+  "timestamp": "2026-08-26 14:59:52"
+}
