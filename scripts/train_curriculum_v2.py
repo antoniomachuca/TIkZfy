@@ -69,30 +69,35 @@ async def _render_single_markup(
     compiler: AsyncTexLiveAdapter,
     rasterizer: GhostscriptRasterizer,
     sem: asyncio.Semaphore,
+    image_size: int = 128,
 ) -> torch.Tensor:
-    """Compile TikZ markup and return a (3, 64, 64) normalized float tensor."""
+    """Compile TikZ markup and return a normalized ``(3, image_size, image_size)`` tensor."""
     async with sem:
         try:
             res = await compiler.compile_tikz(TikzTokens(markup=code))
             if not res.is_successful:
-                return torch.ones((3, 64, 64), dtype=torch.float32)
+                return torch.ones((3, image_size, image_size), dtype=torch.float32)
             png_bytes = await rasterizer.rasterize_pdf(res.pdf_data, dpi=72)
             img = Image.open(io.BytesIO(png_bytes)).convert("RGB")
             arr = np.asarray(img, dtype=np.float32) / 255.0
             t = torch.from_numpy(arr).permute(2, 0, 1).unsqueeze(0)
-            resized = resize_spatial_dimensions(ImageTensor(raw_tensor=t), 64, 64)
+            resized = resize_spatial_dimensions(ImageTensor(raw_tensor=t), image_size, image_size)
             return resized.raw_tensor.squeeze(0)
         except Exception:
-            return torch.ones((3, 64, 64), dtype=torch.float32)
+            return torch.ones((3, image_size, image_size), dtype=torch.float32)
 
 
-async def _render_batch_async(markups: list[str], max_concurrency: int = 32) -> list[torch.Tensor]:
+async def _render_batch_async(
+    markups: list[str], max_concurrency: int = 32, image_size: int = 128
+) -> list[torch.Tensor]:
     """Compile all markups in parallel with bounded concurrency."""
     compiler = AsyncTexLiveAdapter()
     rasterizer = GhostscriptRasterizer()
     sem = asyncio.Semaphore(max_concurrency)
 
-    tasks = [_render_single_markup(m, compiler, rasterizer, sem) for m in markups]
+    tasks = [
+        _render_single_markup(m, compiler, rasterizer, sem, image_size=image_size) for m in markups
+    ]
     total = len(tasks)
     batch_size = 500
     results: list[torch.Tensor] = []
@@ -140,6 +145,8 @@ def build_stage_dataset(
     concurrency: int = 32,
     cache_dir: Path | None = None,
     stage_id: int = 0,
+    image_size: int = 128,
+    coordinate_step: float = 0.05,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
     """Generate or load cached dataset for a curriculum stage.
 
@@ -147,8 +154,9 @@ def build_stage_dataset(
         (train_images, train_tokens, val_images, val_tokens).
     """
     if cache_dir is not None:
-        train_cache = cache_dir / f"stage{stage_id}_train.pt"
-        val_cache = cache_dir / f"stage{stage_id}_val.pt"
+        cache_tag = f"stage{stage_id}_n{num_samples}_{image_size}px_{coordinate_step:g}"
+        train_cache = cache_dir / f"{cache_tag}_train.pt"
+        val_cache = cache_dir / f"{cache_tag}_val.pt"
         if train_cache.exists() and val_cache.exists():
             print(f"[*] Loading cached Stage {stage_id} dataset from disk...")
             train_data = torch.load(train_cache, map_location="cpu", weights_only=False)
@@ -163,14 +171,27 @@ def build_stage_dataset(
     print(f"[*] Generating {num_samples} markups for Stage {stage_id}...")
     markups = generate_stage_markups(families, num_samples, seed=seed)
     tokens_list = [TikzTokens(markup=m) for m in markups]
-    encoded_tokens = batch_encode(tokens_list, vocabulary, max_length=max_length)
+    encoded_tokens = batch_encode(
+        tokens_list,
+        vocabulary,
+        max_length=max_length,
+        coordinate_step=coordinate_step,
+    )
 
-    print(f"[*] Rendering {num_samples} images (64x64) with concurrency={concurrency}...")
-    rendered = asyncio.run(_render_batch_async(markups, max_concurrency=concurrency))
-    images_tensor = torch.stack(rendered, dim=0)  # Shape: (N, 3, 64, 64)
+    print(
+        f"[*] Rendering {num_samples} images ({image_size}x{image_size}) "
+        f"with concurrency={concurrency}..."
+    )
+    rendered = asyncio.run(
+        _render_batch_async(markups, max_concurrency=concurrency, image_size=image_size)
+    )
+    images_tensor = torch.stack(rendered, dim=0)  # Shape: (N, 3, H, W)
 
-    # Stratified 90/10 split
-    num_val = max(100, int(num_samples * 0.1))
+    # Stratified 90/10 split with guard for small subsets
+    if num_samples <= 100:
+        num_val = max(1, int(num_samples * 0.2))
+    else:
+        num_val = min(max(100, int(num_samples * 0.1)), num_samples - 1)
     num_train = num_samples - num_val
     indices = torch.randperm(num_samples, generator=torch.Generator().manual_seed(seed))
 
@@ -318,22 +339,22 @@ CURRICULUM_STAGES: list[dict[str, object]] = [
     {
         "name": "Stage 1: Line Segments & Vectors",
         "families": ["line_segment"],
-        "epochs": 20,
-        "samples": 4000,
+        "epochs": 6,
+        "samples": 15000,
         "lr": 3e-4,
     },
     {
         "name": "Stage 2: Curvilinear Primitives (Circles & Arcs)",
         "families": ["line_segment", "circle_arc"],
-        "epochs": 20,
-        "samples": 6000,
+        "epochs": 6,
+        "samples": 20000,
         "lr": 2e-4,
     },
     {
         "name": "Stage 3: Grids, Polylines & Function Plots",
         "families": ["line_segment", "circle_arc", "grid_axes", "function_plot", "polyline"],
-        "epochs": 20,
-        "samples": 10000,
+        "epochs": 8,
+        "samples": 30000,
         "lr": 1.5e-4,
     },
     {
@@ -348,22 +369,26 @@ CURRICULUM_STAGES: list[dict[str, object]] = [
             "node_arrow",
             "compositional",
         ],
-        "epochs": 25,
-        "samples": 15000,
+        "epochs": 10,
+        "samples": 55000,
         "lr": 1e-4,
     },
 ]
 
 
-def run_curriculum_v2(args: argparse.Namespace) -> None:
-    """Execute the 4-stage curriculum learning pipeline with real rendered images."""
+def run_curriculum_v3(args: argparse.Namespace) -> None:
+    """Execute the V3 curriculum with high-resolution rendered images."""
+    for option_name in ("max_samples_per_stage", "max_epochs_per_stage"):
+        option_value = getattr(args, option_name, None)
+        if option_value is not None and option_value < 1:
+            raise ValueError(f"{option_name} must be positive when provided.")
     results_dir = Path(args.results_dir)
     checkpoints_dir = results_dir / "checkpoints"
     checkpoints_dir.mkdir(parents=True, exist_ok=True)
     cache_dir = Path(args.cache_dir)
 
     target_device = resolve_device(args.device)
-    print(f"[*] Curriculum V2 Engine on {target_device}")
+    print(f"[*] Curriculum V3 Engine on {target_device}")
 
     # Build or load vocabulary from full family coverage
     vocab_path = Path(args.vocab_path)
@@ -379,7 +404,7 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
                 vocab_markups.append(TikzTokens(markup=generate_sample(fam, rng)))
         comp_codes = generate_compositional_batch(500, seed=42)
         vocab_markups.extend([TikzTokens(markup=c) for c in comp_codes])
-        vocabulary = build_vocabulary(vocab_markups)
+        vocabulary = build_vocabulary(vocab_markups, coordinate_step=args.coordinate_step)
         vocab_path.parent.mkdir(parents=True, exist_ok=True)
         JsonVocabularyAdapter().save_vocabulary(vocabulary, str(vocab_path))
         print(f"[+] Built and saved vocabulary: {len(vocabulary.token_to_index)} tokens.")
@@ -387,9 +412,9 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
     # Weighted loss configuration
     token_weights = build_token_loss_weights(
         vocabulary=vocabulary,
-        coordinate_weight=6.0,
-        geometric_weight=2.5,
-        boilerplate_weight=0.3,
+        coordinate_weight=args.coordinate_weight,
+        geometric_weight=args.geometric_weight,
+        boilerplate_weight=args.boilerplate_weight,
     ).to(target_device)
 
     # Initialize model
@@ -403,6 +428,7 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
         num_encoder_blocks=args.num_encoder_blocks,
         use_coord_conv=True,
         use_2d_pos_encoding=True,
+        num_downsampling_stages=args.num_downsampling_stages,
         max_length=args.max_length,
         dropout=0.1,
         device=target_device,
@@ -429,6 +455,10 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
         stage_epochs = int(cast(int, stage_cfg["epochs"]))
         stage_samples = int(cast(int, stage_cfg["samples"]))
         stage_lr = float(cast(float, stage_cfg["lr"]))
+        if args.max_samples_per_stage is not None:
+            stage_samples = min(stage_samples, args.max_samples_per_stage)
+        if args.max_epochs_per_stage is not None:
+            stage_epochs = min(stage_epochs, args.max_epochs_per_stage)
 
         print("\n" + "=" * 72)
         print(f"[*] {stage_name}")
@@ -448,6 +478,8 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
             concurrency=args.concurrency,
             cache_dir=cache_dir,
             stage_id=stage_idx,
+            image_size=args.image_size,
+            coordinate_step=args.coordinate_step,
         )
         n_tr = train_images.shape[0]
         n_vl = val_images.shape[0]
@@ -457,15 +489,17 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
         optimizer = build_adamw_optimizer(
             model, learning_rate=stage_lr, weight_decay=args.weight_decay
         )
-        total_steps = (
-            stage_epochs
-            * ((int(train_images.shape[0]) + args.micro_batch_size - 1) // args.micro_batch_size)
-            // accumulation_steps
-        )
-        warmup_steps = max(10, int(total_steps * 0.08))
-        scheduler = build_cosine_warmup_scheduler(
-            optimizer, warmup_steps=warmup_steps, total_steps=total_steps
-        )
+        num_batches = (
+            int(train_images.shape[0]) + args.micro_batch_size - 1
+        ) // args.micro_batch_size
+        total_steps = max(1, (stage_epochs * num_batches) // accumulation_steps)
+        if total_steps > 1:
+            warmup_steps = max(1, min(int(total_steps * 0.08), total_steps - 1))
+            scheduler = build_cosine_warmup_scheduler(
+                optimizer, warmup_steps=warmup_steps, total_steps=total_steps
+            )
+        else:
+            scheduler = None
 
         stage_best_val = float("inf")
         for epoch in range(1, stage_epochs + 1):
@@ -497,7 +531,7 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
             saved_marker = ""
             if val_loss < stage_best_val:
                 stage_best_val = val_loss
-                stage_ckpt_path = checkpoints_dir / f"curriculum_v2_stage{stage_idx}_best.pt"
+                stage_ckpt_path = checkpoints_dir / f"curriculum_v3_stage{stage_idx}_best.pt"
                 checkpoint_adapter.save_checkpoint(
                     TrainingCheckpoint(
                         model_state=model.state_dict(),
@@ -510,7 +544,7 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
 
             if val_loss < best_global_loss:
                 best_global_loss = val_loss
-                global_ckpt_path = checkpoints_dir / "curriculum_v2_best.pt"
+                global_ckpt_path = checkpoints_dir / "curriculum_v3_best.pt"
                 checkpoint_adapter.save_checkpoint(
                     TrainingCheckpoint(
                         model_state=model.state_dict(),
@@ -528,28 +562,36 @@ def run_curriculum_v2(args: argparse.Namespace) -> None:
             )
 
     total_elapsed = time.time() - pipeline_start
-    print(f"\n[+] Curriculum V2 Complete in {total_elapsed / 60:.1f} min.")
+    print(f"\n[+] Curriculum V3 Complete in {total_elapsed / 60:.1f} min.")
     print(f"[+] Global Best Val Loss: {best_global_loss:.4f}")
-    print(f"[+] Checkpoint: {checkpoints_dir / 'curriculum_v2_best.pt'}")
+    print(f"[+] Checkpoint: {checkpoints_dir / 'curriculum_v3_best.pt'}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Curriculum V2 Training Engine")
-    parser.add_argument("--vocab-path", type=str, default="dataset/encoded/vocabulary.json")
+    parser = argparse.ArgumentParser(description="Curriculum V3 Training Engine")
+    parser.add_argument("--vocab-path", type=str, default="dataset/encoded/vocabulary_v3.json")
     parser.add_argument("--results-dir", type=str, default="results")
     parser.add_argument("--cache-dir", type=str, default="dataset/curriculum_cache")
     parser.add_argument("--device", type=str, default=None)
     parser.add_argument("--micro-batch-size", type=int, default=32)
     parser.add_argument("--effective-batch-size", type=int, default=64)
-    parser.add_argument("--model-dim", type=int, default=384)
-    parser.add_argument("--num-layers", type=int, default=6)
+    parser.add_argument("--model-dim", type=int, default=512)
+    parser.add_argument("--num-layers", type=int, default=8)
     parser.add_argument("--num-heads", type=int, default=8)
-    parser.add_argument("--dim-ff", type=int, default=1536)
-    parser.add_argument("--num-encoder-blocks", type=int, default=6)
+    parser.add_argument("--dim-ff", type=int, default=2048)
+    parser.add_argument("--num-encoder-blocks", type=int, default=8)
+    parser.add_argument("--num-downsampling-stages", type=int, default=3)
+    parser.add_argument("--image-size", type=int, default=128)
+    parser.add_argument("--coordinate-step", type=float, default=0.05)
     parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--weight-decay", type=float, default=0.01)
     parser.add_argument("--spatial-weight", type=float, default=1.5)
+    parser.add_argument("--coordinate-weight", type=float, default=8.0)
+    parser.add_argument("--geometric-weight", type=float, default=3.0)
+    parser.add_argument("--boilerplate-weight", type=float, default=0.15)
     parser.add_argument("--word-dropout-p", type=float, default=0.40)
     parser.add_argument("--concurrency", type=int, default=32)
+    parser.add_argument("--max-samples-per-stage", type=int, default=None)
+    parser.add_argument("--max-epochs-per-stage", type=int, default=None)
     args = parser.parse_args()
-    run_curriculum_v2(args)
+    run_curriculum_v3(args)

@@ -122,7 +122,7 @@ def contrastive_visual_decode(
     v_cond: torch.Tensor = model.encoder.forward(image_tensor)
     v_uncond: torch.Tensor = model.encoder.forward(uncond_img)
 
-    gen: torch.Tensor = torch.tensor([[1]])  # BOS
+    gen: torch.Tensor = torch.tensor([[1]], device=image_tensor.device, dtype=torch.long)  # BOS
     step: int = 0
     finished: bool = False
 
@@ -156,26 +156,39 @@ def contrastive_visual_decode(
 
 
 def generate_showcase(
-    checkpoint_path: str = "checkpoints/grounded_best_model.pt",
-    vocabulary_path: str = "dataset/encoded/vocabulary.json",
+    checkpoint_path: str = "results/checkpoints/curriculum_v3_best.pt",
+    vocabulary_path: str = "dataset/encoded/vocabulary_v3.json",
     output_dir: str = "results/showcase",
+    model_dimension: int = 512,
+    num_layers: int = 8,
+    num_heads: int = 8,
+    dim_feedforward: int = 2048,
+    num_encoder_blocks: int = 8,
+    num_downsampling_stages: int = 3,
+    image_size: int = 128,
+    device: str | None = None,
 ) -> None:
     """Run 100% authentic CFG neural inference with Spatial model and persist grid."""
     out_path: Path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 
-    print(f"[*] Initializing spatial model from '{checkpoint_path}'...")
+    target_device: torch.device = torch.device(
+        device if device is not None else ("cuda" if torch.cuda.is_available() else "cpu")
+    )
+    print(f"[*] Initializing spatial model from '{checkpoint_path}' on {target_device}...")
     vocabulary = JsonVocabularyAdapter().load_vocabulary(vocabulary_path)
     model = VisionAutoregressiveModel(
         vocabulary=vocabulary,
         input_channels=3,
-        model_dimension=384,
-        num_layers=6,
-        num_heads=8,
-        dim_feedforward=1536,
-        num_encoder_blocks=6,
+        model_dimension=model_dimension,
+        num_layers=num_layers,
+        num_heads=num_heads,
+        dim_feedforward=dim_feedforward,
+        num_encoder_blocks=num_encoder_blocks,
         use_coord_conv=True,
+        num_downsampling_stages=num_downsampling_stages,
         max_length=512,
+        device=target_device,
     )
     checkpoint = AtomicCheckpointAdapter().load_checkpoint(checkpoint_path)
     model.load_state_dict(checkpoint.model_state)
@@ -202,7 +215,9 @@ def generate_showcase(
         gt_images.append(gt_pil)
 
         # Encode Ground Truth to tensor
-        input_tensor: torch.Tensor = pil_image_to_tensor(gt_pil, 64, 64)
+        input_tensor: torch.Tensor = pil_image_to_tensor(gt_pil, image_size, image_size).to(
+            target_device
+        )
 
         # 100% Neural Inactive Logit CFG Decoding with Spatial-Aware model
         print(f"  -> [{idx + 1}/{num_samples}] Running Visual Contrastive Decoding (gamma=3.2)...")
@@ -242,8 +257,8 @@ def generate_showcase(
         pred_pil.save(sample_base.with_name(sample_base.name + "_pred.png"))
 
         # Compute SSIM metric
-        t_gt: torch.Tensor = pil_image_to_tensor(gt_pil, 64, 64)
-        t_pred: torch.Tensor = pil_image_to_tensor(pred_pil, 64, 64)
+        t_gt: torch.Tensor = pil_image_to_tensor(gt_pil, image_size, image_size)
+        t_pred: torch.Tensor = pil_image_to_tensor(pred_pil, image_size, image_size)
         ssim_val: float = (
             structural_similarity(t_gt.squeeze(0), t_pred.squeeze(0)) if compilation_ok else 0.0
         )
@@ -337,19 +352,38 @@ def generate_showcase(
 if __name__ == "__main__":
     import argparse
 
+    def _resolve_default_checkpoint() -> str:
+        candidates = [
+            "results/checkpoints/curriculum_v3_best.pt",
+            "results/checkpoints/curriculum_v2_best.pt",
+            "checkpoints/grounded_best_model.pt",
+        ]
+        for c in candidates:
+            if os.path.exists(c):
+                return c
+        return candidates[0]
+
+    def _resolve_default_vocab() -> str:
+        candidates = [
+            "dataset/encoded/vocabulary_v3.json",
+            "dataset/encoded/vocabulary.json",
+        ]
+        for v in candidates:
+            if os.path.exists(v):
+                return v
+        return candidates[0]
+
     parser = argparse.ArgumentParser(description="Generate showcase comparison grid")
     parser.add_argument(
         "--checkpoint",
         type=str,
-        default="results/checkpoints/curriculum_v2_best.pt"
-        if os.path.exists("results/checkpoints/curriculum_v2_best.pt")
-        else "checkpoints/grounded_best_model.pt",
+        default=_resolve_default_checkpoint(),
         help="Path to trained model checkpoint",
     )
     parser.add_argument(
         "--vocab",
         type=str,
-        default="dataset/encoded/vocabulary.json",
+        default=_resolve_default_vocab(),
         help="Path to vocabulary JSON",
     )
     parser.add_argument(
@@ -358,9 +392,25 @@ if __name__ == "__main__":
         default="results/showcase",
         help="Output directory for grid",
     )
+    parser.add_argument("--model-dim", type=int, default=512)
+    parser.add_argument("--num-layers", type=int, default=8)
+    parser.add_argument("--num-heads", type=int, default=8)
+    parser.add_argument("--dim-ff", type=int, default=2048)
+    parser.add_argument("--num-encoder-blocks", type=int, default=8)
+    parser.add_argument("--num-downsampling-stages", type=int, default=3)
+    parser.add_argument("--image-size", type=int, default=128)
+    parser.add_argument("--device", type=str, default=None)
     args = parser.parse_args()
     generate_showcase(
         checkpoint_path=args.checkpoint,
         vocabulary_path=args.vocab,
         output_dir=args.output_dir,
+        model_dimension=args.model_dim,
+        num_layers=args.num_layers,
+        num_heads=args.num_heads,
+        dim_feedforward=args.dim_ff,
+        num_encoder_blocks=args.num_encoder_blocks,
+        num_downsampling_stages=args.num_downsampling_stages,
+        image_size=args.image_size,
+        device=args.device,
     )
