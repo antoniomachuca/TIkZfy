@@ -335,4 +335,32 @@ def generate_showcase(
 
 
 if __name__ == "__main__":
-    generate_showcase()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Generate showcase comparison grid")
+    parser.add_argument(
+        "--checkpoint",
+        type=str,
+        default="results/checkpoints/curriculum_v2_best.pt"
+        if os.path.exists("results/checkpoints/curriculum_v2_best.pt")
+        else "checkpoints/grounded_best_model.pt",
+        help="Path to trained model checkpoint",
+    )
+    parser.add_argument(
+        "--vocab",
+        type=str,
+        default="dataset/encoded/vocabulary.json",
+        help="Path to vocabulary JSON",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="results/showcase",
+        help="Output directory for grid",
+    )
+    args = parser.parse_args()
+    generate_showcase(
+        checkpoint_path=args.checkpoint,
+        vocabulary_path=args.vocab,
+        output_dir=args.output_dir,
+    )
