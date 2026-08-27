@@ -331,7 +331,7 @@ def build_stage_dataset(
     train_tokens: torch.Tensor = encoded_tokens[indices[:num_train]].clone()
     val_images: torch.Tensor = images_tensor[indices[num_train:]].clone()
     val_tokens: torch.Tensor = encoded_tokens[indices[num_train:]].clone()
-    del images_tensor, encoded_tokens, tokens_list, markups
+    del images_tensor, encoded_tokens, tokens_list, final_markups
     gc.collect()
 
     if cache_dir is not None and train_cache is not None and val_cache is not None:
