@@ -111,3 +111,5 @@ results/checkpoints/
 
 # Diagnóstico V3: conservar localmente los artefactos por muestra, sin versionarlos
 results/baselines/v3_baseline/*/*/
+results/baselines/v3_baseline/config.json
+results/baselines/v3_baseline/comparison_grid.png
