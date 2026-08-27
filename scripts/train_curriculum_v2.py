@@ -113,81 +113,119 @@ def compute_file_sha256(file_path: Path) -> str:
 # ---------------------------------------------------------------------------
 
 
-async def _render_single_markup(
-    code: str,
+async def _render_single_sample_robust(
+    family: str,
+    initial_seed: int,
     compiler: AsyncTexLiveAdapter,
     rasterizer: GhostscriptRasterizer,
     sem: asyncio.Semaphore,
     image_size: int = 128,
-) -> tuple[torch.Tensor, str, float]:
-    """Compile TikZ markup and return (tensor, sha256, std) under strict validation."""
-    async with sem:
-        res = await compiler.compile_tikz(TikzTokens(markup=code))
-        if not res.is_successful:
-            raise RuntimeError("TikZ compilation failed while building curriculum data.")
-        png_bytes = await rasterizer.rasterize_pdf(res.pdf_data, dpi=72)
-        img = Image.open(io.BytesIO(png_bytes)).convert("RGB")
-        arr = np.asarray(img, dtype=np.float32) / 255.0  # Shape: (H, W, 3)
-        t = torch.from_numpy(arr).permute(2, 0, 1).unsqueeze(0)  # Shape: (1, 3, H, W)
-        resized = resize_spatial_dimensions(ImageTensor(raw_tensor=t), image_size, image_size)
-        image = resized.raw_tensor.squeeze(0)  # Shape: (3, H, W)
-        if image.shape != (3, image_size, image_size):
-            raise RuntimeError(f"Rendered image has invalid shape: {tuple(image.shape)}.")
-        tensor_std = float(image.std().item())
-        if tensor_std < 1e-4:
-            raise RuntimeError("Rendered image is blank; refusing to cache a substitution image.")
-        image_sha256 = hashlib.sha256(image.numpy().tobytes()).hexdigest()
-        return image, image_sha256, tensor_std
+    max_retries: int = 10,
+) -> tuple[torch.Tensor, str, float, str, int]:
+    """Compile TikZ markup with deterministic fallback regeneration on edge-case degeneracies."""
+    current_seed: int = initial_seed
+    attempt: int = 0
+    success: bool = False
+    final_image: torch.Tensor = torch.empty(0)
+    final_hash: str = ""
+    final_std: float = 0.0
+    final_markup: str = ""
+
+    while attempt < max_retries and not success:
+        sample_rng = np.random.default_rng(current_seed)
+        if family == "composed":
+            markup = generate_compositional_batch(1, seed=current_seed)[0]
+        else:
+            markup = generate_sample(family, sample_rng)
+
+        async with sem:
+            try:
+                res = await compiler.compile_tikz(TikzTokens(markup=markup))
+                if res.is_successful:
+                    png_bytes = await rasterizer.rasterize_pdf(res.pdf_data, dpi=72)
+                    img = Image.open(io.BytesIO(png_bytes)).convert("RGB")
+                    arr = np.asarray(img, dtype=np.float32) / 255.0  # Shape: (H, W, 3)
+                    t = torch.from_numpy(arr).permute(2, 0, 1).unsqueeze(0)  # Shape: (1, 3, H, W)
+                    resized = resize_spatial_dimensions(ImageTensor(raw_tensor=t), image_size, image_size)
+                    image = resized.raw_tensor.squeeze(0)  # Shape: (3, H, W)
+                    if image.shape == (3, image_size, image_size):
+                        tensor_std = float(image.std().item())
+                        if tensor_std >= 1e-4:
+                            final_image = image
+                            final_hash = hashlib.sha256(image.numpy().tobytes()).hexdigest()
+                            final_std = tensor_std
+                            final_markup = markup
+                            success = True
+            except Exception:
+                pass
+
+        if not success:
+            current_seed = current_seed + 1000003
+            attempt += 1
+
+    if not success:
+        raise RuntimeError(
+            f"Failed to generate a valid non-degenerate sample for family '{family}' after {max_retries} attempts."
+        )
+
+    return final_image, final_hash, final_std, final_markup, current_seed
 
 
-async def _render_batch_async(
-    markups: list[str],
+async def _render_stage_batch_async(
+    families_list: list[str],
+    seeds_list: list[int],
     logger: DualLogger,
     max_concurrency: int = 32,
     image_size: int = 128,
-) -> tuple[torch.Tensor, list[str], list[float]]:
-    """Compile markups in parallel with bounded concurrency and manifest metrics."""
+) -> tuple[torch.Tensor, list[str], list[float], list[str], list[int]]:
+    """Compile markups in parallel with bounded concurrency, fallback retry, and manifest metrics."""
     compiler = AsyncTexLiveAdapter()
     rasterizer = GhostscriptRasterizer()
     sem = asyncio.Semaphore(max_concurrency)
 
-    total: int = len(markups)
+    total: int = len(families_list)
     images_tensor: torch.Tensor = torch.empty((total, 3, image_size, image_size), dtype=torch.float32)
     image_hashes: list[str] = [""] * total
     tensor_stds: list[float] = [0.0] * total
+    final_markups: list[str] = [""] * total
+    final_seeds: list[int] = [0] * total
     batch_size: int = 500
 
     start_time: float = time.time()
     i: int = 0
     while i < total:
         chunk_end: int = min(i + batch_size, total)
-        chunk_markups: list[str] = markups[i:chunk_end]
+        chunk_fams: list[str] = families_list[i:chunk_end]
+        chunk_seeds: list[int] = seeds_list[i:chunk_end]
         chunk_tasks = [
-            _render_single_markup(m, compiler, rasterizer, sem, image_size=image_size)
-            for m in chunk_markups
+            _render_single_sample_robust(
+                fam, seed, compiler, rasterizer, sem, image_size=image_size
+            )
+            for fam, seed in zip(chunk_fams, chunk_seeds, strict=True)
         ]
-        chunk_results: list[tuple[torch.Tensor, str, float]] = await asyncio.gather(*chunk_tasks)
-        for offset, (img_t, img_hash, img_std) in enumerate(chunk_results):
+        chunk_results = await asyncio.gather(*chunk_tasks)
+        for offset, (img_t, img_hash, img_std, f_markup, f_seed) in enumerate(chunk_results):
             images_tensor[i + offset] = img_t
             image_hashes[i + offset] = img_hash
             tensor_stds[i + offset] = img_std
+            final_markups[i + offset] = f_markup
+            final_seeds[i + offset] = f_seed
         del chunk_results, chunk_tasks
         elapsed: float = time.time() - start_time
         rate: float = chunk_end / max(1e-3, elapsed)
         logger.log(f"  -> Rendered [{chunk_end}/{total}] images in {elapsed:.1f}s ({rate:.1f} img/s)...")
         i = chunk_end
 
-    return images_tensor, image_hashes, tensor_stds
+    return images_tensor, image_hashes, tensor_stds, final_markups, final_seeds
 
 
-def generate_stage_samples(
+def generate_stage_seeds(
     families: list[str],
     num_samples: int,
     base_seed: int = 42,
-) -> tuple[list[str], list[str], list[int]]:
-    """Generate TikZ markups, family tags, and deterministic seeds balanced across families."""
+) -> tuple[list[str], list[int]]:
+    """Generate family tags and deterministic base seeds balanced across families."""
     rng = np.random.default_rng(base_seed)
-    markups: list[str] = []
     sample_families: list[str] = []
     sample_seeds: list[int] = []
     num_families: int = len(families)
@@ -195,16 +233,10 @@ def generate_stage_samples(
     for i in range(num_samples):
         fam: str = families[i % num_families]
         sample_seed: int = int(rng.integers(0, 2_000_000_000))
-        sample_rng = np.random.default_rng(sample_seed)
-        if fam == "composed":
-            code = generate_compositional_batch(1, seed=sample_seed)[0]
-        else:
-            code = generate_sample(fam, sample_rng)
-        markups.append(code)
         sample_families.append(fam)
         sample_seeds.append(sample_seed)
 
-    return markups, sample_families, sample_seeds
+    return sample_families, sample_seeds
 
 
 def build_stage_dataset(
@@ -241,29 +273,27 @@ def build_stage_dataset(
             val_data["tokens"],
         )
 
-    logger.log(f"[*] Generating {num_samples} markups for Stage {stage_id}...")
-    markups, sample_fams, sample_seeds = generate_stage_samples(
+    logger.log(f"[*] Generating and rendering {num_samples} samples for Stage {stage_id}...")
+    sample_fams, sample_seeds = generate_stage_seeds(
         families, num_samples, base_seed=seed
     )
-    tokens_list: list[TikzTokens] = [TikzTokens(markup=m) for m in markups]
+
+    images_tensor, image_hashes, tensor_stds, final_markups, final_seeds = asyncio.run(
+        _render_stage_batch_async(
+            families_list=sample_fams,
+            seeds_list=sample_seeds,
+            logger=logger,
+            max_concurrency=concurrency,
+            image_size=image_size,
+        )
+    )
+
+    tokens_list: list[TikzTokens] = [TikzTokens(markup=m) for m in final_markups]
     encoded_tokens: torch.Tensor = batch_encode(
         tokens_list,
         vocabulary,
         max_length=max_length,
         coordinate_step=coordinate_step,
-    )
-
-    logger.log(
-        f"[*] Rendering {num_samples} images ({image_size}x{image_size}) "
-        f"with concurrency={concurrency}..."
-    )
-    images_tensor, image_hashes, tensor_stds = asyncio.run(
-        _render_batch_async(
-            markups,
-            logger=logger,
-            max_concurrency=concurrency,
-            image_size=image_size,
-        )
     )
 
     # Save reproducible manifest
@@ -276,8 +306,8 @@ def build_stage_dataset(
                     "sample_id": f"stage{stage_id}_sample_{idx:06d}",
                     "stage": stage_id,
                     "family": sample_fams[idx],
-                    "seed": sample_seeds[idx],
-                    "markup": markups[idx],
+                    "seed": final_seeds[idx],
+                    "markup": final_markups[idx],
                     "tensor_shape": list(images_tensor[idx].shape),
                     "tensor_std": tensor_stds[idx],
                     "image_sha256": image_hashes[idx],

@@ -114,6 +114,11 @@ def _line_segment(rng: np.random.Generator) -> str:
     Temporal complexity: O(1).
     """
     points: NDArray[Any] = _sample_points(rng, 2)
+    diff: NDArray[Any] = points[1] - points[0]
+    if abs(float(diff[0])) < 0.1:
+        points[1, 0] += 0.5 if points[1, 0] <= 0.0 else -0.5
+    if abs(float(diff[1])) < 0.1:
+        points[1, 1] += 0.5 if points[1, 1] <= 0.0 else -0.5
     command: str = (
         f"\\draw[{_choice(rng, LINE_WIDTHS)}, {_choice(rng, NAMED_COLORS)}, "
         f"{_choice(rng, LINE_STYLES)}] {_point_chain(points)};"
@@ -129,6 +134,10 @@ def _polyline(rng: np.random.Generator) -> str:
     """
     vertex_count: int = int(rng.integers(3, 7))
     points: NDArray[Any] = _sample_points(rng, vertex_count)
+    if float(np.std(points[:, 1])) < 0.05:
+        points[0, 1] += 0.5
+    if float(np.std(points[:, 0])) < 0.05:
+        points[0, 0] += 0.5
     command: str = (
         f"\\draw[{_choice(rng, LINE_WIDTHS)}, {_choice(rng, NAMED_COLORS)}] {_point_chain(points)};"
     )
