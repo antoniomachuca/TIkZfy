@@ -1,0 +1,90 @@
+{
+  "phase": 1,
+  "status": "blocked_pending_full_curriculum_run",
+  "audit_date": "2026-08-27",
+  "curriculum": {
+    "script": "scripts/train_curriculum_v2.py",
+    "stages": [
+      {
+        "stage": 1,
+        "families": ["line_segment"],
+        "samples": 15000,
+        "epochs": 6
+      },
+      {
+        "stage": 2,
+        "families": ["line_segment", "circle_arc"],
+        "samples": 20000,
+        "epochs": 6
+      },
+      {
+        "stage": 3,
+        "families": [
+          "line_segment",
+          "circle_arc",
+          "grid_axes",
+          "function_plot",
+          "polyline"
+        ],
+        "samples": 30000,
+        "epochs": 8
+      },
+      {
+        "stage": 4,
+        "families": [
+          "line_segment",
+          "circle_arc",
+          "grid_axes",
+          "function_plot",
+          "polyline",
+          "polygon",
+          "node_arrow",
+          "composed"
+        ],
+        "samples": 55000,
+        "epochs": 10
+      }
+    ],
+    "total_samples": 120000,
+    "configuration_validated": true
+  },
+  "evidence": {
+    "training_log": {
+      "path": "train_v3_full.log",
+      "exists": true,
+      "size_bytes": 0,
+      "stage_evidence": false
+    },
+    "checkpoints": {
+      "global": {
+        "path": "results/checkpoints/curriculum_v3_best.pt",
+        "epoch": 7,
+        "restorable": true
+      },
+      "stage3": {
+        "path": "results/checkpoints/curriculum_v3_stage3_best.pt",
+        "restorable": false,
+        "error": "PytorchStreamReader failed reading zip archive"
+      },
+      "stage4": {
+        "path": "results/checkpoints/curriculum_v3_stage4_best.pt",
+        "epoch": 10,
+        "restorable": true
+      },
+      "stages_1_2": "missing"
+    }
+  },
+  "render_validation": {
+    "script_now_fails_explicitly_on_compile_or_rasterization_errors": true,
+    "expected_shape": [3, 128, 128],
+    "blank_image_substitution": false
+  },
+  "blocking_reasons": [
+    "The empty training log cannot prove execution of stages 1-4.",
+    "Stage 1 and stage 2 checkpoints are missing.",
+    "The stage 3 checkpoint is corrupted.",
+    "The independent 500-per-family and 2000-OOD test split is not present."
+  ],
+  "cloud_required_now": false,
+  "next_action": "Run the complete curriculum with a persisted log and per-sample render manifest."
+}

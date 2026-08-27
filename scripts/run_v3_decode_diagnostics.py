@@ -4,11 +4,9 @@ Evaluates the existing V3 checkpoint without retraining or weight modifications
 across 5 representative geometric families (line_segment, circle_arc, grid_axes,
 node_arrow, composed) with 20 deterministic samples each (100 total samples).
 
-Executes and audits 4 decoding policies:
+Executes and audits the two reference decoding policies:
     1. Greedy Search (argmax)
     2. Beam Search (beam_width=3, length_penalty=0.0)
-    3. Pure Top-p Sampling (gamma=0.0, T=0.7, top_p=0.9)
-    4. Classifier-Free Guidance (gamma=3.2, T=0.7, top_p=0.9)
 
 Calculates:
     - Compilation Rate (CR) via TeX Live + Ghostscript
@@ -428,7 +426,7 @@ async def run_full_diagnostic(
 
     manifest_path = output_dir / "manifest.json"
     if not manifest_path.exists():
-        training_log = checkpoint_path.parent.parent / "train_v3_full.log"
+        training_log = checkpoint_path.parents[2] / "train_v3_full.log"
         manifest: dict[str, Any] = {
             "manifest_version": 1,
             "checkpoint": {

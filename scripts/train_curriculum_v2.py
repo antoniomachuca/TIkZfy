@@ -74,18 +74,20 @@ async def _render_single_markup(
 ) -> torch.Tensor:
     """Compile TikZ markup and return a normalized ``(3, image_size, image_size)`` tensor."""
     async with sem:
-        try:
-            res = await compiler.compile_tikz(TikzTokens(markup=code))
-            if not res.is_successful:
-                return torch.ones((3, image_size, image_size), dtype=torch.float32)
-            png_bytes = await rasterizer.rasterize_pdf(res.pdf_data, dpi=72)
-            img = Image.open(io.BytesIO(png_bytes)).convert("RGB")
-            arr = np.asarray(img, dtype=np.float32) / 255.0
-            t = torch.from_numpy(arr).permute(2, 0, 1).unsqueeze(0)
-            resized = resize_spatial_dimensions(ImageTensor(raw_tensor=t), image_size, image_size)
-            return resized.raw_tensor.squeeze(0)
-        except Exception:
-            return torch.ones((3, image_size, image_size), dtype=torch.float32)
+        res = await compiler.compile_tikz(TikzTokens(markup=code))
+        if not res.is_successful:
+            raise RuntimeError("TikZ compilation failed while building curriculum data.")
+        png_bytes = await rasterizer.rasterize_pdf(res.pdf_data, dpi=72)
+        img = Image.open(io.BytesIO(png_bytes)).convert("RGB")
+        arr = np.asarray(img, dtype=np.float32) / 255.0
+        t = torch.from_numpy(arr).permute(2, 0, 1).unsqueeze(0)
+        resized = resize_spatial_dimensions(ImageTensor(raw_tensor=t), image_size, image_size)
+        image = resized.raw_tensor.squeeze(0)
+        if image.shape != (3, image_size, image_size):
+            raise RuntimeError(f"Rendered image has invalid shape: {tuple(image.shape)}.")
+        if float(image.std().item()) < 1e-4:
+            raise RuntimeError("Rendered image is blank; refusing to cache a substitution image.")
+        return image
 
 
 async def _render_batch_async(
@@ -131,7 +133,7 @@ def generate_stage_markups(
 
     for i in range(num_samples):
         fam = families[i % num_families]
-        if fam == "compositional":
+        if fam == "composed":
             code = generate_compositional_batch(1, seed=int(rng.integers(0, 1_000_000)))[0]
         else:
             code = generate_sample(fam, rng)
@@ -372,7 +374,7 @@ CURRICULUM_STAGES: list[dict[str, object]] = [
             "polyline",
             "polygon",
             "node_arrow",
-            "compositional",
+            "composed",
         ],
         "epochs": 10,
         "samples": 55000,
@@ -381,8 +383,23 @@ CURRICULUM_STAGES: list[dict[str, object]] = [
 ]
 
 
+def validate_curriculum_configuration() -> None:
+    """Validate stage families and the planned 120,000-sample curriculum."""
+    expected_families = set(FAMILY_NAMES)
+    total_samples = 0
+    for stage in CURRICULUM_STAGES:
+        families = cast(list[str], stage["families"])
+        unknown = set(families) - expected_families
+        if unknown:
+            raise ValueError(f"Curriculum contains unknown families: {sorted(unknown)}.")
+        total_samples += int(cast(int, stage["samples"]))
+    if total_samples != 120_000:
+        raise ValueError(f"Curriculum must configure 120000 samples, got {total_samples}.")
+
+
 def run_curriculum_v3(args: argparse.Namespace) -> None:
     """Execute the V3 curriculum with high-resolution rendered images."""
+    validate_curriculum_configuration()
     for option_name in ("max_samples_per_stage", "max_epochs_per_stage"):
         option_value = getattr(args, option_name, None)
         if option_value is not None and option_value < 1:
