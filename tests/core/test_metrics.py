@@ -10,6 +10,7 @@ from core.ml.metrics import (
     batch_geometric_edit_distance,
     batch_geometric_graph_edit_distance,
     batch_visual_similarity,
+    coordinate_error,
     corpus_bleu,
     evaluate_batch,
     geometric_edit_distance,
@@ -137,6 +138,30 @@ def test_geometric_edit_distance_rejects_invalid_scale() -> None:
 
 def test_default_coordinate_scale_matches_canvas_diagonal() -> None:
     assert DEFAULT_COORDINATE_SCALE == pytest.approx(10.0 * math.sqrt(2.0))
+
+
+def test_coordinate_error_extracts_raw_markup_and_reports_points() -> None:
+    reference = r"\begin{tikzpicture}\draw (0,0) -- (1,1);\end{tikzpicture}"
+    candidate = r"\begin{tikzpicture}\draw (0.1,0) -- (1.1,1);\end{tikzpicture}"
+
+    result = coordinate_error(reference, candidate)
+
+    assert result.compared_points == 2
+    assert result.reference_points == 2
+    assert result.candidate_points == 2
+    assert result.normalized_error == pytest.approx(0.1 / DEFAULT_COORDINATE_SCALE)
+
+
+def test_coordinate_error_uses_hungarian_matching_for_unordered_points() -> None:
+    reference = r"\begin{tikzpicture}\node at (0,0) {};\node at (4,4) {};\end{tikzpicture}"
+    candidate = r"\begin{tikzpicture}\node at (4,4) {};\node at (0,0) {};\end{tikzpicture}"
+
+    ordered = coordinate_error(reference, candidate, order_semantic=True)
+    unordered = coordinate_error(reference, candidate, order_semantic=False)
+
+    assert ordered.normalized_error > 0.0
+    assert unordered.normalized_error == pytest.approx(0.0)
+    assert unordered.matching == "hungarian"
 
 
 def test_batch_geometric_edit_distance_returns_per_sample_trace() -> None:

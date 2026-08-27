@@ -65,6 +65,9 @@ from core.ml.generation import (
 )
 from core.ml.metrics import (
     DEFAULT_COORDINATE_SCALE,
+    CoordinateError,
+    coordinate_error,
+    extract_structured_coordinates,
     geometric_edit_distance,
     geometric_graph_edit_distance,
     structural_similarity,
@@ -87,7 +90,7 @@ BENCHMARK_FAMILIES: tuple[str, ...] = (
     "node_arrow",
     "composed",
 )
-SAMPLES_PER_FAMILY: int = 20
+SAMPLES_PER_FAMILY: int = 100
 BASE_SEED: int = 42000
 MAX_LENGTH: int = 128
 BEAM_WIDTH: int = 3
@@ -159,6 +162,13 @@ def detect_primitives(markup: str) -> list[str]:
     return detected
 
 
+def extract_emitted_primitives(markup: str) -> list[str]:
+    """Extract drawing commands actually emitted in statement order."""
+    return [match.group(1).lower() for match in re.finditer(
+        r"\\(draw|fill|path|node|coordinate|clip|shade|filldraw)\b", markup
+    )]
+
+
 def classify_structural_family(markup: str) -> str:
     """Classify the most likely structural family represented by the TikZ markup."""
     lower_markup: str = markup.lower()
@@ -179,11 +189,7 @@ def classify_structural_family(markup: str) -> str:
 
 def extract_coordinates(tokens_or_markup: str | Sequence[str]) -> list[tuple[float, float]]:
     """Extract all (x, y) 2D Cartesian coordinate pairs from markup or token sequence."""
-    text: str = (
-        tokens_or_markup if isinstance(tokens_or_markup, str) else " ".join(tokens_or_markup)
-    )
-    matches = re.finditer(r"\((-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\)", text)
-    return [(float(m.group(1)), float(m.group(2))) for m in matches]
+    return list(extract_structured_coordinates(tokens_or_markup))
 
 
 def compute_coordinate_rmse(
@@ -320,6 +326,8 @@ class SamplePredictionRecord:
     tex_error: str | None
     ssim: float
     coordinate_error: float
+    coordinate_points_compared: int
+    emitted_primitives: list[str]
     token_ged: float
     graph_ged: float
     token_overlap: float
@@ -354,6 +362,8 @@ async def run_full_diagnostic(
         device=device,
     )
     checkpoint_data = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    if not isinstance(checkpoint_data, dict) or "model_state" not in checkpoint_data:
+        raise ValueError("Checkpoint must contain a model_state mapping.")
     model.load_state_dict(checkpoint_data["model_state"])
     model.to(device)
     model.eval()
@@ -416,6 +426,53 @@ async def run_full_diagnostic(
     with (output_dir / "config.json").open("w", encoding="utf-8") as f:
         json.dump(config_record, f, indent=2)
 
+    manifest_path = output_dir / "manifest.json"
+    if not manifest_path.exists():
+        training_log = checkpoint_path.parent.parent / "train_v3_full.log"
+        manifest: dict[str, Any] = {
+            "manifest_version": 1,
+            "checkpoint": {
+                "path": str(checkpoint_path.resolve()),
+                "sha256": ckpt_hash,
+                "epoch": checkpoint_data.get("epoch"),
+                "stage": "unknown",
+                "restorable": True,
+                "state_keys": len(checkpoint_data["model_state"]),
+            },
+            "vocabulary": {
+                "path": str(vocabulary_path.resolve()),
+                "sha256": vocab_hash,
+                "token_count": len(vocab.token_to_index),
+            },
+            "model_architecture": config_record["model_architecture"],
+            "training_log": {
+                "path": str(training_log.resolve()),
+                "exists": training_log.exists(),
+                "size_bytes": training_log.stat().st_size if training_log.exists() else 0,
+                "stage_evidence": "not available; log is empty"
+                if not training_log.exists() or training_log.stat().st_size == 0
+                else "requires audit",
+            },
+            "evaluation": {
+                "families": list(BENCHMARK_FAMILIES),
+                "samples_per_family": SAMPLES_PER_FAMILY,
+                "decoding_policies": ["greedy", "beam_search"],
+                "coordinate_error": {
+                    "source": "raw markup before tokenization",
+                    "normalization": "canvas diagonal",
+                    "matching": "ordered primitives; Hungarian for node_arrow/composed",
+                },
+                "ssim": {
+                    "channels": 3,
+                    "resolution": [IMAGE_SIZE, IMAGE_SIZE],
+                    "range": [0.0, 1.0],
+                    "background": "white",
+                },
+            },
+        }
+        with manifest_path.open("x", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2)
+
     # 1. Generate and Render Benchmark References
     print("[*] Step 1: Generating and rendering 100 benchmark reference samples...")
     sample_records: list[dict[str, Any]] = []
@@ -458,12 +515,15 @@ async def run_full_diagnostic(
 
     print("[+] All 100 reference images generated, validated (non-empty), and rendered.")
 
-    # 2. Run the 4 Decoding Policies
-    print("[*] Step 2: Executing 4 decoding policies on 100 samples (400 total inferences)...")
+    # 2. Run the reference decoding policies
+    policies = ["greedy", "beam_search"]
+    print(
+        f"[*] Step 2: Executing {len(policies)} reference policies on "
+        f"{len(sample_records)} samples ({len(sample_records) * len(policies)} total inferences)..."
+    )
     all_prediction_records: list[SamplePredictionRecord] = []
     showcase_samples: list[dict[str, Any]] = []
 
-    policies = ["greedy", "beam_search", "sampling_gamma0", "cfg_gamma32"]
     start_time = time.time()
 
     for s_idx, s in enumerate(sample_records):
@@ -541,6 +601,7 @@ async def run_full_diagnostic(
             unbal_raw = count_unbalanced_delimiters(decoded_markup)
             unbal_san = count_unbalanced_delimiters(sanitized_markup)
             primitives = detect_primitives(sanitized_markup)
+            emitted_primitives = extract_emitted_primitives(sanitized_markup)
             pred_coords = extract_coordinates(sanitized_markup)
             pred_fam = classify_structural_family(sanitized_markup)
             is_collapsed = pred_fam == "line_segment" and fam != "line_segment"
@@ -553,13 +614,26 @@ async def run_full_diagnostic(
             # Compute SSIM
             ssim_score = 0.0
             if comp_ok and pred_img_tensor is not None:
+                if (
+                    s["ref_img_tensor"].shape != (3, IMAGE_SIZE, IMAGE_SIZE)
+                    or pred_img_tensor.shape != (3, IMAGE_SIZE, IMAGE_SIZE)
+                    or s["ref_img_tensor"].dtype != pred_img_tensor.dtype
+                ):
+                    raise ValueError(
+                        "SSIM inputs must be RGB tensors with identical 128x128 shape and dtype."
+                    )
                 ssim_score = structural_similarity(s["ref_img_tensor"], pred_img_tensor)
 
             # Compute Distances
             cand_tokens_for_ged = [t for t in sanitized_markup.split() if t]
             token_ged_val = geometric_edit_distance(ref_tokens, cand_tokens_for_ged)
             graph_ged_val = geometric_graph_edit_distance(gt_code, sanitized_markup)
-            coord_err_val = compute_coordinate_rmse(ref_coords, pred_coords)
+            coord_report: CoordinateError = coordinate_error(
+                gt_code,
+                sanitized_markup,
+                order_semantic=fam not in {"node_arrow", "composed"},
+            )
+            coord_err_val = coord_report.normalized_error
             overlap_val = compute_token_overlap(ref_tokens, cand_tokens_for_ged)
 
             # Persist per-policy artifacts
@@ -591,6 +665,11 @@ async def run_full_diagnostic(
                 "tex_error": tex_err,
                 "ssim": ssim_score,
                 "coordinate_error": coord_err_val,
+                "coordinate_points_compared": coord_report.compared_points,
+                "reference_coordinate_count": coord_report.reference_points,
+                "candidate_coordinate_count": coord_report.candidate_points,
+                "coordinate_matching": coord_report.matching,
+                "emitted_primitives": emitted_primitives,
                 "token_ged": token_ged_val,
                 "graph_ged": graph_ged_val,
                 "token_overlap": overlap_val,
@@ -624,6 +703,8 @@ async def run_full_diagnostic(
                 tex_error=tex_err,
                 ssim=ssim_score,
                 coordinate_error=coord_err_val,
+                coordinate_points_compared=coord_report.compared_points,
+                emitted_primitives=emitted_primitives,
                 token_ged=token_ged_val,
                 graph_ged=graph_ged_val,
                 token_overlap=overlap_val,
@@ -661,6 +742,8 @@ async def run_full_diagnostic(
                 "compilation_successful",
                 "ssim",
                 "coordinate_error",
+                "coordinate_points_compared",
+                "emitted_primitives",
                 "token_ged",
                 "graph_ged",
                 "token_overlap",
@@ -685,6 +768,8 @@ async def run_full_diagnostic(
                     r.compilation_successful,
                     f"{r.ssim:.4f}",
                     f"{r.coordinate_error:.4f}",
+                    r.coordinate_points_compared,
+                    "|".join(r.emitted_primitives),
                     f"{r.token_ged:.4f}",
                     f"{r.graph_ged:.4f}",
                     f"{r.token_overlap:.4f}",
@@ -756,6 +841,9 @@ async def run_full_diagnostic(
                 "coordinate_error": {
                     "mean": float(coord_vals.mean()),
                     "std": float(coord_vals.std()),
+                    "points_compared": int(
+                        sum(r.coordinate_points_compared for r in policy_records)
+                    ),
                 },
                 "token_ged": {
                     "mean": float(token_ged_vals.mean()),
@@ -806,6 +894,9 @@ async def run_full_diagnostic(
                     "coordinate_error": {
                         "mean": float(coord_fam.mean()),
                         "std": float(coord_fam.std()),
+                        "points_compared": int(
+                            sum(r.coordinate_points_compared for r in fam_records)
+                        ),
                     },
                     "token_ged": {"mean": float(t_ged_fam.mean()), "std": float(t_ged_fam.std())},
                     "graph_ged": {"mean": float(g_ged_fam.mean()), "std": float(g_ged_fam.std())},
@@ -846,9 +937,9 @@ async def run_full_diagnostic(
 
     # 5. Build Qualitative Visual Comparison Grid
     print("[*] Step 5: Rendering qualitative comparison grid across 5 families...")
-    fig, axes = plt.subplots(len(showcase_samples), 5, figsize=(18, 3.6 * len(showcase_samples)))
+    fig, axes = plt.subplots(len(showcase_samples), 3, figsize=(12, 3.6 * len(showcase_samples)))
 
-    col_titles = ["Reference (GT)", "Greedy", "Beam (B=3)", "Sampling (γ=0)", "CFG (γ=3.2)"]
+    col_titles = ["Reference (GT)", "Greedy", "Beam (B=3)"]
     for j, title in enumerate(col_titles):
         axes[0, j].set_title(title, fontsize=12, fontweight="bold", pad=8)
 
@@ -861,7 +952,7 @@ async def run_full_diagnostic(
         axes[i, 0].set_xticks([])
         axes[i, 0].set_yticks([])
 
-        for j, pol in enumerate(["greedy", "beam_search", "sampling_gamma0", "cfg_gamma32"]):
+        for j, pol in enumerate(["greedy", "beam_search"]):
             ax = axes[i, j + 1]
             p_data = s_entry["predictions"][pol]
             if p_data["comp_ok"] and p_data["img_tensor"] is not None:
@@ -896,7 +987,7 @@ def main() -> None:
     repo_root = Path(__file__).resolve().parent.parent
     ckpt_path = repo_root / "results" / "checkpoints" / "curriculum_v3_best.pt"
     vocab_path = repo_root / "dataset" / "encoded" / "vocabulary_v3.json"
-    out_dir = repo_root / "results" / "diagnostics" / "v3_decode_comparison"
+    out_dir = repo_root / "results" / "baselines" / "v3_baseline"
 
     asyncio.run(
         run_full_diagnostic(

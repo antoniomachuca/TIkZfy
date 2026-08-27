@@ -1,0 +1,64 @@
+{
+  "manifest_version": 1,
+  "checkpoint": {
+    "path": "/Users/antoniomachuca/Projects/image-to-tikz-engine/results/checkpoints/curriculum_v3_best.pt",
+    "sha256": "367baed818a3daede32130129be18916ad9d938bf7b610b36299d8afe8c5b0c2",
+    "epoch": 7,
+    "stage": "unknown",
+    "restorable": true,
+    "state_keys": 190
+  },
+  "vocabulary": {
+    "path": "/Users/antoniomachuca/Projects/image-to-tikz-engine/dataset/encoded/vocabulary_v3.json",
+    "sha256": "aa82908a4ddad812879603ed29995f317c2ca5ddab13e5b33ff7a599b4aabe68",
+    "token_count": 289
+  },
+  "model_architecture": {
+    "model_dimension": 512,
+    "num_layers": 8,
+    "num_heads": 8,
+    "dim_feedforward": 2048,
+    "num_encoder_blocks": 8,
+    "num_downsampling_stages": 3,
+    "max_length": 512,
+    "coordinate_step": 0.05,
+    "image_size": 128
+  },
+  "training_log": {
+    "path": "/Users/antoniomachuca/Projects/image-to-tikz-engine/results/train_v3_full.log",
+    "exists": false,
+    "size_bytes": 0,
+    "stage_evidence": "not available; log is empty"
+  },
+  "evaluation": {
+    "families": [
+      "line_segment",
+      "circle_arc",
+      "grid_axes",
+      "node_arrow",
+      "composed"
+    ],
+    "samples_per_family": 100,
+    "decoding_policies": [
+      "greedy",
+      "beam_search"
+    ],
+    "coordinate_error": {
+      "source": "raw markup before tokenization",
+      "normalization": "canvas diagonal",
+      "matching": "ordered primitives; Hungarian for node_arrow/composed"
+    },
+    "ssim": {
+      "channels": 3,
+      "resolution": [
+        128,
+        128
+      ],
+      "range": [
+        0.0,
+        1.0
+      ],
+      "background": "white"
+    }
+  }
+}
