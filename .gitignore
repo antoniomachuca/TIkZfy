@@ -108,3 +108,6 @@ temp_tex/
 
 # Checkpoints binarios del pipeline (los reportes y figuras sí se versionan)
 results/checkpoints/
+
+# Diagnóstico V3: conservar localmente los artefactos por muestra, sin versionarlos
+results/baselines/v3_baseline/*/*/
