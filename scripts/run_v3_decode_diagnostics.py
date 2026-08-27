@@ -47,6 +47,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn.functional as F
+from numpy.typing import NDArray
 from PIL import Image
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -193,10 +194,10 @@ def compute_coordinate_rmse(
     if not ref_coords or not cand_coords:
         return float(DEFAULT_COORDINATE_SCALE)
     min_len: int = min(len(ref_coords), len(cand_coords))
-    ref_arr: np.ndarray = np.asarray(ref_coords[:min_len], dtype=np.float64)
-    cand_arr: np.ndarray = np.asarray(cand_coords[:min_len], dtype=np.float64)
-    diffs: np.ndarray = ref_arr - cand_arr  # Shape: (min_len, 2)
-    euclidean_dists: np.ndarray = np.linalg.norm(diffs, axis=1)  # Shape: (min_len,)
+    ref_arr: NDArray[np.float64] = np.asarray(ref_coords[:min_len], dtype=np.float64)
+    cand_arr: NDArray[np.float64] = np.asarray(cand_coords[:min_len], dtype=np.float64)
+    diffs: NDArray[np.float64] = ref_arr - cand_arr  # Shape: (min_len, 2)
+    euclidean_dists: NDArray[np.float64] = np.linalg.norm(diffs, axis=1)  # Shape: (min_len,)
     len_penalty: float = float(abs(len(ref_coords) - len(cand_coords))) * 1.0
     return float(np.mean(euclidean_dists) + len_penalty)
 
