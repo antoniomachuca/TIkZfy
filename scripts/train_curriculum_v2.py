@@ -327,22 +327,25 @@ def build_stage_dataset(
         num_samples, generator=torch.Generator().manual_seed(seed)
     )
 
-    train_images: torch.Tensor = images_tensor[indices[:num_train]].clone()
-    train_tokens: torch.Tensor = encoded_tokens[indices[:num_train]].clone()
-    val_images: torch.Tensor = images_tensor[indices[num_train:]].clone()
-    val_tokens: torch.Tensor = encoded_tokens[indices[num_train:]].clone()
-    del images_tensor, encoded_tokens, tokens_list, final_markups
-    gc.collect()
+    train_idx = indices[:num_train]
+    val_idx = indices[num_train:]
 
     if cache_dir is not None and train_cache is not None and val_cache is not None:
         cache_dir.mkdir(parents=True, exist_ok=True)
-        torch.save({"images": train_images, "tokens": train_tokens}, train_cache)
-        torch.save({"images": val_images, "tokens": val_tokens}, val_cache)
+        torch.save({"images": images_tensor[train_idx], "tokens": encoded_tokens[train_idx]}, train_cache)
+        torch.save({"images": images_tensor[val_idx], "tokens": encoded_tokens[val_idx]}, val_cache)
         train_hash = compute_file_sha256(train_cache)
         val_hash = compute_file_sha256(val_cache)
         logger.log(f"[+] Cached Stage {stage_id} dataset to {cache_dir}/")
         logger.log(f"    Train Cache SHA-256: {train_hash}")
         logger.log(f"    Val Cache SHA-256:   {val_hash}")
+
+    train_images: torch.Tensor = images_tensor[train_idx]
+    train_tokens: torch.Tensor = encoded_tokens[train_idx]
+    val_images: torch.Tensor = images_tensor[val_idx]
+    val_tokens: torch.Tensor = encoded_tokens[val_idx]
+    del images_tensor, encoded_tokens, tokens_list, final_markups
+    gc.collect()
 
     return train_images, train_tokens, val_images, val_tokens
 
