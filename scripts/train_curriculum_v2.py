@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import gc
 import io
 import os
 import sys
@@ -89,30 +90,33 @@ async def _render_single_markup(
 
 async def _render_batch_async(
     markups: list[str], max_concurrency: int = 32, image_size: int = 128
-) -> list[torch.Tensor]:
-    """Compile all markups in parallel with bounded concurrency."""
+) -> torch.Tensor:
+    """Compile all markups in parallel with bounded concurrency and preallocated tensor."""
     compiler = AsyncTexLiveAdapter()
     rasterizer = GhostscriptRasterizer()
     sem = asyncio.Semaphore(max_concurrency)
 
-    tasks = [
-        _render_single_markup(m, compiler, rasterizer, sem, image_size=image_size) for m in markups
-    ]
-    total = len(tasks)
+    total = len(markups)
+    images_tensor = torch.empty((total, 3, image_size, image_size), dtype=torch.float32)
     batch_size = 500
-    results: list[torch.Tensor] = []
 
     start_time = time.time()
     for i in range(0, total, batch_size):
-        chunk = tasks[i : i + batch_size]
-        chunk_res = await asyncio.gather(*chunk)
-        results.extend(chunk_res)
+        chunk_markups = markups[i : i + batch_size]
+        chunk_tasks = [
+            _render_single_markup(m, compiler, rasterizer, sem, image_size=image_size)
+            for m in chunk_markups
+        ]
+        chunk_res = await asyncio.gather(*chunk_tasks)
+        chunk_tensor = torch.stack(chunk_res, dim=0)
+        images_tensor[i : i + len(chunk_res)] = chunk_tensor
+        del chunk_res, chunk_tensor, chunk_tasks
         elapsed = time.time() - start_time
         processed = min(i + batch_size, total)
         rate = processed / max(1e-3, elapsed)
         print(f"  -> Rendered [{processed}/{total}] images in {elapsed:.1f}s ({rate:.1f} img/s)...")
 
-    return results
+    return images_tensor
 
 
 def generate_stage_markups(
@@ -182,10 +186,9 @@ def build_stage_dataset(
         f"[*] Rendering {num_samples} images ({image_size}x{image_size}) "
         f"with concurrency={concurrency}..."
     )
-    rendered = asyncio.run(
+    images_tensor = asyncio.run(
         _render_batch_async(markups, max_concurrency=concurrency, image_size=image_size)
     )
-    images_tensor = torch.stack(rendered, dim=0)  # Shape: (N, 3, H, W)
 
     # Stratified 90/10 split with guard for small subsets
     if num_samples <= 100:
@@ -195,10 +198,12 @@ def build_stage_dataset(
     num_train = num_samples - num_val
     indices = torch.randperm(num_samples, generator=torch.Generator().manual_seed(seed))
 
-    train_images = images_tensor[indices[:num_train]]
-    train_tokens = encoded_tokens[indices[:num_train]]
-    val_images = images_tensor[indices[num_train:]]
-    val_tokens = encoded_tokens[indices[num_train:]]
+    train_images = images_tensor[indices[:num_train]].clone()
+    train_tokens = encoded_tokens[indices[:num_train]].clone()
+    val_images = images_tensor[indices[num_train:]].clone()
+    val_tokens = encoded_tokens[indices[num_train:]].clone()
+    del images_tensor, encoded_tokens, tokens_list, markups
+    gc.collect()
 
     # Cache to disk for restart resilience
     if cache_dir is not None:
@@ -560,6 +565,11 @@ def run_curriculum_v3(args: argparse.Namespace) -> None:
                 f"Train: {train_loss:.4f} | Val: {val_loss:.4f} | "
                 f"LR: {curr_lr:.6f} | {elapsed:.1f}s {saved_marker}"
             )
+
+        del train_images, train_tokens, val_images, val_tokens, optimizer, scheduler
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
     total_elapsed = time.time() - pipeline_start
     print(f"\n[+] Curriculum V3 Complete in {total_elapsed / 60:.1f} min.")

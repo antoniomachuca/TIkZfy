@@ -1,401 +1,401 @@
 family,sample_index,seed,policy,compilation_successful,ssim,coordinate_error,token_ged,graph_ged,token_overlap,predicted_family,is_line_segment_collapsed,total_length,length_to_eos,has_eos,unk_count,raw_unbalanced_parens,san_unbalanced_parens,tex_error
-line_segment,0,42000,greedy,True,0.5391,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
-line_segment,0,42000,beam_search,True,0.5391,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
-line_segment,0,42000,sampling_gamma0,True,0.6659,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,0,42000,cfg_gamma32,True,0.6521,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
-line_segment,1,42001,greedy,True,0.6577,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,1,42001,beam_search,True,0.7866,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,1,42001,sampling_gamma0,True,0.8858,14.1421,0.8750,1.0000,0.1111,line_segment,False,25,25,True,0,0,0,
-line_segment,1,42001,cfg_gamma32,True,0.6204,14.1421,0.8750,1.0000,0.1111,line_segment,False,25,25,True,0,0,0,
-line_segment,2,42002,greedy,True,0.9150,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,2,42002,beam_search,True,0.9150,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,2,42002,sampling_gamma0,True,0.8118,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,2,42002,cfg_gamma32,True,0.7238,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,3,42003,greedy,True,0.7285,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,3,42003,beam_search,True,0.7313,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,3,42003,sampling_gamma0,False,0.0000,14.1421,0.8750,1.0000,0.1154,line_segment,False,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-line_segment,3,42003,cfg_gamma32,False,0.0000,14.1421,0.8750,1.0000,0.1154,line_segment,False,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-line_segment,4,42004,greedy,True,0.9366,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,4,42004,beam_search,True,0.9366,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,0,42000,greedy,True,0.7208,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,0,42000,beam_search,True,0.7208,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,0,42000,sampling_gamma0,True,0.6668,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,0,42000,cfg_gamma32,True,0.3872,14.1421,0.8696,1.0000,0.1250,line_segment,False,25,25,True,0,0,0,
+line_segment,1,42001,greedy,True,0.7909,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,1,42001,beam_search,True,0.7909,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,1,42001,sampling_gamma0,True,0.9429,14.1421,0.8750,1.0000,0.1111,line_segment,False,25,25,True,0,0,0,
+line_segment,1,42001,cfg_gamma32,True,0.3334,14.1421,0.8750,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,2,42002,greedy,True,0.0047,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,2,42002,beam_search,True,0.6988,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,2,42002,sampling_gamma0,True,0.9062,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,2,42002,cfg_gamma32,True,0.8137,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,3,42003,greedy,True,0.9594,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,3,42003,beam_search,True,0.9542,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
+line_segment,3,42003,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+line_segment,3,42003,cfg_gamma32,False,0.0000,14.1421,0.8750,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+line_segment,4,42004,greedy,True,0.9087,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,4,42004,beam_search,True,0.9087,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
 line_segment,4,42004,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
 line_segment,4,42004,cfg_gamma32,False,0.0000,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-line_segment,5,42005,greedy,True,0.7352,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,5,42005,beam_search,True,0.7352,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,5,42005,sampling_gamma0,True,0.7092,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
-line_segment,5,42005,cfg_gamma32,True,0.7244,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,6,42006,greedy,True,0.9133,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,6,42006,beam_search,True,0.9085,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,6,42006,sampling_gamma0,True,0.8541,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,6,42006,cfg_gamma32,True,0.8354,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,7,42007,greedy,True,0.3352,14.1421,0.8696,1.0000,0.1250,line_segment,False,25,25,True,0,0,0,
-line_segment,7,42007,beam_search,True,0.4502,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
-line_segment,7,42007,sampling_gamma0,True,0.6116,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
-line_segment,7,42007,cfg_gamma32,True,0.6535,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
-line_segment,8,42008,greedy,True,0.8283,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,8,42008,beam_search,True,0.8283,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,8,42008,sampling_gamma0,True,0.7389,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,8,42008,cfg_gamma32,True,0.9749,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
-line_segment,9,42009,greedy,True,1.0000,14.1421,0.8696,1.0000,0.1250,line_segment,False,25,25,True,0,0,0,
-line_segment,9,42009,beam_search,True,1.0000,14.1421,0.8696,1.0000,0.1250,line_segment,False,25,25,True,0,0,0,
-line_segment,9,42009,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-line_segment,9,42009,cfg_gamma32,False,0.0000,14.1421,0.9846,1.0000,0.1176,unknown,False,128,128,False,0,10,10,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-line_segment,10,42010,greedy,True,0.7766,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,10,42010,beam_search,True,0.7766,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,10,42010,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+line_segment,5,42005,greedy,True,0.7094,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
+line_segment,5,42005,beam_search,True,0.7094,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
+line_segment,5,42005,sampling_gamma0,True,0.7952,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,5,42005,cfg_gamma32,True,0.1502,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,6,42006,greedy,True,0.8399,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,6,42006,beam_search,True,0.8358,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
+line_segment,6,42006,sampling_gamma0,True,0.8188,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,6,42006,cfg_gamma32,False,0.0000,14.1421,0.9318,1.0000,0.0968,line_segment,False,46,46,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+line_segment,7,42007,greedy,True,0.5675,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,7,42007,beam_search,True,0.5676,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,7,42007,sampling_gamma0,True,0.5709,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,7,42007,cfg_gamma32,True,0.3551,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,8,42008,greedy,True,0.9335,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,8,42008,beam_search,True,0.3411,14.1421,0.8696,1.0000,0.1250,line_segment,False,25,25,True,0,0,0,
+line_segment,8,42008,sampling_gamma0,True,0.8299,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,8,42008,cfg_gamma32,True,0.6194,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,9,42009,greedy,False,0.0000,14.1421,0.8636,1.0000,0.1364,line_segment,False,24,24,True,0,0,0,cannot identify image file <_io.BytesIO object at 0x13badbba0>
+line_segment,9,42009,beam_search,False,0.0000,14.1421,0.8636,1.0000,0.1364,line_segment,False,24,24,True,0,0,0,cannot identify image file <_io.BytesIO object at 0x141bcce50>
+line_segment,9,42009,sampling_gamma0,False,0.0000,14.1421,0.8750,1.0000,0.1154,line_segment,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+line_segment,9,42009,cfg_gamma32,False,0.0000,14.1421,0.8636,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+line_segment,10,42010,greedy,True,0.8834,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
+line_segment,10,42010,beam_search,True,0.7307,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,10,42010,sampling_gamma0,False,0.0000,14.1421,0.8636,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
 line_segment,10,42010,cfg_gamma32,False,0.0000,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-line_segment,11,42011,greedy,True,0.9428,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
-line_segment,11,42011,beam_search,True,0.9428,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
-line_segment,11,42011,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+line_segment,11,42011,greedy,True,0.0980,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,11,42011,beam_search,True,0.0980,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,11,42011,sampling_gamma0,False,0.0000,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
 line_segment,11,42011,cfg_gamma32,False,0.0000,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-line_segment,12,42012,greedy,True,0.7999,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,12,42012,beam_search,True,0.8109,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,12,42012,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-line_segment,12,42012,cfg_gamma32,True,0.5237,14.1421,0.8750,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,13,42013,greedy,True,0.8305,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,13,42013,beam_search,True,0.8305,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,12,42012,greedy,True,0.7376,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,12,42012,beam_search,True,0.7376,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,12,42012,sampling_gamma0,True,0.9479,14.1421,0.8696,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,
+line_segment,12,42012,cfg_gamma32,True,0.7596,14.1421,0.8750,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,13,42013,greedy,True,0.3360,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,13,42013,beam_search,True,0.3362,14.1421,0.8696,1.0000,0.1250,line_segment,False,25,25,True,0,0,0,
 line_segment,13,42013,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
 line_segment,13,42013,cfg_gamma32,False,0.0000,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-line_segment,14,42014,greedy,True,0.3159,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,14,42014,beam_search,True,0.4686,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,14,42014,sampling_gamma0,True,0.5063,14.1421,0.8636,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,
-line_segment,14,42014,cfg_gamma32,True,0.4124,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,15,42015,greedy,True,0.2462,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
-line_segment,15,42015,beam_search,True,0.2135,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
-line_segment,15,42015,sampling_gamma0,True,0.5071,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,15,42015,cfg_gamma32,True,0.8573,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,16,42016,greedy,True,0.9610,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,16,42016,beam_search,True,0.9610,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,16,42016,sampling_gamma0,True,0.8523,14.1421,0.8636,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,
-line_segment,16,42016,cfg_gamma32,True,0.9261,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,17,42017,greedy,True,0.6424,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,17,42017,beam_search,True,0.6452,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,17,42017,sampling_gamma0,False,0.0000,14.1421,0.8750,1.0000,0.1154,line_segment,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-line_segment,17,42017,cfg_gamma32,False,0.0000,14.1421,0.8750,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-line_segment,18,42018,greedy,True,0.5990,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,18,42018,beam_search,True,0.6891,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
-line_segment,18,42018,sampling_gamma0,False,0.0000,14.1421,0.8750,1.0000,0.1111,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+line_segment,14,42014,greedy,True,0.5048,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,14,42014,beam_search,True,0.5064,14.1421,0.8636,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,
+line_segment,14,42014,sampling_gamma0,True,0.4570,14.1421,0.8636,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,
+line_segment,14,42014,cfg_gamma32,True,0.4478,14.1421,0.8696,1.0000,0.1200,line_segment,False,25,25,True,0,0,0,
+line_segment,15,42015,greedy,True,0.9372,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,15,42015,beam_search,True,0.9532,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,15,42015,sampling_gamma0,True,0.9553,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
+line_segment,15,42015,cfg_gamma32,False,0.0000,14.1421,0.8966,1.0000,0.1154,line_segment,False,29,29,True,0,1,1,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+line_segment,16,42016,greedy,True,0.7196,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,16,42016,beam_search,True,0.7186,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,16,42016,sampling_gamma0,True,0.9188,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,16,42016,cfg_gamma32,True,0.8183,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,17,42017,greedy,True,0.3384,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
+line_segment,17,42017,beam_search,True,0.3360,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
+line_segment,17,42017,sampling_gamma0,False,0.0000,14.1421,0.8800,1.0000,0.1111,line_segment,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+line_segment,17,42017,cfg_gamma32,False,0.0000,14.1421,0.9741,1.0000,0.0638,line_segment,False,115,115,True,0,2,2,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+line_segment,18,42018,greedy,True,0.7887,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,18,42018,beam_search,True,0.7887,14.1421,0.8696,1.0000,0.1154,line_segment,False,25,25,True,0,0,0,
+line_segment,18,42018,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0714,circle_arc,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
 line_segment,18,42018,cfg_gamma32,False,0.0000,14.1421,0.8750,1.0000,0.1111,line_segment,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-line_segment,19,42019,greedy,True,0.8029,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
-line_segment,19,42019,beam_search,True,0.8029,14.1421,0.8636,1.0000,0.1250,line_segment,False,24,24,True,0,0,0,
+line_segment,19,42019,greedy,True,0.9726,14.1421,0.8636,1.0000,0.1304,line_segment,False,24,24,True,0,0,0,
+line_segment,19,42019,beam_search,True,0.9737,14.1421,0.8636,1.0000,0.1364,line_segment,False,24,24,True,0,0,0,
 line_segment,19,42019,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
 line_segment,19,42019,cfg_gamma32,False,0.0000,14.1421,0.8696,1.0000,0.1200,line_segment,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,0,42000,greedy,True,0.7104,14.1421,0.9130,1.0000,0.0769,line_segment,True,25,25,True,0,0,0,
-circle_arc,0,42000,beam_search,True,0.7104,14.1421,0.9130,1.0000,0.0769,line_segment,True,25,25,True,0,0,0,
-circle_arc,0,42000,sampling_gamma0,True,0.7189,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,
-circle_arc,0,42000,cfg_gamma32,True,0.5611,14.1421,0.9130,1.0000,0.0769,line_segment,True,25,25,True,0,0,0,
-circle_arc,1,42001,greedy,True,0.7482,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,
-circle_arc,1,42001,beam_search,True,0.7580,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,
-circle_arc,1,42001,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0714,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,1,42001,cfg_gamma32,True,0.7552,14.1421,0.9167,1.0000,0.0714,line_segment,True,25,25,True,0,0,0,
-circle_arc,2,42002,greedy,True,0.8422,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,
-circle_arc,2,42002,beam_search,True,0.8410,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,
-circle_arc,2,42002,sampling_gamma0,False,0.0000,14.1421,0.9130,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-circle_arc,2,42002,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0741,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-circle_arc,3,42003,greedy,True,0.8653,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,3,42003,beam_search,True,0.8653,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,3,42003,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-circle_arc,3,42003,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-circle_arc,4,42004,greedy,True,0.7773,14.1421,0.9130,1.0000,0.0800,line_segment,True,25,25,True,0,0,0,
-circle_arc,4,42004,beam_search,True,0.7773,14.1421,0.9130,1.0000,0.0800,line_segment,True,25,25,True,0,0,0,
-circle_arc,4,42004,sampling_gamma0,False,0.0000,14.1421,0.9130,1.0000,0.0800,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,4,42004,cfg_gamma32,False,0.0000,14.1421,0.9130,1.0000,0.0800,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,5,42005,greedy,True,0.6642,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,5,42005,beam_search,True,0.6642,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,5,42005,sampling_gamma0,True,0.7856,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,5,42005,cfg_gamma32,True,0.7064,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,6,42006,greedy,True,0.6603,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,6,42006,beam_search,True,0.6603,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,6,42006,sampling_gamma0,True,0.7698,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,6,42006,cfg_gamma32,True,0.7241,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,7,42007,greedy,True,0.7483,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,
-circle_arc,7,42007,beam_search,True,0.7578,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,
-circle_arc,7,42007,sampling_gamma0,True,0.7347,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,
-circle_arc,7,42007,cfg_gamma32,True,0.6931,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,
-circle_arc,8,42008,greedy,True,0.7064,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,8,42008,beam_search,True,0.6895,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,8,42008,sampling_gamma0,True,0.8234,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,8,42008,cfg_gamma32,True,0.8024,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,9,42009,greedy,True,0.6718,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,
-circle_arc,9,42009,beam_search,True,0.6718,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,
-circle_arc,9,42009,sampling_gamma0,False,0.0000,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,9,42009,cfg_gamma32,False,0.0000,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,10,42010,greedy,False,0.0000,14.1421,0.9091,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,cannot identify image file <_io.BytesIO object at 0x12c06a390>
-circle_arc,10,42010,beam_search,True,0.8204,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,
-circle_arc,10,42010,sampling_gamma0,False,0.0000,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,10,42010,cfg_gamma32,False,0.0000,14.1421,0.9130,1.0000,0.0769,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,11,42011,greedy,True,0.6661,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,
-circle_arc,11,42011,beam_search,True,0.4543,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,
-circle_arc,11,42011,sampling_gamma0,False,0.0000,14.1421,0.9091,1.0000,0.0769,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,11,42011,cfg_gamma32,False,0.0000,14.1421,0.9130,1.0000,0.0741,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,12,42012,greedy,True,0.6653,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,
-circle_arc,12,42012,beam_search,True,0.6653,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,
-circle_arc,12,42012,sampling_gamma0,False,0.0000,14.1421,0.9130,1.0000,0.0769,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,12,42012,cfg_gamma32,False,0.0000,14.1421,0.9130,1.0000,0.0769,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,13,42013,greedy,True,0.6837,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,13,42013,beam_search,True,0.6837,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,13,42013,sampling_gamma0,False,0.0000,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,13,42013,cfg_gamma32,False,0.0000,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,14,42014,greedy,True,0.3337,14.1421,0.9091,1.0000,0.0909,line_segment,True,24,24,True,0,0,0,
-circle_arc,14,42014,beam_search,True,0.7888,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,14,42014,sampling_gamma0,True,0.8045,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,14,42014,cfg_gamma32,True,0.7901,14.1421,0.9130,1.0000,0.0833,line_segment,True,25,25,True,0,0,0,
-circle_arc,15,42015,greedy,False,0.0000,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,cannot identify image file <_io.BytesIO object at 0x12c06a3e0>
-circle_arc,15,42015,beam_search,True,0.7644,14.1421,0.9130,1.0000,0.0800,line_segment,True,25,25,True,0,0,0,
-circle_arc,15,42015,sampling_gamma0,True,0.8056,14.1421,0.9091,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,
-circle_arc,15,42015,cfg_gamma32,True,0.8085,14.1421,0.9130,1.0000,0.0800,line_segment,True,25,25,True,0,0,0,
-circle_arc,16,42016,greedy,True,0.7519,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,
-circle_arc,16,42016,beam_search,True,0.7494,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,
-circle_arc,16,42016,sampling_gamma0,True,0.7443,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,
-circle_arc,16,42016,cfg_gamma32,True,0.8404,14.1421,0.9091,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,
-circle_arc,17,42017,greedy,True,0.8036,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,17,42017,beam_search,True,0.8086,14.1421,0.9091,1.0000,0.0870,line_segment,True,24,24,True,0,0,0,
-circle_arc,17,42017,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,17,42017,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,18,42018,greedy,True,0.6964,14.1421,0.9130,1.0000,0.0833,line_segment,True,25,25,True,0,0,0,
-circle_arc,18,42018,beam_search,True,0.6964,14.1421,0.9130,1.0000,0.0833,line_segment,True,25,25,True,0,0,0,
-circle_arc,18,42018,sampling_gamma0,False,0.0000,14.1421,0.9200,1.0000,0.0769,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,18,42018,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0800,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,19,42019,greedy,True,0.8559,14.1421,0.9091,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,
-circle_arc,19,42019,beam_search,True,0.8559,14.1421,0.9091,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,
-circle_arc,19,42019,sampling_gamma0,False,0.0000,14.1421,0.9130,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-circle_arc,19,42019,cfg_gamma32,False,0.0000,14.1421,0.9130,1.0000,0.0800,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,0,42000,greedy,True,0.3114,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,0,42000,beam_search,True,0.3114,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,0,42000,sampling_gamma0,True,0.3552,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,0,42000,cfg_gamma32,True,0.3385,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,1,42001,greedy,True,0.5233,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,1,42001,beam_search,True,0.5233,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,1,42001,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0857,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,1,42001,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0857,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,2,42002,greedy,True,0.3517,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,2,42002,beam_search,True,0.3510,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,2,42002,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-grid_axes,2,42002,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0857,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-grid_axes,3,42003,greedy,True,0.4621,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,3,42003,beam_search,True,0.4621,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,3,42003,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-grid_axes,3,42003,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-grid_axes,4,42004,greedy,True,0.3481,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,4,42004,beam_search,True,0.3485,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,4,42004,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,4,42004,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,5,42005,greedy,True,0.2675,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,5,42005,beam_search,True,0.2675,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,5,42005,sampling_gamma0,True,0.2920,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,5,42005,cfg_gamma32,True,0.2944,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,6,42006,greedy,True,0.6197,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,6,42006,beam_search,True,0.6197,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,6,42006,sampling_gamma0,True,0.6874,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,6,42006,cfg_gamma32,True,0.5990,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,7,42007,greedy,True,0.2052,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,7,42007,beam_search,True,0.2054,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,7,42007,sampling_gamma0,True,0.2204,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,7,42007,cfg_gamma32,True,0.2278,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,8,42008,greedy,True,0.7012,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,8,42008,beam_search,True,0.7012,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,8,42008,sampling_gamma0,True,0.7952,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,8,42008,cfg_gamma32,True,0.7952,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,9,42009,greedy,True,0.5366,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,9,42009,beam_search,True,0.5366,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,9,42009,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,9,42009,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,10,42010,greedy,True,0.4039,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,10,42010,beam_search,True,0.3944,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,10,42010,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,10,42010,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,11,42011,greedy,True,0.5762,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,11,42011,beam_search,True,0.5762,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,11,42011,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,11,42011,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,12,42012,greedy,True,0.2252,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,12,42012,beam_search,True,0.2196,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,12,42012,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0857,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,12,42012,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0857,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,13,42013,greedy,True,0.6212,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,13,42013,beam_search,True,0.6212,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,13,42013,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,13,42013,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,14,42014,greedy,True,0.1497,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,14,42014,beam_search,True,0.1518,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,14,42014,sampling_gamma0,True,0.1649,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,14,42014,cfg_gamma32,True,0.1651,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,15,42015,greedy,True,0.4037,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,15,42015,beam_search,True,0.4037,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,15,42015,sampling_gamma0,True,0.4337,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,15,42015,cfg_gamma32,True,0.4329,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,16,42016,greedy,True,0.4860,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,16,42016,beam_search,True,0.4860,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,16,42016,sampling_gamma0,True,0.5109,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,16,42016,cfg_gamma32,True,0.5207,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,17,42017,greedy,True,0.4470,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,17,42017,beam_search,True,0.4470,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,17,42017,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,17,42017,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,18,42018,greedy,True,0.4426,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,18,42018,beam_search,True,0.4426,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,18,42018,sampling_gamma0,False,0.0000,14.1421,0.9200,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,18,42018,cfg_gamma32,False,0.0000,14.1421,0.9200,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,19,42019,greedy,True,0.5954,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,19,42019,beam_search,True,0.5954,14.1421,0.9167,1.0000,0.0882,line_segment,True,24,24,True,0,0,0,
-grid_axes,19,42019,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0857,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-grid_axes,19,42019,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0857,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,0,42000,greedy,True,0.6232,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,0,42000,beam_search,True,0.6208,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,0,42000,sampling_gamma0,True,0.6030,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,0,42000,cfg_gamma32,True,0.5001,14.1421,0.9375,0.8571,0.0714,line_segment,True,24,24,True,0,0,0,
-node_arrow,1,42001,greedy,True,0.6681,14.1421,0.9091,0.6667,0.0938,line_segment,True,24,24,True,0,0,0,
-node_arrow,1,42001,beam_search,True,0.7586,14.1421,0.9130,0.6667,0.0938,line_segment,True,25,25,True,0,0,0,
-node_arrow,1,42001,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0909,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,1,42001,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,2,42002,greedy,True,0.5875,14.1421,0.9375,0.8571,0.0682,line_segment,True,24,24,True,0,0,0,
-node_arrow,2,42002,beam_search,True,0.5875,14.1421,0.9375,0.8571,0.0682,line_segment,True,24,24,True,0,0,0,
-node_arrow,2,42002,sampling_gamma0,False,0.0000,14.1421,0.9375,0.8571,0.0652,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-node_arrow,2,42002,cfg_gamma32,False,0.0000,14.1421,0.9375,0.8571,0.0667,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-node_arrow,3,42003,greedy,True,0.8444,14.1421,0.9091,0.6667,0.0968,line_segment,True,24,24,True,0,0,0,
-node_arrow,3,42003,beam_search,True,0.8444,14.1421,0.9091,0.6667,0.0968,line_segment,True,24,24,True,0,0,0,
-node_arrow,3,42003,sampling_gamma0,False,0.0000,14.1421,0.9167,0.6667,0.0938,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-node_arrow,3,42003,cfg_gamma32,False,0.0000,14.1421,0.9167,0.6667,0.0909,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-node_arrow,4,42004,greedy,True,0.6741,14.1421,0.9375,0.8571,0.0682,line_segment,True,24,24,True,0,0,0,
-node_arrow,4,42004,beam_search,True,0.6741,14.1421,0.9375,0.8571,0.0682,line_segment,True,24,24,True,0,0,0,
-node_arrow,4,42004,sampling_gamma0,False,0.0000,14.1421,0.9375,1.0000,0.0667,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,4,42004,cfg_gamma32,False,0.0000,14.1421,0.9375,1.0000,0.0667,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,5,42005,greedy,True,0.6088,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,5,42005,beam_search,True,0.6046,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,5,42005,sampling_gamma0,True,0.7622,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,5,42005,cfg_gamma32,True,0.7663,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,6,42006,greedy,True,0.6328,14.1421,0.9130,0.6667,0.0909,line_segment,True,25,25,True,0,0,0,
-node_arrow,6,42006,beam_search,True,0.6125,14.1421,0.9130,0.6667,0.0938,line_segment,True,25,25,True,0,0,0,
-node_arrow,6,42006,sampling_gamma0,True,0.7095,14.1421,0.9091,0.6667,0.0938,line_segment,True,24,24,True,0,0,0,
-node_arrow,6,42006,cfg_gamma32,True,0.4851,14.1421,0.9130,0.6667,0.0909,line_segment,True,25,25,True,0,0,0,
-node_arrow,7,42007,greedy,True,0.6087,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,7,42007,beam_search,True,0.6087,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,7,42007,sampling_gamma0,True,0.6498,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,7,42007,cfg_gamma32,True,0.6613,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,8,42008,greedy,True,0.6519,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,8,42008,beam_search,True,0.6483,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,8,42008,sampling_gamma0,False,0.0000,14.1421,0.9375,0.8571,0.0667,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-node_arrow,8,42008,cfg_gamma32,False,0.0000,14.1421,0.9375,0.8571,0.0682,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-node_arrow,9,42009,greedy,True,0.6796,14.1421,0.9375,0.8571,0.0682,line_segment,True,24,24,True,0,0,0,
-node_arrow,9,42009,beam_search,True,0.6796,14.1421,0.9375,0.8571,0.0682,line_segment,True,24,24,True,0,0,0,
-node_arrow,9,42009,sampling_gamma0,False,0.0000,14.1421,0.9375,1.0000,0.0652,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,9,42009,cfg_gamma32,False,0.0000,14.1421,0.9375,1.0000,0.0652,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,10,42010,greedy,True,0.7786,14.1421,0.9091,0.6667,0.0938,line_segment,True,24,24,True,0,0,0,
-node_arrow,10,42010,beam_search,True,0.7773,14.1421,0.9091,0.6667,0.0938,line_segment,True,24,24,True,0,0,0,
-node_arrow,10,42010,sampling_gamma0,False,0.0000,14.1421,0.9091,1.0000,0.0938,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,10,42010,cfg_gamma32,False,0.0000,14.1421,0.9091,1.0000,0.0938,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,11,42011,greedy,True,0.8517,14.1421,0.9143,0.8000,0.0811,line_segment,True,24,24,True,0,0,0,
-node_arrow,11,42011,beam_search,True,0.7402,14.1421,0.9143,0.8000,0.0811,line_segment,True,24,24,True,0,0,0,
-node_arrow,11,42011,sampling_gamma0,False,0.0000,14.1421,0.9143,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,11,42011,cfg_gamma32,False,0.0000,14.1421,0.9143,1.0000,0.0789,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,12,42012,greedy,True,0.6482,14.1421,0.9143,0.8000,0.0789,line_segment,True,24,24,True,0,0,0,
-node_arrow,12,42012,beam_search,True,0.6482,14.1421,0.9143,0.8000,0.0789,line_segment,True,24,24,True,0,0,0,
-node_arrow,12,42012,sampling_gamma0,False,0.0000,14.1421,0.9143,1.0000,0.0769,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,12,42012,cfg_gamma32,False,0.0000,14.1421,0.9143,1.0000,0.0750,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,13,42013,greedy,True,0.8845,14.1421,0.9091,0.6667,0.0938,line_segment,True,24,24,True,0,0,0,
-node_arrow,13,42013,beam_search,True,0.8857,14.1421,0.9091,0.6667,0.0938,line_segment,True,24,24,True,0,0,0,
-node_arrow,13,42013,sampling_gamma0,False,0.0000,14.1421,0.9091,1.0000,0.0938,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,13,42013,cfg_gamma32,False,0.0000,14.1421,0.9091,1.0000,0.0938,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,14,42014,greedy,True,0.6582,14.1421,0.9143,0.8000,0.0789,line_segment,True,24,24,True,0,0,0,
-node_arrow,14,42014,beam_search,True,0.6557,14.1421,0.9143,0.8000,0.0789,line_segment,True,24,24,True,0,0,0,
-node_arrow,14,42014,sampling_gamma0,True,0.6883,14.1421,0.9143,0.8000,0.0789,line_segment,True,24,24,True,0,0,0,
-node_arrow,14,42014,cfg_gamma32,True,0.6821,14.1421,0.9143,0.8000,0.0789,line_segment,True,24,24,True,0,0,0,
-node_arrow,15,42015,greedy,True,0.6410,14.1421,0.9091,0.6667,0.0938,line_segment,True,24,24,True,0,0,0,
-node_arrow,15,42015,beam_search,True,0.6700,14.1421,0.9130,0.6667,0.0938,line_segment,True,25,25,True,0,0,0,
-node_arrow,15,42015,sampling_gamma0,True,0.5844,14.1421,0.9130,0.6667,0.0909,line_segment,True,25,25,True,0,0,0,
-node_arrow,15,42015,cfg_gamma32,True,0.5408,14.1421,0.9130,0.6667,0.0909,line_segment,True,25,25,True,0,0,0,
-node_arrow,16,42016,greedy,True,0.6471,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,16,42016,beam_search,True,0.6471,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,16,42016,sampling_gamma0,True,0.7578,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,16,42016,cfg_gamma32,True,0.7597,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,17,42017,greedy,True,0.6569,14.1421,0.9375,0.8571,0.0682,line_segment,True,24,24,True,0,0,0,
-node_arrow,17,42017,beam_search,True,0.6530,14.1421,0.9375,0.8571,0.0682,line_segment,True,24,24,True,0,0,0,
-node_arrow,17,42017,sampling_gamma0,False,0.0000,14.1421,0.9375,1.0000,0.0652,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,17,42017,cfg_gamma32,False,0.0000,14.1421,0.9375,1.0000,0.0652,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,18,42018,greedy,True,0.7539,14.1421,0.9091,0.6667,0.0938,line_segment,True,24,24,True,0,0,0,
-node_arrow,18,42018,beam_search,True,0.8308,14.1421,0.9130,0.6667,0.0909,line_segment,True,25,25,True,0,0,0,
-node_arrow,18,42018,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,18,42018,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0882,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,19,42019,greedy,True,0.6872,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,19,42019,beam_search,True,0.6804,14.1421,0.9375,0.8571,0.0698,line_segment,True,24,24,True,0,0,0,
-node_arrow,19,42019,sampling_gamma0,False,0.0000,14.1421,0.9375,1.0000,0.0682,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-node_arrow,19,42019,cfg_gamma32,False,0.0000,14.1421,0.9375,1.0000,0.0682,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,0,42000,greedy,True,0.3066,14.1421,0.9118,1.0000,0.0769,line_segment,True,24,24,True,0,0,0,
-composed,0,42000,beam_search,True,0.8399,14.1421,0.9118,1.0000,0.0750,line_segment,True,24,24,True,0,0,0,
-composed,0,42000,sampling_gamma0,True,0.7907,14.1421,0.9118,1.0000,0.0750,line_segment,True,24,24,True,0,0,0,
-composed,0,42000,cfg_gamma32,True,0.8271,14.1421,0.9118,1.0000,0.0732,line_segment,True,25,25,True,0,0,0,
-composed,1,42001,greedy,True,0.7420,14.1421,0.8846,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,
-composed,1,42001,beam_search,True,0.7565,14.1421,0.8846,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,
-composed,1,42001,sampling_gamma0,False,0.0000,14.1421,0.9231,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,1,42001,cfg_gamma32,True,0.8185,14.1421,0.9231,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,
-composed,2,42002,greedy,True,0.6814,14.1421,0.9268,1.0000,0.0667,line_segment,True,24,24,True,0,0,0,
-composed,2,42002,beam_search,True,0.6814,14.1421,0.9268,1.0000,0.0667,line_segment,True,24,24,True,0,0,0,
-composed,2,42002,sampling_gamma0,False,0.0000,14.1421,0.9268,1.0000,0.0652,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-composed,2,42002,cfg_gamma32,False,0.0000,14.1421,0.9268,1.0000,0.0638,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-composed,3,42003,greedy,True,0.7910,14.1421,0.9118,1.0000,0.0732,line_segment,True,24,24,True,0,0,0,
-composed,3,42003,beam_search,True,0.7910,14.1421,0.9118,1.0000,0.0732,line_segment,True,24,24,True,0,0,0,
-composed,3,42003,sampling_gamma0,False,0.0000,14.1421,0.9118,1.0000,0.0698,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-composed,3,42003,cfg_gamma32,False,0.0000,14.1421,0.9118,1.0000,0.0698,line_segment,True,24,24,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
-composed,4,42004,greedy,True,0.7982,14.1421,0.9333,1.0000,0.0600,line_segment,True,24,24,True,0,0,0,
-composed,4,42004,beam_search,True,0.7892,14.1421,0.9333,1.0000,0.0600,line_segment,True,24,24,True,0,0,0,
-composed,4,42004,sampling_gamma0,False,0.0000,14.1421,0.9333,1.0000,0.0588,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,4,42004,cfg_gamma32,False,0.0000,14.1421,0.9333,1.0000,0.0577,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,5,42005,greedy,True,0.7671,14.1421,0.9444,1.0000,0.0566,line_segment,True,24,24,True,0,0,0,
-composed,5,42005,beam_search,True,0.7609,14.1421,0.9444,1.0000,0.0566,line_segment,True,24,24,True,0,0,0,
-composed,5,42005,sampling_gamma0,True,0.8232,14.1421,0.9444,1.0000,0.0566,line_segment,True,24,24,True,0,0,0,
-composed,5,42005,cfg_gamma32,True,0.8297,14.1421,0.9444,1.0000,0.0566,line_segment,True,24,24,True,0,0,0,
-composed,6,42006,greedy,True,0.7255,14.1421,0.8636,1.0000,0.0968,line_segment,True,24,24,True,0,0,0,
-composed,6,42006,beam_search,True,0.7198,14.1421,0.8636,1.0000,0.0968,line_segment,True,24,24,True,0,0,0,
-composed,6,42006,sampling_gamma0,True,0.7429,14.1421,0.8636,1.0000,0.0968,line_segment,True,24,24,True,0,0,0,
-composed,6,42006,cfg_gamma32,True,0.7908,14.1421,0.8636,1.0000,0.0968,line_segment,True,24,24,True,0,0,0,
-composed,7,42007,greedy,True,0.7850,14.1421,0.8929,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,7,42007,beam_search,True,0.7850,14.1421,0.8929,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,7,42007,sampling_gamma0,True,0.8737,14.1421,0.8929,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,7,42007,cfg_gamma32,True,0.8144,14.1421,0.8929,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,8,42008,greedy,True,0.7583,14.1421,0.9259,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,
-composed,8,42008,beam_search,True,0.7604,14.1421,0.9259,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,
-composed,8,42008,sampling_gamma0,True,0.7591,14.1421,0.9259,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,
-composed,8,42008,cfg_gamma32,True,0.7304,14.1421,0.9259,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,
-composed,9,42009,greedy,True,0.7215,14.1421,0.9348,1.0000,0.0612,line_segment,True,24,24,True,0,0,0,
-composed,9,42009,beam_search,True,0.7215,14.1421,0.9348,1.0000,0.0612,line_segment,True,24,24,True,0,0,0,
-composed,9,42009,sampling_gamma0,False,0.0000,14.1421,0.9348,1.0000,0.0612,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,9,42009,cfg_gamma32,False,0.0000,14.1421,0.9348,1.0000,0.0612,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,10,42010,greedy,True,0.6508,14.1421,0.9143,1.0000,0.0714,line_segment,True,24,24,True,0,0,0,
-composed,10,42010,beam_search,True,0.6508,14.1421,0.9143,1.0000,0.0714,line_segment,True,24,24,True,0,0,0,
-composed,10,42010,sampling_gamma0,False,0.0000,14.1421,0.9143,1.0000,0.0714,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,10,42010,cfg_gamma32,False,0.0000,14.1421,0.9143,1.0000,0.0714,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,11,42011,greedy,True,0.6409,14.1421,0.9268,1.0000,0.0625,line_segment,True,24,24,True,0,0,0,
-composed,11,42011,beam_search,True,0.6409,14.1421,0.9268,1.0000,0.0625,line_segment,True,24,24,True,0,0,0,
-composed,11,42011,sampling_gamma0,False,0.0000,14.1421,0.9268,1.0000,0.0625,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,11,42011,cfg_gamma32,False,0.0000,14.1421,0.9268,1.0000,0.0625,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,12,42012,greedy,True,0.7423,14.1421,0.9130,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,
-composed,12,42012,beam_search,True,0.7328,14.1421,0.9130,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,
-composed,12,42012,sampling_gamma0,False,0.0000,14.1421,0.9130,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,12,42012,cfg_gamma32,False,0.0000,14.1421,0.9130,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,13,42013,greedy,True,0.6018,14.1421,0.8889,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,
-composed,13,42013,beam_search,True,0.5969,14.1421,0.8889,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,
-composed,13,42013,sampling_gamma0,False,0.0000,14.1421,0.8889,1.0000,0.0811,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,13,42013,cfg_gamma32,False,0.0000,14.1421,0.8889,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,14,42014,greedy,True,0.7348,14.1421,0.9286,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,14,42014,beam_search,True,0.7248,14.1421,0.9286,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,14,42014,sampling_gamma0,True,0.7437,14.1421,0.9286,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,14,42014,cfg_gamma32,True,0.7505,14.1421,0.9286,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,15,42015,greedy,True,0.7209,14.1421,0.8966,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,15,42015,beam_search,True,0.7902,14.1421,0.8966,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,15,42015,sampling_gamma0,True,0.7804,14.1421,0.8966,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,15,42015,cfg_gamma32,True,0.7116,14.1421,0.8966,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,16,42016,greedy,True,0.6319,14.1421,0.9318,1.0000,0.0588,line_segment,True,24,24,True,0,0,0,
-composed,16,42016,beam_search,True,0.6287,14.1421,0.9318,1.0000,0.0588,line_segment,True,24,24,True,0,0,0,
-composed,16,42016,sampling_gamma0,True,0.7310,14.1421,0.9318,1.0000,0.0588,line_segment,True,24,24,True,0,0,0,
-composed,16,42016,cfg_gamma32,True,0.7090,14.1421,0.9318,1.0000,0.0588,line_segment,True,24,24,True,0,0,0,
-composed,17,42017,greedy,True,0.7175,14.1421,0.9362,1.0000,0.0600,line_segment,True,24,24,True,0,0,0,
-composed,17,42017,beam_search,True,0.7085,14.1421,0.9362,1.0000,0.0600,line_segment,True,24,24,True,0,0,0,
-composed,17,42017,sampling_gamma0,False,0.0000,14.1421,0.9362,1.0000,0.0577,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,17,42017,cfg_gamma32,False,0.0000,14.1421,0.9362,1.0000,0.0588,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,18,42018,greedy,True,0.7283,14.1421,0.9167,1.0000,0.0909,line_segment,True,24,24,True,0,0,0,
-composed,18,42018,beam_search,True,0.7308,14.1421,0.9167,1.0000,0.0909,line_segment,True,25,25,True,0,0,0,
-composed,18,42018,sampling_gamma0,False,0.0000,14.1421,0.9200,1.0000,0.0833,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,18,42018,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0857,line_segment,True,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,19,42019,greedy,True,0.7014,14.1421,0.8966,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,19,42019,beam_search,True,0.7014,14.1421,0.8966,1.0000,0.0789,line_segment,True,24,24,True,0,0,0,
-composed,19,42019,sampling_gamma0,False,0.0000,14.1421,0.8966,1.0000,0.0769,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
-composed,19,42019,cfg_gamma32,False,0.0000,14.1421,0.8966,1.0000,0.0769,line_segment,True,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,0,42000,greedy,True,0.9330,14.1421,0.8000,1.0000,0.1739,unknown,False,22,22,True,0,0,0,
+circle_arc,0,42000,beam_search,True,0.9330,14.1421,0.8000,1.0000,0.1739,unknown,False,22,22,True,0,0,0,
+circle_arc,0,42000,sampling_gamma0,True,0.9354,14.1421,0.8000,1.0000,0.1739,unknown,False,22,22,True,0,0,0,
+circle_arc,0,42000,cfg_gamma32,True,0.8994,14.1421,0.8095,1.0000,0.1818,unknown,False,22,22,True,0,0,0,
+circle_arc,1,42001,greedy,True,0.9493,14.1421,0.8095,1.0000,0.1600,unknown,False,23,23,True,0,0,0,
+circle_arc,1,42001,beam_search,True,0.9493,14.1421,0.8095,1.0000,0.1600,unknown,False,23,23,True,0,0,0,
+circle_arc,1,42001,sampling_gamma0,True,0.9493,14.1421,0.8182,1.0000,0.1538,unknown,False,23,23,True,0,0,0,
+circle_arc,1,42001,cfg_gamma32,False,0.0000,14.1421,0.8182,1.0000,0.1538,unknown,False,23,23,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,2,42002,greedy,True,0.9766,14.1421,0.8889,1.0000,0.0870,circle_arc,False,20,20,True,0,0,0,
+circle_arc,2,42002,beam_search,True,0.9766,14.1421,0.8889,1.0000,0.0870,circle_arc,False,20,20,True,0,0,0,
+circle_arc,2,42002,sampling_gamma0,True,0.9774,14.1421,0.8000,1.0000,0.1739,unknown,False,22,22,True,0,0,0,
+circle_arc,2,42002,cfg_gamma32,True,0.9774,14.1421,0.8095,1.0000,0.1739,unknown,False,22,22,True,0,0,0,
+circle_arc,3,42003,greedy,True,0.9998,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,3,42003,beam_search,True,0.9998,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,3,42003,sampling_gamma0,False,0.0000,14.1421,0.8636,1.0000,0.1250,circle_arc,False,22,22,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+circle_arc,3,42003,cfg_gamma32,True,1.0000,14.1421,0.8421,1.0000,0.1500,circle_arc,False,21,21,True,0,0,0,
+circle_arc,4,42004,greedy,True,0.8558,14.1421,0.8696,1.0000,0.1250,circle_arc,False,25,25,True,0,0,0,
+circle_arc,4,42004,beam_search,True,0.8558,14.1421,0.8696,1.0000,0.1250,circle_arc,False,25,25,True,0,0,0,
+circle_arc,4,42004,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.1250,circle_arc,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,4,42004,cfg_gamma32,False,0.0000,14.1421,0.8696,1.0000,0.1250,circle_arc,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,5,42005,greedy,True,0.9421,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,5,42005,beam_search,True,0.9421,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,5,42005,sampling_gamma0,False,0.0000,14.1421,0.8500,1.0000,0.1364,circle_arc,False,20,20,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+circle_arc,5,42005,cfg_gamma32,False,0.0000,14.1421,0.8421,1.0000,0.1429,circle_arc,False,22,22,True,0,1,1,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+circle_arc,6,42006,greedy,True,0.9286,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,6,42006,beam_search,True,0.9286,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,6,42006,sampling_gamma0,True,0.9285,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,6,42006,cfg_gamma32,True,0.9285,14.1421,0.8421,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,7,42007,greedy,True,0.9570,14.1421,0.8095,1.0000,0.1600,unknown,False,23,23,True,0,0,0,
+circle_arc,7,42007,beam_search,True,0.9570,14.1421,0.8095,1.0000,0.1600,unknown,False,23,23,True,0,0,0,
+circle_arc,7,42007,sampling_gamma0,True,0.9552,14.1421,0.8095,1.0000,0.1600,unknown,False,23,23,True,0,0,0,
+circle_arc,7,42007,cfg_gamma32,True,0.9399,14.1421,0.8095,1.0000,0.1600,unknown,False,23,23,True,0,0,0,
+circle_arc,8,42008,greedy,True,0.9836,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,8,42008,beam_search,True,0.9836,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,8,42008,sampling_gamma0,True,0.9707,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,8,42008,cfg_gamma32,False,0.0000,14.1421,0.8421,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,9,42009,greedy,True,0.8639,14.1421,0.8947,1.0000,0.0800,circle_arc,False,21,21,True,0,0,0,
+circle_arc,9,42009,beam_search,True,0.8639,14.1421,0.8947,1.0000,0.0800,circle_arc,False,21,21,True,0,0,0,
+circle_arc,9,42009,sampling_gamma0,False,0.0000,14.1421,0.8947,1.0000,0.0800,circle_arc,False,21,21,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,9,42009,cfg_gamma32,False,0.0000,14.1421,0.8095,1.0000,0.1600,unknown,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,10,42010,greedy,True,0.9830,14.1421,0.8000,1.0000,0.1739,unknown,False,22,22,True,0,0,0,
+circle_arc,10,42010,beam_search,True,0.9828,14.1421,0.8000,1.0000,0.1739,unknown,False,22,22,True,0,0,0,
+circle_arc,10,42010,sampling_gamma0,False,0.0000,14.1421,0.8000,1.0000,0.1739,unknown,False,22,22,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,10,42010,cfg_gamma32,False,0.0000,14.1421,0.8000,1.0000,0.1818,unknown,False,22,22,True,0,1,1,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,11,42011,greedy,True,0.9778,14.1421,0.8095,1.0000,0.1600,unknown,False,23,23,True,0,0,0,
+circle_arc,11,42011,beam_search,True,0.9778,14.1421,0.8095,1.0000,0.1600,unknown,False,23,23,True,0,0,0,
+circle_arc,11,42011,sampling_gamma0,False,0.0000,14.1421,0.8947,1.0000,0.0800,circle_arc,False,21,21,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,11,42011,cfg_gamma32,False,0.0000,14.1421,0.8182,1.0000,0.1600,unknown,False,23,23,True,0,1,1,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,12,42012,greedy,True,0.9760,14.1421,0.8889,1.0000,0.0870,circle_arc,False,20,20,True,0,0,0,
+circle_arc,12,42012,beam_search,True,0.9760,14.1421,0.8889,1.0000,0.0870,circle_arc,False,20,20,True,0,0,0,
+circle_arc,12,42012,sampling_gamma0,False,0.0000,14.1421,0.8095,1.0000,0.1739,unknown,False,22,22,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,12,42012,cfg_gamma32,False,0.0000,14.1421,0.8000,1.0000,0.1739,unknown,False,22,22,True,0,1,1,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,13,42013,greedy,True,0.8687,14.1421,0.8696,1.0000,0.1304,circle_arc,False,25,25,True,0,0,0,
+circle_arc,13,42013,beam_search,True,0.8687,14.1421,0.8696,1.0000,0.1304,circle_arc,False,25,25,True,0,0,0,
+circle_arc,13,42013,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.1304,circle_arc,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,13,42013,cfg_gamma32,False,0.0000,14.1421,0.8696,1.0000,0.1304,circle_arc,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,14,42014,greedy,True,0.9450,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,14,42014,beam_search,True,0.9450,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,14,42014,sampling_gamma0,False,0.0000,14.1421,0.8636,1.0000,0.1304,circle_arc,False,22,22,True,0,1,1,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+circle_arc,14,42014,cfg_gamma32,True,0.9101,14.1421,0.8333,1.0000,0.1500,circle_arc,False,18,18,True,0,0,0,
+circle_arc,15,42015,greedy,True,0.9899,14.1421,0.8421,1.0000,0.1364,circle_arc,False,21,21,True,0,0,0,
+circle_arc,15,42015,beam_search,True,0.9899,14.1421,0.8421,1.0000,0.1364,circle_arc,False,21,21,True,0,0,0,
+circle_arc,15,42015,sampling_gamma0,True,0.9899,14.1421,0.8421,1.0000,0.1364,circle_arc,False,21,21,True,0,0,0,
+circle_arc,15,42015,cfg_gamma32,True,0.9907,14.1421,0.8696,1.0000,0.1200,circle_arc,False,23,23,True,0,0,0,
+circle_arc,16,42016,greedy,True,0.9699,14.1421,0.8000,1.0000,0.1739,unknown,False,22,22,True,0,0,0,
+circle_arc,16,42016,beam_search,True,0.9779,14.1421,0.8000,1.0000,0.1739,unknown,False,22,22,True,0,0,0,
+circle_arc,16,42016,sampling_gamma0,False,0.0000,14.1421,0.8182,1.0000,0.1667,unknown,False,22,22,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+circle_arc,16,42016,cfg_gamma32,True,0.9699,14.1421,0.8095,1.0000,0.1818,unknown,False,22,22,True,0,0,0,
+circle_arc,17,42017,greedy,True,0.9658,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,17,42017,beam_search,True,0.9658,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,17,42017,sampling_gamma0,False,0.0000,14.1421,0.8500,1.0000,0.1364,circle_arc,False,20,20,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,17,42017,cfg_gamma32,False,0.0000,14.1421,0.8333,1.0000,0.1500,circle_arc,False,18,18,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,18,42018,greedy,True,0.9228,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,18,42018,beam_search,True,0.9228,14.1421,0.8333,1.0000,0.1500,circle_arc,False,20,20,True,0,0,0,
+circle_arc,18,42018,sampling_gamma0,False,0.0000,14.1421,0.8421,1.0000,0.1429,circle_arc,False,20,20,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,18,42018,cfg_gamma32,False,0.0000,14.1421,0.8500,1.0000,0.1364,circle_arc,False,21,21,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,19,42019,greedy,True,0.9139,14.1421,0.8696,1.0000,0.1250,circle_arc,False,25,25,True,0,0,0,
+circle_arc,19,42019,beam_search,True,0.9139,14.1421,0.8696,1.0000,0.1250,circle_arc,False,25,25,True,0,0,0,
+circle_arc,19,42019,sampling_gamma0,False,0.0000,14.1421,0.8750,1.0000,0.1200,circle_arc,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+circle_arc,19,42019,cfg_gamma32,False,0.0000,14.1421,0.8750,1.0000,0.1200,circle_arc,False,25,25,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+grid_axes,0,42000,greedy,True,0.4827,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,0,42000,beam_search,True,0.4827,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,0,42000,sampling_gamma0,True,0.2904,14.1421,0.9167,1.0000,0.1000,grid_axes,False,62,62,True,0,0,0,
+grid_axes,0,42000,cfg_gamma32,True,0.4827,14.1421,0.9167,1.0000,0.1026,grid_axes,False,128,128,False,0,4,0,
+grid_axes,1,42001,greedy,True,0.9991,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,1,42001,beam_search,True,0.9991,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,1,42001,sampling_gamma0,True,0.9991,14.1421,0.9180,1.0000,0.1000,grid_axes,False,62,62,True,0,0,0,
+grid_axes,1,42001,cfg_gamma32,True,0.7504,14.1421,0.9180,1.0000,0.0976,grid_axes,False,62,62,True,0,0,0,
+grid_axes,2,42002,greedy,True,0.6253,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,2,42002,beam_search,True,0.6253,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,2,42002,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0930,grid_axes,False,62,62,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+grid_axes,2,42002,cfg_gamma32,True,0.6253,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,3,42003,greedy,True,0.6808,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,3,42003,beam_search,True,0.6808,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,3,42003,sampling_gamma0,False,0.0000,14.1421,0.9576,1.0000,0.0784,grid_axes,False,120,120,True,0,2,2,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+grid_axes,3,42003,cfg_gamma32,True,0.6808,14.1421,0.9167,1.0000,0.1026,grid_axes,False,123,123,True,0,4,0,
+grid_axes,4,42004,greedy,True,0.5044,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,4,42004,beam_search,True,0.5044,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,4,42004,sampling_gamma0,False,0.0000,14.1421,0.9048,1.0000,0.1000,grid_axes,False,62,62,True,0,1,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+grid_axes,4,42004,cfg_gamma32,True,0.0000,14.1421,0.9167,1.0000,0.0976,grid_axes,False,62,62,True,0,0,0,
+grid_axes,5,42005,greedy,True,0.9912,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,5,42005,beam_search,True,0.9912,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,5,42005,sampling_gamma0,True,0.9915,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,5,42005,cfg_gamma32,True,0.9912,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,6,42006,greedy,True,0.7585,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,6,42006,beam_search,True,0.7585,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,6,42006,sampling_gamma0,True,0.6331,14.1421,0.9167,1.0000,0.1000,grid_axes,False,62,62,True,0,0,0,
+grid_axes,6,42006,cfg_gamma32,True,0.7620,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,7,42007,greedy,True,0.4532,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,7,42007,beam_search,True,0.4532,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,7,42007,sampling_gamma0,True,0.4532,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,7,42007,cfg_gamma32,True,0.4532,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,8,42008,greedy,True,1.0000,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,8,42008,beam_search,True,1.0000,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,8,42008,sampling_gamma0,True,0.6521,14.1421,0.9167,1.0000,0.0952,grid_axes,False,62,62,True,0,1,1,
+grid_axes,8,42008,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,1,1,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+grid_axes,9,42009,greedy,True,0.8294,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,9,42009,beam_search,True,0.8294,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,9,42009,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0882,grid_axes,False,62,62,True,0,2,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+grid_axes,9,42009,cfg_gamma32,True,0.0001,14.1421,0.9048,1.0000,0.1000,grid_axes,False,62,62,True,0,1,0,
+grid_axes,10,42010,greedy,True,0.7666,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,10,42010,beam_search,True,0.7666,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,10,42010,sampling_gamma0,True,0.6028,14.1421,0.9167,1.0000,0.1000,grid_axes,False,62,62,True,0,0,0,
+grid_axes,10,42010,cfg_gamma32,True,0.6028,14.1421,0.9167,1.0000,0.1000,grid_axes,False,62,62,True,0,0,0,
+grid_axes,11,42011,greedy,True,0.9966,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,11,42011,beam_search,True,0.9966,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,11,42011,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0952,grid_axes,False,62,62,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+grid_axes,11,42011,cfg_gamma32,True,0.8245,14.1421,0.9167,1.0000,0.1000,grid_axes,False,62,62,True,0,0,0,
+grid_axes,12,42012,greedy,True,0.5747,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,12,42012,beam_search,True,0.5747,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,12,42012,sampling_gamma0,True,0.0000,14.1421,0.9180,1.0000,0.0930,grid_axes,False,62,62,True,0,0,0,
+grid_axes,12,42012,cfg_gamma32,True,0.3755,14.1421,0.9180,1.0000,0.0952,grid_axes,False,128,128,False,0,3,0,
+grid_axes,13,42013,greedy,True,1.0000,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,13,42013,beam_search,True,1.0000,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,13,42013,sampling_gamma0,True,0.8699,14.1421,0.9580,1.0000,0.0833,grid_axes,False,128,128,False,0,6,4,
+grid_axes,13,42013,cfg_gamma32,True,0.8699,14.1421,0.9167,1.0000,0.1000,grid_axes,False,128,128,False,0,4,0,
+grid_axes,14,42014,greedy,True,0.3090,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,14,42014,beam_search,True,0.3090,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,14,42014,sampling_gamma0,True,0.3090,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,14,42014,cfg_gamma32,True,0.3090,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,15,42015,greedy,True,0.8845,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,15,42015,beam_search,True,0.8845,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,15,42015,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.1000,grid_axes,False,62,62,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+grid_axes,15,42015,cfg_gamma32,True,0.8845,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,16,42016,greedy,True,0.6774,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,16,42016,beam_search,True,0.6774,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,16,42016,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.1000,grid_axes,False,62,62,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+grid_axes,16,42016,cfg_gamma32,True,0.7124,14.1421,0.9167,1.0000,0.1000,grid_axes,False,62,62,True,0,0,0,
+grid_axes,17,42017,greedy,True,0.6739,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,17,42017,beam_search,True,0.6739,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,17,42017,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0882,grid_axes,False,62,62,True,0,1,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+grid_axes,17,42017,cfg_gamma32,False,0.0000,14.1421,0.9180,1.0000,0.0952,grid_axes,False,62,62,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+grid_axes,18,42018,greedy,True,0.7815,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,18,42018,beam_search,True,0.7815,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,18,42018,sampling_gamma0,True,0.6185,14.1421,0.9180,1.0000,0.0952,grid_axes,False,62,62,True,0,0,0,
+grid_axes,18,42018,cfg_gamma32,True,0.6185,14.1421,0.9180,1.0000,0.0976,grid_axes,False,62,62,True,0,0,0,
+grid_axes,19,42019,greedy,True,0.6920,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,19,42019,beam_search,True,0.6920,14.1421,0.9167,1.0000,0.1026,grid_axes,False,62,62,True,0,0,0,
+grid_axes,19,42019,sampling_gamma0,True,0.0001,14.1421,0.9070,1.0000,0.0976,grid_axes,False,62,62,True,0,1,0,
+grid_axes,19,42019,cfg_gamma32,True,0.8472,14.1421,0.9528,1.0000,0.0952,grid_axes,False,128,128,False,0,1,2,
+node_arrow,0,42000,greedy,True,0.6145,14.1421,0.9167,0.8571,0.0652,line_segment,True,46,46,True,0,0,0,
+node_arrow,0,42000,beam_search,True,0.6931,14.1421,0.9167,0.8571,0.0638,line_segment,True,47,47,True,0,0,0,
+node_arrow,0,42000,sampling_gamma0,True,0.6886,14.1421,0.9167,0.8571,0.0600,line_segment,True,46,46,True,0,0,0,
+node_arrow,0,42000,cfg_gamma32,True,0.6154,14.1421,0.9167,0.8571,0.0600,line_segment,True,47,47,True,0,0,0,
+node_arrow,1,42001,greedy,True,0.5742,14.1421,0.9318,0.6667,0.0909,line_segment,True,46,46,True,0,0,0,
+node_arrow,1,42001,beam_search,True,0.5703,14.1421,0.9318,0.6667,0.0909,line_segment,True,46,46,True,0,0,0,
+node_arrow,1,42001,sampling_gamma0,False,0.0000,14.1421,0.9333,1.0000,0.0750,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,1,42001,cfg_gamma32,True,0.6240,14.1421,0.9348,0.6667,0.0789,line_segment,True,47,47,True,0,0,0,
+node_arrow,2,42002,greedy,True,0.6055,14.1421,0.9167,0.8571,0.0638,line_segment,True,46,46,True,0,0,0,
+node_arrow,2,42002,beam_search,True,0.6544,14.1421,0.9167,0.8571,0.0638,line_segment,True,47,47,True,0,0,0,
+node_arrow,2,42002,sampling_gamma0,True,0.5804,14.1421,0.9167,0.8571,0.0588,line_segment,True,46,46,True,0,0,0,
+node_arrow,2,42002,cfg_gamma32,False,0.0000,14.1421,0.9612,0.8571,0.0429,line_segment,True,128,128,False,0,6,6,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+node_arrow,3,42003,greedy,True,0.7856,14.1421,0.9318,0.6667,0.0882,line_segment,True,46,46,True,0,0,0,
+node_arrow,3,42003,beam_search,True,0.8488,14.1421,0.9333,0.6667,0.0811,line_segment,True,47,47,True,0,0,0,
+node_arrow,3,42003,sampling_gamma0,False,0.0000,14.1421,0.9500,0.6667,0.0638,line_segment,True,62,62,True,0,2,2,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+node_arrow,3,42003,cfg_gamma32,False,0.0000,14.1421,0.9500,0.6667,0.0698,line_segment,True,62,62,True,0,1,1,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+node_arrow,4,42004,greedy,True,0.6538,14.1421,0.9167,0.8571,0.0667,line_segment,True,46,46,True,0,0,0,
+node_arrow,4,42004,beam_search,True,0.6538,14.1421,0.9167,0.8571,0.0667,line_segment,True,46,46,True,0,0,0,
+node_arrow,4,42004,sampling_gamma0,False,0.0000,14.1421,0.9515,1.0000,0.0405,line_segment,True,107,107,True,0,2,2,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,4,42004,cfg_gamma32,False,0.0000,14.1421,0.9612,1.0000,0.0517,line_segment,True,128,128,False,0,2,2,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,5,42005,greedy,True,0.6183,14.1421,0.9167,0.8571,0.0638,line_segment,True,46,46,True,0,0,0,
+node_arrow,5,42005,beam_search,True,0.6342,14.1421,0.9167,0.8571,0.0638,line_segment,True,46,46,True,0,0,0,
+node_arrow,5,42005,sampling_gamma0,True,0.6368,14.1421,0.9167,0.8571,0.0612,line_segment,True,46,46,True,0,0,0,
+node_arrow,5,42005,cfg_gamma32,False,0.0000,14.1421,0.9612,0.8571,0.0462,line_segment,True,128,128,False,0,5,5,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+node_arrow,6,42006,greedy,True,0.4259,14.1421,0.9333,0.6667,0.0789,line_segment,True,47,47,True,0,0,0,
+node_arrow,6,42006,beam_search,True,0.4259,14.1421,0.9333,0.6667,0.0789,line_segment,True,47,47,True,0,0,0,
+node_arrow,6,42006,sampling_gamma0,False,0.0000,14.1421,0.9318,0.6667,0.0789,line_segment,True,46,46,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+node_arrow,6,42006,cfg_gamma32,True,0.4732,14.1421,0.9333,0.6667,0.0789,line_segment,True,47,47,True,0,0,0,
+node_arrow,7,42007,greedy,True,0.6362,14.1421,0.9167,0.8571,0.0625,line_segment,True,46,46,True,0,0,0,
+node_arrow,7,42007,beam_search,True,0.6716,14.1421,0.9167,0.8571,0.0638,line_segment,True,47,47,True,0,0,0,
+node_arrow,7,42007,sampling_gamma0,True,0.5946,14.1421,0.9167,0.8571,0.0600,line_segment,True,46,46,True,0,0,0,
+node_arrow,7,42007,cfg_gamma32,False,0.0000,14.1421,0.9612,0.8571,0.0448,line_segment,True,128,128,False,0,3,3,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+node_arrow,8,42008,greedy,True,0.6775,14.1421,0.9167,0.8571,0.0652,line_segment,True,46,46,True,0,0,0,
+node_arrow,8,42008,beam_search,True,0.6669,14.1421,0.9167,0.8571,0.0667,line_segment,True,46,46,True,0,0,0,
+node_arrow,8,42008,sampling_gamma0,True,0.6949,14.1421,0.9167,0.8571,0.0600,line_segment,True,46,46,True,0,0,0,
+node_arrow,8,42008,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0652,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,9,42009,greedy,True,0.6458,14.1421,0.9167,0.8571,0.0667,line_segment,True,46,46,True,0,0,0,
+node_arrow,9,42009,beam_search,True,0.6404,14.1421,0.9167,0.8571,0.0667,line_segment,True,46,46,True,0,0,0,
+node_arrow,9,42009,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0600,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,9,42009,cfg_gamma32,False,0.0000,14.1421,0.9612,1.0000,0.0484,line_segment,True,128,128,False,0,3,3,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,10,42010,greedy,True,0.8427,14.1421,0.9318,0.6667,0.0833,line_segment,True,46,46,True,0,0,0,
+node_arrow,10,42010,beam_search,True,0.8547,14.1421,0.9318,0.6667,0.0857,line_segment,True,46,46,True,0,0,0,
+node_arrow,10,42010,sampling_gamma0,False,0.0000,14.1421,0.9318,1.0000,0.0769,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,10,42010,cfg_gamma32,False,0.0000,14.1421,0.9318,1.0000,0.0789,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,11,42011,greedy,True,0.7493,14.1421,0.9091,0.8000,0.0750,line_segment,True,46,46,True,0,0,0,
+node_arrow,11,42011,beam_search,True,0.7493,14.1421,0.9091,0.8000,0.0750,line_segment,True,46,46,True,0,0,0,
+node_arrow,11,42011,sampling_gamma0,False,0.0000,14.1421,0.9355,1.0000,0.0612,line_segment,True,62,62,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,11,42011,cfg_gamma32,False,0.0000,14.1421,0.9091,1.0000,0.0698,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,12,42012,greedy,True,0.4887,14.1421,0.9091,0.8000,0.0769,line_segment,True,46,46,True,0,0,0,
+node_arrow,12,42012,beam_search,True,0.4364,14.1421,0.9091,0.8000,0.0750,line_segment,True,46,46,True,0,0,0,
+node_arrow,12,42012,sampling_gamma0,True,0.6250,14.1421,0.9111,0.8000,0.0652,line_segment,True,46,46,True,0,0,0,
+node_arrow,12,42012,cfg_gamma32,False,0.0000,14.1421,0.9130,1.0000,0.0682,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,13,42013,greedy,True,0.8021,14.1421,0.9318,0.6667,0.0789,line_segment,True,46,46,True,0,0,0,
+node_arrow,13,42013,beam_search,True,0.7783,14.1421,0.9318,0.6667,0.0789,line_segment,True,46,46,True,0,0,0,
+node_arrow,13,42013,sampling_gamma0,False,0.0000,14.1421,0.9318,1.0000,0.0769,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,13,42013,cfg_gamma32,False,0.0000,14.1421,0.9318,1.0000,0.0789,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,14,42014,greedy,True,0.7266,14.1421,0.9091,0.8000,0.0732,line_segment,True,46,46,True,0,0,0,
+node_arrow,14,42014,beam_search,True,0.7266,14.1421,0.9091,0.8000,0.0732,line_segment,True,46,46,True,0,0,0,
+node_arrow,14,42014,sampling_gamma0,True,0.7487,14.1421,0.9091,0.8000,0.0667,line_segment,True,46,46,True,0,0,0,
+node_arrow,14,42014,cfg_gamma32,True,0.7188,14.1421,0.9091,0.8000,0.0682,line_segment,True,46,46,True,0,0,0,
+node_arrow,15,42015,greedy,True,0.4484,14.1421,0.9318,0.6667,0.0909,line_segment,True,46,46,True,0,0,0,
+node_arrow,15,42015,beam_search,True,0.5667,14.1421,0.9333,0.6667,0.0789,line_segment,True,47,47,True,0,0,0,
+node_arrow,15,42015,sampling_gamma0,True,0.5791,14.1421,0.9318,0.6667,0.0769,line_segment,True,46,46,True,0,0,0,
+node_arrow,15,42015,cfg_gamma32,False,0.0000,14.1421,0.9400,0.6667,0.0789,line_segment,True,52,52,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+node_arrow,16,42016,greedy,True,0.7257,14.1421,0.9167,0.8571,0.0698,line_segment,True,46,46,True,0,0,0,
+node_arrow,16,42016,beam_search,True,0.7258,14.1421,0.9167,0.8571,0.0714,line_segment,True,46,46,True,0,0,0,
+node_arrow,16,42016,sampling_gamma0,True,0.7147,14.1421,0.9167,0.8571,0.0600,line_segment,True,46,46,True,0,0,0,
+node_arrow,16,42016,cfg_gamma32,True,0.6720,14.1421,0.9167,0.8571,0.0556,line_segment,True,62,62,True,0,1,1,
+node_arrow,17,42017,greedy,True,0.6755,14.1421,0.9167,0.8571,0.0625,line_segment,True,46,46,True,0,0,0,
+node_arrow,17,42017,beam_search,True,0.7398,14.1421,0.9167,0.8571,0.0625,line_segment,True,46,46,True,0,0,0,
+node_arrow,17,42017,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0577,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,17,42017,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0577,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,18,42018,greedy,True,0.6817,14.1421,0.9333,0.6667,0.0811,line_segment,True,47,47,True,0,0,0,
+node_arrow,18,42018,beam_search,True,0.6950,14.1421,0.9333,0.6667,0.0833,line_segment,True,47,47,True,0,0,0,
+node_arrow,18,42018,sampling_gamma0,False,0.0000,14.1421,0.9333,1.0000,0.0769,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,18,42018,cfg_gamma32,False,0.0000,14.1421,0.9348,1.0000,0.0769,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,19,42019,greedy,True,0.4890,14.1421,0.9167,0.8571,0.0652,line_segment,True,46,46,True,0,0,0,
+node_arrow,19,42019,beam_search,True,0.4968,14.1421,0.9167,0.8571,0.0652,line_segment,True,46,46,True,0,0,0,
+node_arrow,19,42019,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0588,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+node_arrow,19,42019,cfg_gamma32,False,0.0000,14.1421,0.9167,1.0000,0.0600,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,0,42000,greedy,True,0.8050,14.1421,0.8864,1.0000,0.0667,line_segment,True,46,46,True,0,0,0,
+composed,0,42000,beam_search,True,0.7915,14.1421,0.8864,1.0000,0.0667,line_segment,True,46,46,True,0,0,0,
+composed,0,42000,sampling_gamma0,True,0.7497,14.1421,0.8864,1.0000,0.0682,line_segment,True,46,46,True,0,0,0,
+composed,0,42000,cfg_gamma32,False,0.0000,14.1421,0.9457,1.0000,0.0484,line_segment,True,128,128,False,0,1,1,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+composed,1,42001,greedy,True,0.9065,14.1421,0.8636,1.0000,0.0811,line_segment,True,46,46,True,0,0,0,
+composed,1,42001,beam_search,True,0.8642,14.1421,0.9394,1.0000,0.0435,function_plot,False,35,35,True,0,0,0,
+composed,1,42001,sampling_gamma0,True,0.7644,14.1421,0.8667,1.0000,0.0698,line_segment,True,46,46,True,0,0,0,
+composed,1,42001,cfg_gamma32,False,0.0000,14.1421,0.9412,1.0000,0.0426,function_plot,False,35,35,True,0,0,0,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+composed,2,42002,greedy,True,0.7390,14.1421,0.8636,1.0000,0.0612,line_segment,True,46,46,True,0,0,0,
+composed,2,42002,beam_search,True,0.7562,14.1421,0.8636,1.0000,0.0667,line_segment,True,46,46,True,0,0,0,
+composed,2,42002,sampling_gamma0,True,0.6599,14.1421,0.8636,1.0000,0.0577,line_segment,True,46,46,True,0,0,0,
+composed,2,42002,cfg_gamma32,True,0.6347,14.1421,0.8636,1.0000,0.0577,line_segment,True,46,46,True,0,0,0,
+composed,3,42003,greedy,True,0.8075,14.1421,0.8636,1.0000,0.0652,line_segment,True,46,46,True,0,0,0,
+composed,3,42003,beam_search,True,0.8082,14.1421,0.8636,1.0000,0.0667,line_segment,True,46,46,True,0,0,0,
+composed,3,42003,sampling_gamma0,False,0.0000,14.1421,0.9000,1.0000,0.0545,line_segment,True,62,62,True,0,2,2,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+composed,3,42003,cfg_gamma32,True,0.7248,14.1421,0.8636,1.0000,0.0638,line_segment,True,46,46,True,0,0,0,
+composed,4,42004,greedy,True,0.8077,14.1421,0.9111,1.0000,0.0600,line_segment,True,46,46,True,0,0,0,
+composed,4,42004,beam_search,True,0.8077,14.1421,0.9111,1.0000,0.0600,line_segment,True,46,46,True,0,0,0,
+composed,4,42004,sampling_gamma0,False,0.0000,14.1421,0.8936,1.0000,0.0517,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,4,42004,cfg_gamma32,False,0.0000,14.1421,0.9111,1.0000,0.0536,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,5,42005,greedy,True,0.7782,14.1421,0.8704,1.0000,0.0526,line_segment,True,46,46,True,0,0,0,
+composed,5,42005,beam_search,True,0.7768,14.1421,0.8704,1.0000,0.0526,line_segment,True,46,46,True,0,0,0,
+composed,5,42005,sampling_gamma0,True,0.7488,14.1421,0.8704,1.0000,0.0500,line_segment,True,46,46,True,0,0,0,
+composed,5,42005,cfg_gamma32,True,0.7623,14.1421,0.8704,1.0000,0.0517,line_segment,True,46,46,True,0,0,0,
+composed,6,42006,greedy,True,0.7419,14.1421,0.9318,1.0000,0.0882,line_segment,True,46,46,True,0,0,0,
+composed,6,42006,beam_search,True,0.7402,14.1421,0.9318,1.0000,0.0857,line_segment,True,46,46,True,0,0,0,
+composed,6,42006,sampling_gamma0,True,0.7701,14.1421,0.9318,1.0000,0.0789,line_segment,True,46,46,True,0,0,0,
+composed,6,42006,cfg_gamma32,False,0.0000,14.1421,0.9767,1.0000,0.0588,line_segment,True,128,128,False,0,9,9,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+composed,7,42007,greedy,True,0.7866,14.1421,0.8864,1.0000,0.0811,line_segment,True,46,46,True,0,0,0,
+composed,7,42007,beam_search,False,0.0000,14.1421,0.8864,1.0000,0.0833,line_segment,True,46,46,True,0,0,0,cannot identify image file <_io.BytesIO object at 0x33628bd80>
+composed,7,42007,sampling_gamma0,False,0.0000,14.1421,0.9167,1.0000,0.0566,line_segment,True,62,62,True,0,2,2,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+composed,7,42007,cfg_gamma32,True,0.7739,14.1421,0.8864,1.0000,0.0698,line_segment,True,46,46,True,0,0,0,
+composed,8,42008,greedy,True,0.6582,14.1421,0.9333,1.0000,0.0714,line_segment,True,47,47,True,0,0,0,
+composed,8,42008,beam_search,True,0.6956,14.1421,0.9333,1.0000,0.0698,line_segment,True,47,47,True,0,0,0,
+composed,8,42008,sampling_gamma0,True,0.7271,14.1421,0.9333,1.0000,0.0667,line_segment,True,47,47,True,0,0,0,
+composed,8,42008,cfg_gamma32,False,0.0000,14.1421,0.9767,1.0000,0.0508,line_segment,True,128,128,False,0,6,6,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,9,42009,greedy,True,0.8067,14.1421,0.8913,1.0000,0.0577,line_segment,True,46,46,True,0,0,0,
+composed,9,42009,beam_search,True,0.5961,14.1421,0.9130,1.0000,0.0577,line_segment,True,47,47,True,0,0,0,
+composed,9,42009,sampling_gamma0,False,0.0000,14.1421,0.8913,1.0000,0.0536,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,9,42009,cfg_gamma32,False,0.0000,14.1421,0.8936,1.0000,0.0536,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,10,42010,greedy,True,0.8217,14.1421,0.9429,1.0000,0.0714,circle_arc,False,24,24,True,0,0,0,
+composed,10,42010,beam_search,True,0.8217,14.1421,0.9429,1.0000,0.0714,circle_arc,False,24,24,True,0,0,0,
+composed,10,42010,sampling_gamma0,False,0.0000,14.1421,0.9429,1.0000,0.0714,circle_arc,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,10,42010,cfg_gamma32,False,0.0000,14.1421,0.9429,1.0000,0.0732,circle_arc,False,24,24,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,11,42011,greedy,True,0.6623,14.1421,0.8636,1.0000,0.0588,line_segment,True,46,46,True,0,0,0,
+composed,11,42011,beam_search,True,0.6659,14.1421,0.8636,1.0000,0.0577,line_segment,True,46,46,True,0,0,0,
+composed,11,42011,sampling_gamma0,False,0.0000,14.1421,0.8667,1.0000,0.0508,line_segment,True,62,62,True,0,1,1,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,11,42011,cfg_gamma32,False,0.0000,14.1421,0.8636,1.0000,0.0577,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,12,42012,greedy,True,0.7539,14.1421,0.9318,1.0000,0.0750,line_segment,True,46,46,True,0,0,0,
+composed,12,42012,beam_search,True,0.6836,14.1421,0.9333,1.0000,0.0750,line_segment,True,47,47,True,0,0,0,
+composed,12,42012,sampling_gamma0,False,0.0000,14.1421,0.9348,1.0000,0.0682,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,12,42012,cfg_gamma32,False,0.0000,14.1421,0.9717,1.0000,0.0500,line_segment,True,107,107,True,0,1,1,"TeX compilation structurally failed. Engine output: This is pdfTeX, Version 3.141592653-2.6-1.40.28 "
+composed,13,42013,greedy,True,0.4059,14.1421,0.8444,1.0000,0.0698,line_segment,True,47,47,True,0,0,0,
+composed,13,42013,beam_search,True,0.4059,14.1421,0.8444,1.0000,0.0698,line_segment,True,47,47,True,0,0,0,
+composed,13,42013,sampling_gamma0,False,0.0000,14.1421,0.8444,1.0000,0.0682,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,13,42013,cfg_gamma32,False,0.0000,14.1421,0.9259,1.0000,0.0833,circle_arc,False,21,21,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,14,42014,greedy,True,0.7291,14.1421,0.9318,1.0000,0.0714,line_segment,True,46,46,True,0,0,0,
+composed,14,42014,beam_search,True,0.5584,14.1421,0.9333,1.0000,0.0750,line_segment,True,47,47,True,0,0,0,
+composed,14,42014,sampling_gamma0,True,0.6774,14.1421,0.9318,1.0000,0.0667,line_segment,True,46,46,True,0,0,0,
+composed,14,42014,cfg_gamma32,True,0.6141,14.1421,0.9500,1.0000,0.0667,line_segment,True,62,62,True,0,2,2,
+composed,15,42015,greedy,True,0.7271,14.1421,0.8636,1.0000,0.0732,line_segment,True,46,46,True,0,0,0,
+composed,15,42015,beam_search,True,0.7251,14.1421,0.8636,1.0000,0.0714,line_segment,True,46,46,True,0,0,0,
+composed,15,42015,sampling_gamma0,True,0.7172,14.1421,0.8636,1.0000,0.0698,line_segment,True,46,46,True,0,0,0,
+composed,15,42015,cfg_gamma32,True,0.5811,14.1421,0.8696,1.0000,0.0698,line_segment,True,46,46,True,0,0,0,
+composed,16,42016,greedy,True,0.8096,14.1421,0.9545,1.0000,0.0588,circle_arc,False,24,24,True,0,0,0,
+composed,16,42016,beam_search,True,0.8096,14.1421,0.9545,1.0000,0.0588,circle_arc,False,24,24,True,0,0,0,
+composed,16,42016,sampling_gamma0,True,0.8096,14.1421,0.9545,1.0000,0.0588,circle_arc,False,24,24,True,0,0,0,
+composed,16,42016,cfg_gamma32,False,0.0000,14.1421,0.9545,1.0000,0.0577,circle_arc,False,47,47,True,0,1,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,17,42017,greedy,True,0.5495,14.1421,0.8723,1.0000,0.0588,line_segment,True,46,46,True,0,0,0,
+composed,17,42017,beam_search,True,0.5495,14.1421,0.8723,1.0000,0.0588,line_segment,True,46,46,True,0,0,0,
+composed,17,42017,sampling_gamma0,False,0.0000,14.1421,0.8723,1.0000,0.0517,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,17,42017,cfg_gamma32,False,0.0000,14.1421,0.9077,1.0000,0.0400,line_segment,True,128,128,False,0,3,3,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,18,42018,greedy,True,0.6187,14.1421,0.8667,1.0000,0.0882,line_segment,True,47,47,True,0,0,0,
+composed,18,42018,beam_search,True,0.7204,14.1421,0.8667,1.0000,0.0857,line_segment,True,47,47,True,0,0,0,
+composed,18,42018,sampling_gamma0,False,0.0000,14.1421,0.8696,1.0000,0.0714,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,18,42018,cfg_gamma32,False,0.0000,14.1421,0.8696,1.0000,0.0789,line_segment,True,47,47,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,19,42019,greedy,True,0.7477,14.1421,0.8636,1.0000,0.0714,line_segment,True,46,46,True,0,0,0,
+composed,19,42019,beam_search,True,0.7436,14.1421,0.8636,1.0000,0.0698,line_segment,True,46,46,True,0,0,0,
+composed,19,42019,sampling_gamma0,False,0.0000,14.1421,0.8667,1.0000,0.0682,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
+composed,19,42019,cfg_gamma32,False,0.0000,14.1421,0.8667,1.0000,0.0667,line_segment,True,46,46,True,0,0,0,"Ghostscript rasterization failed. Process output: GPL Ghostscript 10.04.0: Unrecoverable error, exit"
