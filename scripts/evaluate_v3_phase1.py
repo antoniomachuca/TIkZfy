@@ -36,15 +36,13 @@ import os
 import re
 import sys
 import time
-from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import numpy as np
 import torch
 from numpy.typing import NDArray
 from PIL import Image
-from torch import nn
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -53,17 +51,14 @@ from adapters.ghostscript_rasterizer import GhostscriptRasterizer
 from adapters.tex_live_adapter import AsyncTexLiveAdapter
 from adapters.vocabulary_persistence import JsonVocabularyAdapter
 from core.dataset.compositional import generate_compositional_batch
-from core.dataset.templates import FAMILY_NAMES, generate_sample
+from core.dataset.templates import generate_sample
 from core.math.spatial import resize_spatial_dimensions
-from core.math.tokenization import batch_encode, decode_from_tensor, tokenize_tikz_markup
-from core.ml.generation import BeamHypothesis, beam_search, decode_indices_to_markup, greedy_search
+from core.math.tokenization import tokenize_tikz_markup
+from core.ml.generation import beam_search, decode_indices_to_markup, greedy_search
 from core.ml.metrics import (
     DEFAULT_COORDINATE_SCALE,
-    CoordinateError,
-    coordinate_error,
     extract_structured_coordinates,
     geometric_edit_distance,
-    geometric_graph_edit_distance,
     structural_similarity,
 )
 from core.ml.model import VisionAutoregressiveModel, resolve_device
@@ -186,7 +181,9 @@ async def render_markups_parallel(
     sem = asyncio.Semaphore(max_concurrency)
 
     total: int = len(markups)
-    images_tensor: torch.Tensor = torch.empty((total, 3, image_size, image_size), dtype=torch.float32)
+    images_tensor: torch.Tensor = torch.empty(
+        (total, 3, image_size, image_size), dtype=torch.float32
+    )
     successes: list[bool] = [False] * total
     stds: list[float] = [0.0] * total
     batch_size: int = 500
@@ -223,7 +220,7 @@ def generate_independent_test_split(
 
     # 1. Synthetic families (8 families * samples_per_family)
     for fam in ALL_EVAL_FAMILIES:
-        for idx in range(samples_per_family):
+        for _idx in range(samples_per_family):
             sample_seed = int(rng.integers(1_000_000_000, 2_000_000_000))
             sample_rng = np.random.default_rng(sample_seed)
             if fam == "composed":
@@ -235,7 +232,7 @@ def generate_independent_test_split(
             seeds.append(sample_seed)
 
     # 2. Out-of-Distribution (OOD) multi-primitive compositional samples
-    for idx in range(ood_samples_count):
+    for _idx in range(ood_samples_count):
         sample_seed = int(rng.integers(2_000_000_000, 3_000_000_000))
         code = generate_compositional_batch(1, seed=sample_seed)[0]
         markups.append(code)
@@ -261,7 +258,9 @@ def evaluate_policy_on_split(
     """Execute complete policy evaluation and metric computation."""
     model.eval()
     total_samples: int = len(ref_markups)
-    eval_count: int = total_samples if max_eval_samples is None else min(total_samples, max_eval_samples)
+    eval_count: int = (
+        total_samples if max_eval_samples is None else min(total_samples, max_eval_samples)
+    )
 
     print(f"[*] Evaluating Policy: {policy_name.upper()} on {eval_count} test samples...")
     predicted_markups: list[str] = []
@@ -271,7 +270,7 @@ def evaluate_policy_on_split(
         img_input = ImageTensor(test_images[idx : idx + 1].to(target_device))  # Shape: (1, 3, H, W)
         if policy_name == "beam":
             hypotheses = beam_search(model, img_input, beam_width=beam_width, max_length=max_length)
-            pred_indices = hypotheses[0].token_indices if hypotheses else (0,)
+            pred_indices = hypotheses[0].tokens if hypotheses else (0,)
         else:
             pred_indices = greedy_search(model, img_input, max_length=max_length)
 
@@ -325,7 +324,9 @@ def evaluate_policy_on_split(
 
         # 4. Family Accuracy
         cand_fam = classify_structural_family(cand_code)
-        fam_acc = 1.0 if cand_fam == fam or (fam == "ood_composed" and cand_fam != "unknown") else 0.0
+        fam_acc = (
+            1.0 if cand_fam == fam or (fam == "ood_composed" and cand_fam != "unknown") else 0.0
+        )
 
         # 5. Coordinate RMSE
         ref_coords = list(extract_structured_coordinates(ref_code))
@@ -443,7 +444,9 @@ def run_phase1_evaluation(args: argparse.Namespace) -> dict[str, Any]:
     model.eval()
 
     # Generate or load independent test split
-    test_cache_path = cache_dir / f"independent_test_split_{args.samples_per_family}x8_{args.ood_samples}ood.pt"
+    test_cache_path = cache_dir / (
+        f"independent_test_split_{args.samples_per_family}x8_{args.ood_samples}ood.pt"
+    )
     manifest_path = manifest_dir / "independent_test_manifest.jsonl"
 
     if test_cache_path.exists():
@@ -454,7 +457,10 @@ def run_phase1_evaluation(args: argparse.Namespace) -> dict[str, Any]:
         ref_families = test_cache["families"]
         ref_seeds = test_cache["seeds"]
     else:
-        print(f"[*] Generating independent test split ({args.samples_per_family}x8 synthetic + {args.ood_samples} OOD)...")
+        print(
+            f"[*] Generating independent test split "
+            f"({args.samples_per_family}x8 synthetic + {args.ood_samples} OOD)..."
+        )
         ref_markups, ref_families, ref_seeds = generate_independent_test_split(
             samples_per_family=args.samples_per_family,
             ood_samples_count=args.ood_samples,
@@ -464,26 +470,34 @@ def run_phase1_evaluation(args: argparse.Namespace) -> dict[str, Any]:
         _, test_images, test_stds = asyncio.run(
             render_markups_parallel(ref_markups, max_concurrency=args.concurrency, image_size=128)
         )
-        torch.save({
-            "images": test_images,
-            "markups": ref_markups,
-            "families": ref_families,
-            "seeds": ref_seeds,
-        }, test_cache_path)
+        torch.save(
+            {
+                "images": test_images,
+                "markups": ref_markups,
+                "families": ref_families,
+                "seeds": ref_seeds,
+            },
+            test_cache_path,
+        )
         print(f"[+] Saved test split cache to {test_cache_path}")
 
         # Save manifest
         with manifest_path.open("w", encoding="utf-8") as f_man:
             for idx in range(len(ref_markups)):
-                f_man.write(json.dumps({
-                    "sample_id": f"test_{idx:06d}",
-                    "family": ref_families[idx],
-                    "seed": ref_seeds[idx],
-                    "markup": ref_markups[idx],
-                    "tensor_shape": list(test_images[idx].shape),
-                    "tensor_std": test_stds[idx],
-                    "compilation_status": "SUCCESS",
-                }) + "\n")
+                f_man.write(
+                    json.dumps(
+                        {
+                            "sample_id": f"test_{idx:06d}",
+                            "family": ref_families[idx],
+                            "seed": ref_seeds[idx],
+                            "markup": ref_markups[idx],
+                            "tensor_shape": list(test_images[idx].shape),
+                            "tensor_std": test_stds[idx],
+                            "compilation_status": "SUCCESS",
+                        }
+                    )
+                    + "\n"
+                )
         print(f"[+] Saved test manifest to {manifest_path}")
 
     test_cache_hash = compute_file_sha256(test_cache_path)
@@ -550,13 +564,13 @@ def run_phase1_evaluation(args: argparse.Namespace) -> dict[str, Any]:
 
     # Generate Markdown and LaTeX summary tables
     md_table_path = tables_dir / "phase1_metrics_table.md"
-    tex_table_path = tables_dir / "phase1_metrics_table.tex"
-
     md_lines: list[str] = [
         "# Phase 1 V3 Checkpoint Evaluation Results",
         "",
-        f"**Checkpoint:** `{checkpoint_path.name}` (Epoch: {checkpoint.epoch}, SHA-256: `{ckpt_hash[:12]}...`)",
-        f"**Benchmark:** {len(ref_markups)} independent samples ({args.samples_per_family}/family + {args.ood_samples} OOD)",
+        f"**Checkpoint:** `{checkpoint_path.name}` "
+        f"(Epoch: {checkpoint.epoch}, SHA-256: `{ckpt_hash[:12]}...`)",
+        f"**Benchmark:** {len(ref_markups)} independent samples "
+        f"({args.samples_per_family}/family + {args.ood_samples} OOD)",
         "",
         "## Summary Metrics (Greedy Baseline)",
         "",
@@ -569,7 +583,8 @@ def run_phase1_evaluation(args: argparse.Namespace) -> dict[str, Any]:
         "",
         "## Per-Family Breakdown",
         "",
-        "| Family | Samples | Compilation Rate (%) | Mean SSIM | Primitive Acc (%) | Family Acc (%) | Coordinate RMSE | GED |",
+        "| Family | Samples | Compilation Rate (%) | Mean SSIM | Primitive Acc (%) "
+        "| Family Acc (%) | Coordinate RMSE | GED |",
         "| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
 
