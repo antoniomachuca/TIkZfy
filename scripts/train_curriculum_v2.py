@@ -47,6 +47,7 @@ from adapters.ghostscript_rasterizer import GhostscriptRasterizer
 from adapters.tex_live_adapter import AsyncTexLiveAdapter
 from adapters.vocabulary_persistence import JsonVocabularyAdapter
 from core.dataset.compositional import generate_compositional_batch
+from core.dataset.packages import BASE_TIKZ_LIBRARIES
 from core.dataset.templates import FAMILY_NAMES, generate_sample
 from core.math.augmentation import add_gaussian_noise, jitter_contrast
 from core.math.spatial import resize_spatial_dimensions
@@ -179,7 +180,7 @@ async def _render_stage_batch_async(
     image_size: int = 128,
 ) -> tuple[torch.Tensor, list[str], list[float], list[str], list[int]]:
     """Compile markups in parallel with bounded concurrency, fallback retry, and manifest metrics."""
-    compiler = AsyncTexLiveAdapter()
+    compiler = AsyncTexLiveAdapter(tikz_libraries=BASE_TIKZ_LIBRARIES)
     rasterizer = GhostscriptRasterizer()
     sem = asyncio.Semaphore(max_concurrency)
 
