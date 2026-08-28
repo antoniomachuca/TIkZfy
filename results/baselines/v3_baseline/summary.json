@@ -1,0 +1,376 @@
+{
+  "overall": {
+    "greedy": {
+      "sample_count": 500,
+      "compilation_rate": 0.944,
+      "ssim": {
+        "mean": 0.6971065452885087,
+        "std": 0.26459092040001025
+      },
+      "coordinate_error": {
+        "mean": 0.4025828,
+        "std": 0.2590541636495349,
+        "points_compared": 1649
+      },
+      "token_ged": {
+        "mean": 0.8886922215029085,
+        "std": 0.03561950225131337
+      },
+      "graph_ged": {
+        "mean": 0.9546666666666667,
+        "std": 0.09773043586947772
+      },
+      "token_overlap": {
+        "mean": 0.1021827372269042,
+        "std": 0.03111202156431492
+      },
+      "family_accuracy": 0.54,
+      "collapse_to_segment_rate": 0.4675,
+      "eos_rate": 1.0,
+      "unk_rate": 0.0,
+      "mean_length_to_eos": 39.2
+    },
+    "beam_search": {
+      "sample_count": 500,
+      "compilation_rate": 0.938,
+      "ssim": {
+        "mean": 0.6871436886581797,
+        "std": 0.27591367782673704
+      },
+      "coordinate_error": {
+        "mean": 0.4097616,
+        "std": 0.2672134792360595,
+        "points_compared": 1620
+      },
+      "token_ged": {
+        "mean": 0.8893665241093456,
+        "std": 0.03588706287111894
+      },
+      "graph_ged": {
+        "mean": 0.9546666666666667,
+        "std": 0.09773043586947772
+      },
+      "token_overlap": {
+        "mean": 0.10180279299724825,
+        "std": 0.03152237566903083
+      },
+      "family_accuracy": 0.536,
+      "collapse_to_segment_rate": 0.4575,
+      "eos_rate": 1.0,
+      "unk_rate": 0.0,
+      "mean_length_to_eos": 38.728
+    }
+  },
+  "by_family": {
+    "line_segment": {
+      "greedy": {
+        "sample_count": 100,
+        "compilation_rate": 0.89,
+        "ssim": {
+          "mean": 0.5527851114627993,
+          "std": 0.3205284327014355
+        },
+        "coordinate_error": {
+          "mean": 0.390472,
+          "std": 0.15469646219613425,
+          "points_compared": 200
+        },
+        "token_ged": {
+          "mean": 0.8667490118577073,
+          "std": 0.007156190338679816
+        },
+        "graph_ged": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "token_overlap": {
+          "mean": 0.1250461673592108,
+          "std": 0.006701514493479742
+        },
+        "family_accuracy": 1.0,
+        "collapse_to_segment_rate": 0.0,
+        "eos_rate": 1.0,
+        "unk_rate": 0.0,
+        "mean_length_to_eos": 24.63
+      },
+      "beam_search": {
+        "sample_count": 100,
+        "compilation_rate": 0.9,
+        "ssim": {
+          "mean": 0.5523262746442197,
+          "std": 0.3285255289557439
+        },
+        "coordinate_error": {
+          "mean": 0.40172199999999997,
+          "std": 0.15808864132504905,
+          "points_compared": 200
+        },
+        "token_ged": {
+          "mean": 0.8664822134387349,
+          "std": 0.002962054386592108
+        },
+        "graph_ged": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "token_overlap": {
+          "mean": 0.12542173044346955,
+          "std": 0.006832265752668805
+        },
+        "family_accuracy": 1.0,
+        "collapse_to_segment_rate": 0.0,
+        "eos_rate": 1.0,
+        "unk_rate": 0.0,
+        "mean_length_to_eos": 24.48
+      }
+    },
+    "circle_arc": {
+      "greedy": {
+        "sample_count": 100,
+        "compilation_rate": 0.89,
+        "ssim": {
+          "mean": 0.838304523229599,
+          "std": 0.30146260405669084
+        },
+        "coordinate_error": {
+          "mean": 0.45135,
+          "std": 0.1820745102972956,
+          "points_compared": 100
+        },
+        "token_ged": {
+          "mean": 0.8444212243388444,
+          "std": 0.031401257168628606
+        },
+        "graph_ged": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "token_overlap": {
+          "mean": 0.13936676919571656,
+          "std": 0.02731697501203481
+        },
+        "family_accuracy": 0.7,
+        "collapse_to_segment_rate": 0.02,
+        "eos_rate": 1.0,
+        "unk_rate": 0.0,
+        "mean_length_to_eos": 22.17
+      },
+      "beam_search": {
+        "sample_count": 100,
+        "compilation_rate": 0.91,
+        "ssim": {
+          "mean": 0.8478972065448761,
+          "std": 0.282213636195949
+        },
+        "coordinate_error": {
+          "mean": 0.45022,
+          "std": 0.19056315541048327,
+          "points_compared": 100
+        },
+        "token_ged": {
+          "mean": 0.8454093666313344,
+          "std": 0.03273924815389716
+        },
+        "graph_ged": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "token_overlap": {
+          "mean": 0.1384530481341694,
+          "std": 0.028469591088109838
+        },
+        "family_accuracy": 0.68,
+        "collapse_to_segment_rate": 0.04,
+        "eos_rate": 1.0,
+        "unk_rate": 0.0,
+        "mean_length_to_eos": 22.19
+      }
+    },
+    "grid_axes": {
+      "greedy": {
+        "sample_count": 100,
+        "compilation_rate": 1.0,
+        "ssim": {
+          "mean": 0.7112612235546112,
+          "std": 0.24960302878443522
+        },
+        "coordinate_error": {
+          "mean": 0.000723,
+          "std": 0.000561222772168058,
+          "points_compared": 600
+        },
+        "token_ged": {
+          "mean": 0.9166666666666667,
+          "std": 1.1102230246251565e-16
+        },
+        "graph_ged": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "token_overlap": {
+          "mean": 0.10256410256410256,
+          "std": 0.0
+        },
+        "family_accuracy": 1.0,
+        "collapse_to_segment_rate": 0.0,
+        "eos_rate": 1.0,
+        "unk_rate": 0.0,
+        "mean_length_to_eos": 62.0
+      },
+      "beam_search": {
+        "sample_count": 100,
+        "compilation_rate": 1.0,
+        "ssim": {
+          "mean": 0.7102941390872002,
+          "std": 0.25011005918980844
+        },
+        "coordinate_error": {
+          "mean": 0.0007030000000000001,
+          "std": 0.0005581137876813294,
+          "points_compared": 600
+        },
+        "token_ged": {
+          "mean": 0.9166666666666667,
+          "std": 1.1102230246251565e-16
+        },
+        "graph_ged": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "token_overlap": {
+          "mean": 0.10256410256410256,
+          "std": 0.0
+        },
+        "family_accuracy": 1.0,
+        "collapse_to_segment_rate": 0.0,
+        "eos_rate": 1.0,
+        "unk_rate": 0.0,
+        "mean_length_to_eos": 62.0
+      }
+    },
+    "node_arrow": {
+      "greedy": {
+        "sample_count": 100,
+        "compilation_rate": 1.0,
+        "ssim": {
+          "mean": 0.6951317837834359,
+          "std": 0.11285669885346679
+        },
+        "coordinate_error": {
+          "mean": 0.6107520000000001,
+          "std": 0.12760816625906038,
+          "points_compared": 290
+        },
+        "token_ged": {
+          "mean": 0.9196941072212812,
+          "std": 0.01010930833731513
+        },
+        "graph_ged": {
+          "mean": 0.7733333333333333,
+          "std": 0.08157185944900518
+        },
+        "token_overlap": {
+          "mean": 0.07442639526999928,
+          "std": 0.010433340428497277
+        },
+        "family_accuracy": 0.0,
+        "collapse_to_segment_rate": 0.98,
+        "eos_rate": 1.0,
+        "unk_rate": 0.0,
+        "mean_length_to_eos": 44.12
+      },
+      "beam_search": {
+        "sample_count": 100,
+        "compilation_rate": 0.96,
+        "ssim": {
+          "mean": 0.6485927302297205,
+          "std": 0.19010080118526584
+        },
+        "coordinate_error": {
+          "mean": 0.612537,
+          "std": 0.1403860239874326,
+          "points_compared": 280
+        },
+        "token_ged": {
+          "mean": 0.9196230394002133,
+          "std": 0.010487821421600124
+        },
+        "graph_ged": {
+          "mean": 0.7733333333333333,
+          "std": 0.08157185944900518
+        },
+        "token_overlap": {
+          "mean": 0.07434333034610387,
+          "std": 0.011073307892076703
+        },
+        "family_accuracy": 0.0,
+        "collapse_to_segment_rate": 0.95,
+        "eos_rate": 1.0,
+        "unk_rate": 0.0,
+        "mean_length_to_eos": 42.14
+      }
+    },
+    "composed": {
+      "greedy": {
+        "sample_count": 100,
+        "compilation_rate": 0.94,
+        "ssim": {
+          "mean": 0.6880500844120979,
+          "std": 0.2008319501520891
+        },
+        "coordinate_error": {
+          "mean": 0.559617,
+          "std": 0.17369125139453628,
+          "points_compared": 459
+        },
+        "token_ged": {
+          "mean": 0.8959300974300433,
+          "std": 0.03109336888274363
+        },
+        "graph_ged": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "token_overlap": {
+          "mean": 0.06951025174549176,
+          "std": 0.014013118122884888
+        },
+        "family_accuracy": 0.0,
+        "collapse_to_segment_rate": 0.87,
+        "eos_rate": 1.0,
+        "unk_rate": 0.0,
+        "mean_length_to_eos": 43.08
+      },
+      "beam_search": {
+        "sample_count": 100,
+        "compilation_rate": 0.92,
+        "ssim": {
+          "mean": 0.6766080927848815,
+          "std": 0.2196003755552283
+        },
+        "coordinate_error": {
+          "mean": 0.583626,
+          "std": 0.18874105945448116,
+          "points_compared": 440
+        },
+        "token_ged": {
+          "mean": 0.8986513344097787,
+          "std": 0.03234028913921446
+        },
+        "graph_ged": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "token_overlap": {
+          "mean": 0.06823175349839582,
+          "std": 0.01434480523799154
+        },
+        "family_accuracy": 0.0,
+        "collapse_to_segment_rate": 0.84,
+        "eos_rate": 1.0,
+        "unk_rate": 0.0,
+        "mean_length_to_eos": 42.83
+      }
+    }
+  }
+}

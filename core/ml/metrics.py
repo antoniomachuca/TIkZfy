@@ -37,10 +37,81 @@ from core.models.value_objects import TikzTokens
 # substitution cost, so closer points interpolate the cost linearly in [0, 1].
 DEFAULT_COORDINATE_SCALE: float = 10.0 * math.sqrt(2.0)
 
-_COORDINATE_PATTERN: re.Pattern[str] = re.compile(r"\((-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\)")
+_COORDINATE_PATTERN: re.Pattern[str] = re.compile(
+    r"\(\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)"
+)
 
 
 _NUMERIC_PATTERN: re.Pattern[str] = re.compile(r"^-?\d+(?:\.\d+)?$")
+
+
+@dataclass(frozen=True)
+class CoordinateError:
+    """Canvas-normalized coordinate discrepancy and matching diagnostics."""
+
+    normalized_error: float
+    compared_points: int
+    reference_points: int
+    candidate_points: int
+    matching: str
+
+
+def extract_structured_coordinates(
+    markup: str | TikzTokens | Sequence[str],
+) -> tuple[tuple[float, float], ...]:
+    """Extract geometric coordinate literals from raw markup before tokenization."""
+    text: str = _extract_markup_text(markup)
+    return tuple(
+        (float(match.group(1)), float(match.group(2)))
+        for match in _COORDINATE_PATTERN.finditer(text)
+    )
+
+
+def coordinate_error(
+    reference_markup: str | TikzTokens | Sequence[str],
+    candidate_markup: str | TikzTokens | Sequence[str],
+    *,
+    order_semantic: bool = True,
+    coordinate_scale: float = DEFAULT_COORDINATE_SCALE,
+) -> CoordinateError:
+    """Compare structured coordinates in canvas units.
+
+    Ordered primitives are paired by position. For non-semantic ordering,
+    Hungarian matching minimizes the total Euclidean discrepancy.
+    """
+    if coordinate_scale <= 0.0:
+        raise ValueError(f"coordinate_scale must be positive. Got {coordinate_scale}.")
+    reference = np.asarray(extract_structured_coordinates(reference_markup), dtype=np.float64)
+    candidate = np.asarray(extract_structured_coordinates(candidate_markup), dtype=np.float64)
+    reference_count = len(reference)
+    candidate_count = len(candidate)
+    compared = min(reference_count, candidate_count)
+    if compared == 0:
+        unmatched = max(reference_count, candidate_count)
+        return CoordinateError(
+            normalized_error=float(unmatched > 0),
+            compared_points=0,
+            reference_points=reference_count,
+            candidate_points=candidate_count,
+            matching="ordered" if order_semantic else "hungarian",
+        )
+
+    distances = np.linalg.norm(reference[:, None, :] - candidate[None, :, :], axis=2)
+    if order_semantic:
+        matched = distances[np.arange(compared), np.arange(compared)]
+    else:
+        rows, columns = linear_sum_assignment(distances)
+        matched = distances[rows, columns]
+        compared = len(matched)
+    total = float(np.minimum(matched / coordinate_scale, 1.0).sum())
+    total += float(max(reference_count, candidate_count) - compared)
+    return CoordinateError(
+        normalized_error=total / max(reference_count, candidate_count),
+        compared_points=compared,
+        reference_points=reference_count,
+        candidate_points=candidate_count,
+        matching="ordered" if order_semantic else "hungarian",
+    )
 
 
 def _validate_batch(
