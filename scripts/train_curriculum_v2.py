@@ -535,6 +535,10 @@ def validate_curriculum_configuration() -> None:
 def run_curriculum_v3(args: argparse.Namespace) -> None:
     """Execute the V3 curriculum with high-resolution rendered images and logging."""
     validate_curriculum_configuration()
+    if not 1 <= args.start_stage <= len(CURRICULUM_STAGES):
+        raise ValueError(f"start_stage must be between 1 and {len(CURRICULUM_STAGES)}.")
+    if args.start_stage > 1 and args.initial_checkpoint is None:
+        raise ValueError("initial_checkpoint is required when starting after stage 1.")
     for option_name in ("max_samples_per_stage", "max_epochs_per_stage"):
         option_value = getattr(args, option_name, None)
         if option_value is not None and option_value < 1:
@@ -607,6 +611,11 @@ def run_curriculum_v3(args: argparse.Namespace) -> None:
     )
     total_params: int = sum(p.numel() for p in model.parameters())
     logger.log(f"[+] Model Architecture: {total_params:,} parameters (CoordConv + 2D PE + Dropout 0.1)")
+    checkpoint_adapter = AtomicCheckpointAdapter()
+    if args.initial_checkpoint is not None:
+        initial_checkpoint = checkpoint_adapter.load_checkpoint(args.initial_checkpoint)
+        model.load_state_dict(initial_checkpoint.model_state)
+        logger.log(f"[+] Loaded initial checkpoint: {args.initial_checkpoint}")
 
     config_record = {
         "seed": args.seed,
@@ -645,13 +654,12 @@ def run_curriculum_v3(args: argparse.Namespace) -> None:
     ).to(target_device)
 
     best_global_loss: float = float("inf")
-    checkpoint_adapter = AtomicCheckpointAdapter()
     accumulation_steps: int = max(1, args.effective_batch_size // args.micro_batch_size)
 
     pipeline_start: float = time.time()
     stage_summaries: list[dict[str, object]] = []
 
-    for stage_idx, stage_cfg in enumerate(CURRICULUM_STAGES, start=1):
+    for stage_idx, stage_cfg in enumerate(CURRICULUM_STAGES[args.start_stage - 1 :], start=args.start_stage):
         stage_name = str(stage_cfg["name"])
         stage_families: list[str] = cast(list[str], stage_cfg["families"])
         stage_epochs = int(cast(int, stage_cfg["epochs"]))
@@ -834,5 +842,7 @@ if __name__ == "__main__":
     parser.add_argument("--concurrency", type=int, default=32)
     parser.add_argument("--max-samples-per-stage", type=int, default=None)
     parser.add_argument("--max-epochs-per-stage", type=int, default=None)
+    parser.add_argument("--start-stage", type=int, default=1)
+    parser.add_argument("--initial-checkpoint", type=str, default=None)
     args = parser.parse_args()
     run_curriculum_v3(args)

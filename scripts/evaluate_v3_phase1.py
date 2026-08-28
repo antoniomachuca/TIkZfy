@@ -312,9 +312,9 @@ def evaluate_policy_on_split(
 
         # 2. SSIM
         if is_compiled:
-            gt_img = ImageTensor(test_images[idx : idx + 1])
-            pr_img = ImageTensor(pred_tensors[idx : idx + 1])
-            ssim_score = float(structural_similarity(gt_img, pr_img).item())
+            gt_img = test_images[idx]
+            pr_img = pred_tensors[idx]
+            ssim_score = float(structural_similarity(gt_img, pr_img))
         else:
             ssim_score = 0.0
 

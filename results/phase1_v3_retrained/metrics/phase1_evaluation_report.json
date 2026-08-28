@@ -1,0 +1,115 @@
+{
+  "timestamp": "2026-08-28 18:06:14",
+  "checkpoint": {
+    "path": "results/phase1_v3_retrained/checkpoints/curriculum_v3_best.pt",
+    "sha256": "37b627c6a8f9188e01eddc6c39e01ed4c139f5b58d379bf62019f332893ab150",
+    "epoch": 10
+  },
+  "vocabulary": {
+    "path": "dataset/encoded/vocabulary_v3.json",
+    "sha256": "aa82908a4ddad812879603ed29995f317c2ca5ddab13e5b33ff7a599b4aabe68",
+    "size": 289
+  },
+  "test_benchmark": {
+    "cache_path": "dataset/curriculum_cache_v3_retrained/independent_test_split_500x8_2000ood.pt",
+    "cache_sha256": "72084b4e565e7b42a0613eb8f89deda45720cb7caeffa89ea5f91402be7f73c9",
+    "total_samples": 6000,
+    "synthetic_samples": 4000,
+    "ood_samples": 2000,
+    "seed": 999999
+  },
+  "greedy_baseline": {
+    "policy": "greedy",
+    "total_samples": 6000,
+    "overall_compilation_rate": 0.44516666666666665,
+    "overall_mean_ssim": 0.3645272624133686,
+    "overall_primitive_accuracy": 0.6964925264550266,
+    "overall_family_accuracy": 0.7973333333333333,
+    "overall_coordinate_rmse": 20.37254692910965,
+    "overall_mean_ged": 0.49836422339617803,
+    "by_family": {
+      "line_segment": {
+        "count": 500,
+        "compilation_rate": 0.908,
+        "mean_ssim": 0.7430542237830814,
+        "primitive_accuracy": 0.9455857142857141,
+        "family_accuracy": 0.916,
+        "mean_coordinate_rmse": 6.3678393184425355,
+        "mean_ged": 0.18939932049936162
+      },
+      "circle_arc": {
+        "count": 500,
+        "compilation_rate": 0.916,
+        "mean_ssim": 0.8538268460631371,
+        "primitive_accuracy": 0.9293333333333332,
+        "family_accuracy": 0.726,
+        "mean_coordinate_rmse": 7.770323283951366,
+        "mean_ged": 0.1602732765305521
+      },
+      "grid_axes": {
+        "count": 500,
+        "compilation_rate": 1.0,
+        "mean_ssim": 0.7441880630850792,
+        "primitive_accuracy": 1.0,
+        "family_accuracy": 1.0,
+        "mean_coordinate_rmse": 0.010531176994471647,
+        "mean_ged": 0.00396233333333334
+      },
+      "function_plot": {
+        "count": 500,
+        "compilation_rate": 0.972,
+        "mean_ssim": 0.8709170416593551,
+        "primitive_accuracy": 0.9691666666666666,
+        "family_accuracy": 0.956,
+        "mean_coordinate_rmse": 14.142135623730953,
+        "mean_ged": 0.1137371598791314
+      },
+      "polyline": {
+        "count": 500,
+        "compilation_rate": 0.704,
+        "mean_ssim": 0.5041960161120951,
+        "primitive_accuracy": 0.8300333333333333,
+        "family_accuracy": 0.0,
+        "mean_coordinate_rmse": 8.001371258080269,
+        "mean_ged": 0.39912232586017854
+      },
+      "polygon": {
+        "count": 500,
+        "compilation_rate": 0.716,
+        "mean_ssim": 0.589780623793602,
+        "primitive_accuracy": 0.982,
+        "family_accuracy": 0.972,
+        "mean_coordinate_rmse": 9.016866815182595,
+        "mean_ged": 0.33455270968894435
+      },
+      "node_arrow": {
+        "count": 500,
+        "compilation_rate": 0.002,
+        "mean_ssim": 0.0015070875883102417,
+        "primitive_accuracy": 0.9947999999999999,
+        "family_accuracy": 0.998,
+        "mean_coordinate_rmse": 5.509676176285223,
+        "mean_ged": 0.31845473030076776
+      },
+      "composed": {
+        "count": 500,
+        "compilation_rate": 0.026,
+        "mean_ssim": 0.01256150096654892,
+        "primitive_accuracy": 0.3389976190476191,
+        "family_accuracy": 0.0,
+        "mean_coordinate_rmse": 38.27900269592298,
+        "mean_ged": 0.8888053765582572
+      },
+      "ood_composed": {
+        "count": 2000,
+        "compilation_rate": 0.0245,
+        "mean_ssim": 0.013573936477303506,
+        "primitive_accuracy": 0.34199841269841275,
+        "family_accuracy": 1.0,
+        "mean_coordinate_rmse": 38.843204200181354,
+        "mean_ged": 0.8930158620259029
+      }
+    }
+  },
+  "beam_comparison": null
+}
