@@ -216,9 +216,9 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
         cand_idx: int = 0
         while cand_idx < len(candidate_indices):
             cand_tokens = decode_indices_to_markup(self._vocabulary, candidate_indices[cand_idx])
-            comp_res = await compiler.compile_tikz(cand_tokens)
-            if comp_res.is_successful and comp_res.pdf_data:
-                try:
+            try:
+                comp_res = await compiler.compile_tikz(cand_tokens)
+                if comp_res.is_successful and comp_res.pdf_data:
                     png_bytes = await rasterizer.rasterize_pdf(comp_res.pdf_data, dpi=72)
                     img = Image.open(io.BytesIO(png_bytes)).convert("RGB")
                     arr = np.asarray(img, dtype=np.float32) / 255.0
@@ -234,8 +234,8 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
                     if score > best_ssim:
                         best_ssim = score
                         best_markup = cand_tokens
-                except Exception:
-                    pass
+            except Exception:
+                pass
             cand_idx += 1
 
         return best_markup, best_ssim
@@ -290,6 +290,26 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
         if "num_heads" not in cfg:
             inferred_heads = 8 if inferred_dim >= 256 else 4
 
+        inferred_encoder_blocks = int(cfg.get("num_encoder_blocks", 6))
+        if "num_encoder_blocks" not in cfg:
+            block_keys = [k for k in state.keys() if k.startswith("encoder.residual_blocks.")]
+            if block_keys:
+                inferred_encoder_blocks = max(int(k.split(".")[2]) for k in block_keys) + 1
+
+        inferred_downsampling = int(cfg.get("num_downsampling_stages", 2))
+        if "num_downsampling_stages" not in cfg:
+            stem_conv_keys = [
+                k for k in state.keys() if k.startswith("encoder.stem.") and k.endswith(".weight")
+            ]
+            if stem_conv_keys:
+                inferred_downsampling = len(stem_conv_keys)
+
+        inferred_feedforward = cfg.get("dim_feedforward")
+        if inferred_feedforward is None:
+            ff_keys = [k for k in state.keys() if "linear1.weight" in k]
+            if ff_keys:
+                inferred_feedforward = int(state[ff_keys[0]].shape[0])
+
         input_channels: int = int(cfg.get("input_channels", 3))
         model_dimension: int = inferred_dim
         cfg_max_length: int = int(cfg.get("max_length", max_length))
@@ -303,6 +323,10 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
             max_length=cfg_max_length,
             num_layers=num_layers,
             num_heads=num_heads,
+            dim_feedforward=inferred_feedforward,
+            num_encoder_blocks=inferred_encoder_blocks,
+            num_downsampling_stages=inferred_downsampling,
+            device=device,
         )
         model.load_state_dict(checkpoint.model_state)
 
