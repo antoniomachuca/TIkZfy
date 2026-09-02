@@ -11,6 +11,12 @@ from core.dataset.curation import (
     train_val_split,
     within_length_budget,
 )
+from core.dataset.sharded import (
+    DatasetV4Manifest,
+    ShardedTikzDataset,
+    ShardMetadata,
+    save_shard,
+)
 from core.dataset.templates import (
     FAMILY_NAMES,
     family_index,
@@ -22,6 +28,10 @@ __all__: list[str] = [
     "MAX_MARKUP_CHARS",
     "FAMILY_NAMES",
     "DEFAULT_DEPTH_RANGE",
+    "DatasetV4Manifest",
+    "ShardMetadata",
+    "ShardedTikzDataset",
+    "save_shard",
     "deduplicate_markups",
     "family_index",
     "generate_batch",

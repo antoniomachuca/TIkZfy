@@ -27,6 +27,7 @@ from core.ml.model import VisionAutoregressiveModel
 from core.models import (
     BOS_INDEX,
     EOS_INDEX,
+    FAMILY_PREFIX_TOKENS,
     PAD_INDEX,
     ROOT_ENVIRONMENTS,
     UNK_INDEX,
@@ -109,6 +110,17 @@ def build_grammar_mask(
     ]
 
     if not tokens:
+        mask.fill_(False)
+        for env in ROOT_ENVIRONMENTS:
+            begin_tag = f"\\begin{{{env}}}"
+            if begin_tag in vocabulary.token_to_index:
+                mask[vocabulary.token_to_index[begin_tag]] = True
+        for fam_tag in FAMILY_PREFIX_TOKENS:
+            if fam_tag in vocabulary.token_to_index:
+                mask[vocabulary.token_to_index[fam_tag]] = True
+        return mask
+
+    if len(tokens) == 1 and tokens[0].startswith("<FAM:"):
         mask.fill_(False)
         for env in ROOT_ENVIRONMENTS:
             begin_tag = f"\\begin{{{env}}}"
@@ -538,19 +550,23 @@ def _reconstruct_environment_markup(
 
     Temporal complexity: O(L) where L is token length.
     """
-    if not decoded_tokens:
+    # Strip any family prefix tokens before building LaTeX document
+    clean_tokens: list[str] = [
+        t for t in decoded_tokens if not (t.startswith("<FAM:") and t.endswith(">"))
+    ]
+    if not clean_tokens:
         markup: str = f"{_BEGIN_TIKZ} {_END_TIKZ}"
         return markup, ()
 
     # Identify declared root environment if present
     root_env: str | None = None
-    for token in decoded_tokens:
+    for token in clean_tokens:
         if root_env is None:
             for env_name in ROOT_ENVIRONMENTS:
                 if token == f"\\begin{{{env_name}}}":
                     root_env = env_name
 
-    final_tokens: list[str] = list(decoded_tokens)
+    final_tokens: list[str] = list(clean_tokens)
     if root_env is not None:
         begin_tag: str = f"\\begin{{{root_env}}}"
         end_tag: str = f"\\end{{{root_env}}}"
