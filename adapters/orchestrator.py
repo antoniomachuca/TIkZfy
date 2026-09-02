@@ -1,17 +1,38 @@
 """Inbound orchestrator implementing the primary Image-to-TikZ use case."""
 
+import io
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import torch
+import torch.nn.functional as F
+from PIL import Image
 
 from adapters.checkpoint_adapter import AtomicCheckpointAdapter
 from adapters.vocabulary_persistence import JsonVocabularyAdapter
 from core.exceptions import TensorTopologyError
-from core.ml.generation import beam_search, decode_indices_to_markup, greedy_search
+from core.ml.generation import (
+    beam_search,
+    best_of_n_search,
+    decode_indices_to_markup,
+    greedy_search,
+    sample_search,
+)
+from core.ml.metrics import structural_similarity
 from core.ml.model import VisionAutoregressiveModel
 from core.models import ImageTensor, TikzTokens, TokenVocabulary, TrainingCheckpoint
 from ports.inbound import ImageToTikzUseCase
+from ports.outbound import ImageRasterizerPort, TexCompilerPort
+
+VALID_SEARCH_STRATEGIES: tuple[str, ...] = (
+    "greedy",
+    "beam",
+    "grammar_greedy",
+    "grammar_beam",
+    "sample",
+    "best_of_n",
+)
 
 
 class ImageToTikzOrchestrator(ImageToTikzUseCase):
@@ -35,9 +56,10 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
             raise TypeError("vocabulary must be a TokenVocabulary instance.")
         if max_length <= 0:
             raise ValueError(f"max_length must be positive. Got {max_length}.")
-        if search_strategy not in ("greedy", "beam"):
+        if search_strategy not in VALID_SEARCH_STRATEGIES:
             raise ValueError(
-                f"search_strategy must be 'greedy' or 'beam'. Got '{search_strategy}'."
+                f"search_strategy must be one of {VALID_SEARCH_STRATEGIES}. "
+                f"Got '{search_strategy}'."
             )
         if beam_width <= 0:
             raise ValueError(f"beam_width must be positive. Got {beam_width}.")
@@ -93,16 +115,131 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
                 image,
                 max_length=self._max_length,
                 beam_width=self._beam_width,
+                grammar_constrained=False,
             )
             indices: tuple[int, ...] = hypotheses[0].tokens
+        elif self._search_strategy == "grammar_beam":
+            hypotheses = beam_search(
+                self._model,
+                image,
+                max_length=self._max_length,
+                beam_width=self._beam_width,
+                grammar_constrained=True,
+            )
+            indices = hypotheses[0].tokens
+        elif self._search_strategy == "grammar_greedy":
+            indices = greedy_search(
+                self._model,
+                image,
+                max_length=self._max_length,
+                grammar_constrained=True,
+            )
+        elif self._search_strategy == "sample":
+            indices = sample_search(
+                self._model,
+                image,
+                max_length=self._max_length,
+                grammar_constrained=True,
+            )
+        elif self._search_strategy == "best_of_n":
+            candidates = best_of_n_search(
+                self._model,
+                image,
+                n_hypotheses=self._beam_width,
+                max_length=self._max_length,
+                grammar_constrained=True,
+            )
+            indices = candidates[0]
         else:
             indices = greedy_search(
                 self._model,
                 image,
                 max_length=self._max_length,
+                grammar_constrained=False,
             )
 
         return decode_indices_to_markup(self._vocabulary, indices)
+
+    async def execute_reranked(
+        self,
+        image: ImageTensor,
+        compiler: TexCompilerPort,
+        rasterizer: ImageRasterizerPort,
+        n_hypotheses: int = 4,
+    ) -> tuple[TikzTokens, float]:
+        """Execute Best-of-N inference with execution-guided SSIM re-ranking.
+
+        Generates N candidate markups using grammar-constrained nucleus sampling,
+        compiles each via TexCompilerPort, rasterizes via ImageRasterizerPort,
+        and selects the candidate with highest SSIM against the input tensor.
+
+        Args:
+            image (ImageTensor): Statically validated 4D tensor with shape (1, C, H, W).
+            compiler (TexCompilerPort): Outbound TeX compilation port.
+            rasterizer (ImageRasterizerPort): Outbound PDF rasterization port.
+            n_hypotheses (int): Number of candidate hypotheses (default: 4).
+
+        Returns:
+            tuple[TikzTokens, float]: (Selected best markup, Measured SSIM score).
+
+        Temporal complexity: O(N * (T_decode + T_compile + T_rasterize + T_ssim)).
+        """
+        if not isinstance(image, ImageTensor):
+            raise TypeError(f"Expected ImageTensor, got {type(image)}.")
+        if image.raw_tensor.ndim != 4 or image.raw_tensor.shape[0] != 1:
+            raise TensorTopologyError(
+                f"Inference requires a single image tensor of shape (1, C, H, W). "
+                f"Got shape {tuple(image.raw_tensor.shape)}."
+            )
+        if not isinstance(compiler, TexCompilerPort):
+            raise TypeError("compiler must implement TexCompilerPort.")
+        if not isinstance(rasterizer, ImageRasterizerPort):
+            raise TypeError("rasterizer must implement ImageRasterizerPort.")
+        if n_hypotheses < 1:
+            raise ValueError(f"n_hypotheses must be positive. Got {n_hypotheses}.")
+
+        candidate_indices = best_of_n_search(
+            self._model,
+            image,
+            n_hypotheses=n_hypotheses,
+            max_length=self._max_length,
+            grammar_constrained=True,
+        )
+
+        best_markup: TikzTokens = decode_indices_to_markup(
+            self._vocabulary, candidate_indices[0]
+        )
+        best_ssim: float = 0.0
+        ref_image_tensor = image.raw_tensor[0]
+        _, target_h, target_w = ref_image_tensor.shape
+
+        cand_idx: int = 0
+        while cand_idx < len(candidate_indices):
+            cand_tokens = decode_indices_to_markup(self._vocabulary, candidate_indices[cand_idx])
+            comp_res = await compiler.compile_tikz(cand_tokens)
+            if comp_res.is_successful and comp_res.pdf_data:
+                try:
+                    png_bytes = await rasterizer.rasterize_pdf(comp_res.pdf_data, dpi=72)
+                    img = Image.open(io.BytesIO(png_bytes)).convert("RGB")
+                    arr = np.asarray(img, dtype=np.float32) / 255.0
+                    cand_tensor = torch.from_numpy(arr).permute(2, 0, 1)
+                    if cand_tensor.shape[1:] != (target_h, target_w):
+                        cand_tensor = F.interpolate(
+                            cand_tensor.unsqueeze(0),
+                            size=(target_h, target_w),
+                            mode="bilinear",
+                            align_corners=False,
+                        ).squeeze(0)
+                    score = structural_similarity(ref_image_tensor, cand_tensor)
+                    if score > best_ssim:
+                        best_ssim = score
+                        best_markup = cand_tokens
+                except Exception:
+                    pass
+            cand_idx += 1
+
+        return best_markup, best_ssim
+
 
     @classmethod
     def from_checkpoint(

@@ -14,6 +14,7 @@ References:
         log-probability scoring and length normalization of beam hypotheses.
 """
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import cast
 
@@ -68,13 +69,171 @@ def _encode_single_image(model: VisionAutoregressiveModel, image: ImageTensor) -
     return cast(torch.Tensor, model.encoder(image_tensor))
 
 
+def build_grammar_mask(
+    vocabulary: TokenVocabulary,
+    prefix_indices: Sequence[int],
+    device: torch.device,
+) -> torch.Tensor:
+    """Compute a boolean mask over vocabulary tokens admissible under TikZ syntax rules.
+
+    Admissibility conditions:
+        - At step 0 (only BOS present), only root openers (\\begin{tikzpicture}) are allowed.
+        - While delimiters ((), [], {}) are open, closing the root or emitting EOS is barred.
+        - Delimiters cannot be closed if their current nesting depth is zero.
+        - Delimiters cannot be opened if nested delimiter depth limits are reached.
+        - Emitting \\end{...} requires balanced delimiters and a terminated statement (';').
+        - Once \\end{...} is emitted, only EOS_INDEX is permitted.
+
+    Args:
+        vocabulary (TokenVocabulary): Discrete token vocabulary.
+        prefix_indices (Sequence[int]): Previously emitted token indices starting with BOS_INDEX.
+        device (torch.device): Execution device for the output boolean mask tensor.
+
+    Returns:
+        torch.Tensor: Boolean tensor of shape ``(V,)`` where True denotes admissible next tokens.
+
+    Temporal complexity: O(L + V) where L is prefix length and V is vocabulary size.
+    Spatial complexity: O(V).
+    """
+    vocab_size: int = len(vocabulary.token_to_index)
+    mask: torch.Tensor = torch.ones(vocab_size, dtype=torch.bool, device=device)
+    if PAD_INDEX in vocabulary.index_to_token:
+        mask[PAD_INDEX] = False
+    if UNK_INDEX in vocabulary.index_to_token:
+        mask[UNK_INDEX] = False
+
+    tokens: list[str] = [
+        vocabulary.index_to_token[idx]
+        for idx in prefix_indices
+        if idx in vocabulary.index_to_token and idx not in (BOS_INDEX, PAD_INDEX, UNK_INDEX)
+    ]
+
+    if not tokens:
+        mask.fill_(False)
+        for env in ROOT_ENVIRONMENTS:
+            begin_tag = f"\\begin{{{env}}}"
+            if begin_tag in vocabulary.token_to_index:
+                mask[vocabulary.token_to_index[begin_tag]] = True
+        return mask
+
+    paren_depth: int = 0
+    bracket_depth: int = 0
+    brace_depth: int = 0
+    statements_completed: int = 0
+    has_pending_statement: bool = False
+    root_closed: bool = False
+
+    for tok in tokens:
+        if tok.startswith("\\end{"):
+            root_closed = True
+        elif tok == ";":
+            statements_completed += 1
+            has_pending_statement = False
+        elif tok.startswith("\\") and tok not in (
+            "\\x",
+            "\\begin{tikzpicture}",
+            "\\begin{axis}",
+            "\\begin{tikzcd}",
+        ):
+            has_pending_statement = True
+        elif tok == "(":
+            paren_depth += 1
+        elif tok == ")":
+            paren_depth = max(0, paren_depth - 1)
+        elif tok == "[":
+            bracket_depth += 1
+        elif tok == "]":
+            bracket_depth = max(0, bracket_depth - 1)
+        elif tok == "{":
+            brace_depth += 1
+        elif tok == "}":
+            brace_depth = max(0, brace_depth - 1)
+
+    if root_closed:
+        mask.fill_(False)
+        mask[EOS_INDEX] = True
+        return mask
+
+    mask[EOS_INDEX] = False
+
+    for env in ROOT_ENVIRONMENTS:
+        begin_tag = f"\\begin{{{env}}}"
+        if begin_tag in vocabulary.token_to_index:
+            mask[vocabulary.token_to_index[begin_tag]] = False
+
+    if paren_depth == 0 and ")" in vocabulary.token_to_index:
+        mask[vocabulary.token_to_index[")"]] = False
+    if bracket_depth == 0 and "]" in vocabulary.token_to_index:
+        mask[vocabulary.token_to_index["]"]] = False
+    if brace_depth == 0 and "}" in vocabulary.token_to_index:
+        mask[vocabulary.token_to_index["}"]] = False
+
+    if paren_depth > 0:
+        if "(" in vocabulary.token_to_index:
+            mask[vocabulary.token_to_index["("]] = False
+        if "[" in vocabulary.token_to_index:
+            mask[vocabulary.token_to_index["["]] = False
+        if ";" in vocabulary.token_to_index:
+            mask[vocabulary.token_to_index[";"]] = False
+        for env in ROOT_ENVIRONMENTS:
+            end_tag = f"\\end{{{env}}}"
+            if end_tag in vocabulary.token_to_index:
+                mask[vocabulary.token_to_index[end_tag]] = False
+
+    if bracket_depth > 0:
+        if "[" in vocabulary.token_to_index:
+            mask[vocabulary.token_to_index["["]] = False
+        if ";" in vocabulary.token_to_index:
+            mask[vocabulary.token_to_index[";"]] = False
+        for env in ROOT_ENVIRONMENTS:
+            end_tag = f"\\end{{{env}}}"
+            if end_tag in vocabulary.token_to_index:
+                mask[vocabulary.token_to_index[end_tag]] = False
+
+    if brace_depth > 0:
+        if ";" in vocabulary.token_to_index:
+            mask[vocabulary.token_to_index[";"]] = False
+        for env in ROOT_ENVIRONMENTS:
+            end_tag = f"\\end{{{env}}}"
+            if end_tag in vocabulary.token_to_index:
+                mask[vocabulary.token_to_index[end_tag]] = False
+
+    can_close_root: bool = (
+        paren_depth == 0
+        and bracket_depth == 0
+        and brace_depth == 0
+        and statements_completed > 0
+        and not has_pending_statement
+    )
+    if not can_close_root:
+        for env in ROOT_ENVIRONMENTS:
+            end_tag = f"\\end{{{env}}}"
+            if end_tag in vocabulary.token_to_index:
+                mask[vocabulary.token_to_index[end_tag]] = False
+
+    last_tok = tokens[-1] if tokens else ""
+    if (
+        paren_depth > 0 or bracket_depth > 0 or brace_depth > 0 or last_tok == ";"
+    ) and ";" in vocabulary.token_to_index:
+        mask[vocabulary.token_to_index[";"]] = False
+
+    if not bool(mask.any().item()):
+        mask.fill_(True)
+        if PAD_INDEX in vocabulary.index_to_token:
+            mask[PAD_INDEX] = False
+        if UNK_INDEX in vocabulary.index_to_token:
+            mask[UNK_INDEX] = False
+
+    return mask
+
+
 def greedy_search(
     model: VisionAutoregressiveModel,
     image: ImageTensor,
     max_length: int = DEFAULT_MAX_SEQUENCE_LENGTH,
+    grammar_constrained: bool = False,
 ) -> tuple[int, ...]:
-    """
-    Decode one image greedily into a ``[BOS, ..., EOS]`` token index sequence.
+    """Decode one image greedily into a ``[BOS, ..., EOS]`` token index sequence.
 
     At each step the token maximizing the conditional distribution is selected,
     and EOS-free columns are masked to ``EOS_INDEX`` once finished so the
@@ -84,6 +243,7 @@ def greedy_search(
         model (VisionAutoregressiveModel): Trained encoder/decoder in eval mode.
         image (ImageTensor): Single image with shape ``(1, C, H, W)``.
         max_length (int): Inclusive upper bound on sequence length. Default: 512.
+        grammar_constrained (bool): If True, masks syntactically invalid tokens.
 
     Returns:
         tuple[int, ...]: Token index sequence including ``BOS_INDEX`` and, when
@@ -111,7 +271,15 @@ def greedy_search(
     step: int = 0
     while step < max_length - 1 and not bool(finished.all().item()):
         logits: torch.Tensor = model.decoder(visual_tokens, generated)
-        next_token: torch.Tensor = logits[:, -1, :].argmax(dim=-1)
+        step_logits: torch.Tensor = logits[:, -1, :].clone()
+        if grammar_constrained:
+            current_seq: list[int] = generated[0].tolist()
+            mask: torch.Tensor = build_grammar_mask(
+                model.vocabulary, current_seq, device=visual_tokens.device
+            )
+            step_logits = step_logits.masked_fill(~mask, float("-inf"))
+
+        next_token: torch.Tensor = step_logits.argmax(dim=-1)
         next_token = torch.where(finished, torch.full_like(next_token, EOS_INDEX), next_token)
         generated = torch.cat((generated, next_token.unsqueeze(1)), dim=1)
         finished = finished | next_token.eq(EOS_INDEX)
@@ -120,15 +288,138 @@ def greedy_search(
     return tuple(generated[0].tolist())
 
 
+def sample_search(
+    model: VisionAutoregressiveModel,
+    image: ImageTensor,
+    max_length: int = DEFAULT_MAX_SEQUENCE_LENGTH,
+    temperature: float = 0.7,
+    top_p: float = 0.9,
+    grammar_constrained: bool = True,
+) -> tuple[int, ...]:
+    """Sample one image into a token sequence using nucleus sampling and grammar constraints.
+
+    Args:
+        model (VisionAutoregressiveModel): Trained encoder/decoder in eval mode.
+        image (ImageTensor): Single image with shape ``(1, C, H, W)``.
+        max_length (int): Inclusive upper bound on sequence length. Default: 512.
+        temperature (float): Softmax sampling temperature. Default: 0.7.
+        top_p (float): Cumulative probability threshold for nucleus filtering. Default: 0.9.
+        grammar_constrained (bool): If True, masks syntactically invalid tokens. Default: True.
+
+    Returns:
+        tuple[int, ...]: Emitted token sequence starting with BOS_INDEX.
+
+    Temporal complexity: O(L * T) where L is emitted length and T is decoder step cost.
+    """
+    if not isinstance(model, VisionAutoregressiveModel):
+        raise TypeError("model must be a VisionAutoregressiveModel instance.")
+    if max_length < 2:
+        raise ValueError(f"max_length must be at least 2. Got {max_length}.")
+    if max_length > model.max_length:
+        raise ValueError(f"max_length {max_length} exceeds model.max_length {model.max_length}.")
+    if temperature <= 0.0:
+        raise ValueError(f"temperature must be positive. Got {temperature}.")
+    if not (0.0 < top_p <= 1.0):
+        raise ValueError(f"top_p must be in (0.0, 1.0]. Got {top_p}.")
+
+    visual_tokens: torch.Tensor = _encode_single_image(model, image)
+    generated: torch.Tensor = torch.full(
+        (1, 1), BOS_INDEX, dtype=torch.long, device=visual_tokens.device
+    )
+    finished: torch.Tensor = torch.zeros(1, dtype=torch.bool, device=visual_tokens.device)
+    step: int = 0
+    while step < max_length - 1 and not bool(finished.all().item()):
+        logits: torch.Tensor = model.decoder(visual_tokens, generated)
+        step_logits: torch.Tensor = logits[:, -1, :] / temperature
+
+        if grammar_constrained:
+            current_seq: list[int] = generated[0].tolist()
+            mask: torch.Tensor = build_grammar_mask(
+                model.vocabulary, current_seq, device=visual_tokens.device
+            )
+            step_logits = step_logits.masked_fill(~mask, float("-inf"))
+
+        probs: torch.Tensor = F.softmax(step_logits, dim=-1)
+        if top_p < 1.0:
+            sorted_probs, sorted_indices = torch.sort(probs, descending=True, dim=-1)
+            cumulative_probs = torch.cumsum(sorted_probs, dim=-1)
+            sorted_indices_to_remove = cumulative_probs > top_p
+            sorted_indices_to_remove[:, 1:] = sorted_indices_to_remove[:, :-1].clone()
+            sorted_indices_to_remove[:, 0] = False
+            indices_to_remove = sorted_indices_to_remove.scatter(
+                dim=1, index=sorted_indices, src=sorted_indices_to_remove
+            )
+            probs = probs.masked_fill(indices_to_remove, 0.0)
+            prob_sum = probs.sum(dim=-1, keepdim=True)
+            probs = torch.where(prob_sum > 0, probs / prob_sum, probs)
+
+        next_token: torch.Tensor = torch.multinomial(probs, num_samples=1).squeeze(1)
+        next_token = torch.where(finished, torch.full_like(next_token, EOS_INDEX), next_token)
+        generated = torch.cat((generated, next_token.unsqueeze(1)), dim=1)
+        finished = finished | next_token.eq(EOS_INDEX)
+        step += 1
+
+    return tuple(generated[0].tolist())
+
+
+def best_of_n_search(
+    model: VisionAutoregressiveModel,
+    image: ImageTensor,
+    n_hypotheses: int = 4,
+    max_length: int = DEFAULT_MAX_SEQUENCE_LENGTH,
+    temperature: float = 0.7,
+    top_p: float = 0.9,
+    grammar_constrained: bool = True,
+) -> list[tuple[int, ...]]:
+    """Generate N candidate token sequences: 1 greedy anchor + (N-1) nucleus-sampled candidates.
+
+    Args:
+        model (VisionAutoregressiveModel): Trained encoder/decoder in eval mode.
+        image (ImageTensor): Single image with shape ``(1, C, H, W)``.
+        n_hypotheses (int): Number of candidate sequences to produce (minimum 1).
+        max_length (int): Inclusive upper bound on sequence length.
+        temperature (float): Softmax sampling temperature for sampled candidates.
+        top_p (float): Cumulative probability threshold for nucleus filtering.
+        grammar_constrained (bool): If True, applies syntactic admissibility constraints.
+
+    Returns:
+        list[tuple[int, ...]]: Distinct candidate token index sequences.
+
+    Temporal complexity: O(N * L * T) where N is hypothesis count.
+    """
+    if n_hypotheses < 1:
+        raise ValueError(f"n_hypotheses must be at least 1. Got {n_hypotheses}.")
+
+    greedy_candidate: tuple[int, ...] = greedy_search(
+        model, image, max_length=max_length, grammar_constrained=grammar_constrained
+    )
+    candidates: list[tuple[int, ...]] = [greedy_candidate]
+
+    sample_count: int = 1
+    while sample_count < n_hypotheses:
+        cand: tuple[int, ...] = sample_search(
+            model,
+            image,
+            max_length=max_length,
+            temperature=temperature,
+            top_p=top_p,
+            grammar_constrained=grammar_constrained,
+        )
+        candidates.append(cand)
+        sample_count += 1
+
+    return candidates
+
+
 def beam_search(
     model: VisionAutoregressiveModel,
     image: ImageTensor,
     beam_width: int = 3,
     max_length: int = DEFAULT_MAX_SEQUENCE_LENGTH,
     length_penalty: float = 0.0,
+    grammar_constrained: bool = False,
 ) -> list[BeamHypothesis]:
-    """
-    Decode one image with beam search into ranked hypotheses.
+    """Decode one image with beam search into ranked hypotheses.
 
     At each step every active beam is decoded in a single batch; the
     ``beam_width`` best ``(beam, token)`` candidates across the flattened
@@ -142,6 +433,7 @@ def beam_search(
         max_length (int): Inclusive upper bound on sequence length. Default: 512.
         length_penalty (float): Non-negative exponent ``alpha``; hypotheses are
             ranked by ``log_probability / length ** alpha``. Default: 0.0.
+        grammar_constrained (bool): If True, masks syntactically invalid tokens.
 
     Returns:
         list[BeamHypothesis]: Up to ``beam_width`` hypotheses sorted best-first.
@@ -178,7 +470,18 @@ def beam_search(
         )
         expanded_memory: torch.Tensor = visual_tokens.expand(batch.shape[0], -1, -1)
         logits: torch.Tensor = model.decoder(expanded_memory, batch)
-        log_probs: torch.Tensor = F.log_softmax(logits[:, -1, :], dim=-1)
+        step_logits: torch.Tensor = logits[:, -1, :].clone()
+
+        if grammar_constrained:
+            row_idx: int = 0
+            while row_idx < len(active_sequences):
+                mask: torch.Tensor = build_grammar_mask(
+                    model.vocabulary, active_sequences[row_idx], device=visual_tokens.device
+                )
+                step_logits[row_idx, ~mask] = float("-inf")
+                row_idx += 1
+
+        log_probs: torch.Tensor = F.log_softmax(step_logits, dim=-1)
         score_matrix: torch.Tensor = log_probs + torch.tensor(
             active_scores, device=visual_tokens.device
         ).unsqueeze(1)
@@ -215,6 +518,7 @@ def beam_search(
         reverse=True,
     )
     return ranked[:beam_width]
+
 
 
 def _reconstruct_environment_markup(

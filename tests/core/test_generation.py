@@ -6,8 +6,11 @@ from core.ml.generation import (
     DEFAULT_MAX_SEQUENCE_LENGTH,
     BeamHypothesis,
     beam_search,
+    best_of_n_search,
+    build_grammar_mask,
     decode_indices_to_markup,
     greedy_search,
+    sample_search,
 )
 from core.ml.model import VisionAutoregressiveModel
 from core.models import BOS_INDEX, EOS_INDEX, ImageTensor, TikzTokens, TokenVocabulary
@@ -186,3 +189,104 @@ def test_decode_indices_to_markup_recovers_missing_end_delimiter() -> None:
     assert isinstance(result, TikzTokens)
     assert "\\begin{tikzpicture}" in result.markup
     assert "\\end{tikzpicture}" in result.markup
+
+
+def test_build_grammar_mask_initial_step_only_allows_root_opener() -> None:
+    vocab = _vocabulary()
+    device = torch.device("cpu")
+    mask = build_grammar_mask(vocab, [BOS_INDEX], device=device)
+
+    assert isinstance(mask, torch.Tensor)
+    assert mask.shape == (len(vocab.token_to_index),)
+    begin_idx = vocab.token_to_index[r"\begin{tikzpicture}"]
+    assert bool(mask[begin_idx].item()) is True
+    assert bool(mask[EOS_INDEX].item()) is False
+
+
+def test_build_grammar_mask_inside_paren_prohibits_semicolon_and_end() -> None:
+    vocab = _vocabulary()
+    device = torch.device("cpu")
+    prefix = [
+        BOS_INDEX,
+        vocab.token_to_index[r"\begin{tikzpicture}"],
+        vocab.token_to_index[r"\draw"],
+        vocab.token_to_index["("],
+    ]
+    mask = build_grammar_mask(vocab, prefix, device=device)
+
+    assert bool(mask[vocab.token_to_index[";"]].item()) is False
+    assert bool(mask[vocab.token_to_index[r"\end{tikzpicture}"]].item()) is False
+    assert bool(mask[EOS_INDEX].item()) is False
+
+
+def test_build_grammar_mask_after_end_only_allows_eos() -> None:
+    vocab = _vocabulary()
+    device = torch.device("cpu")
+    prefix = [
+        BOS_INDEX,
+        vocab.token_to_index[r"\begin{tikzpicture}"],
+        vocab.token_to_index[r"\draw"],
+        vocab.token_to_index["("],
+        vocab.token_to_index["0"],
+        vocab.token_to_index[","],
+        vocab.token_to_index["0"],
+        vocab.token_to_index[")"],
+        vocab.token_to_index[";"],
+        vocab.token_to_index[r"\end{tikzpicture}"],
+    ]
+    mask = build_grammar_mask(vocab, prefix, device=device)
+
+    assert bool(mask[EOS_INDEX].item()) is True
+    assert mask.sum().item() == 1
+
+
+def test_greedy_search_with_grammar_constraint() -> None:
+    model = _model(max_length=12)
+    model.eval()
+
+    indices = greedy_search(model, _image(), max_length=12, grammar_constrained=True)
+
+    assert isinstance(indices, tuple)
+    assert indices[0] == BOS_INDEX
+    assert all(isinstance(idx, int) for idx in indices)
+
+
+def test_sample_search_emits_valid_sequence() -> None:
+    torch.manual_seed(42)
+    model = _model(max_length=12)
+    model.eval()
+
+    indices = sample_search(
+        model,
+        _image(),
+        max_length=12,
+        temperature=0.8,
+        top_p=0.9,
+        grammar_constrained=True,
+    )
+
+    assert isinstance(indices, tuple)
+    assert indices[0] == BOS_INDEX
+    assert all(isinstance(idx, int) for idx in indices)
+
+
+def test_best_of_n_search_generates_expected_candidate_count() -> None:
+    torch.manual_seed(99)
+    model = _model(max_length=10)
+    model.eval()
+
+    hypotheses = best_of_n_search(
+        model,
+        _image(),
+        n_hypotheses=3,
+        max_length=10,
+        temperature=0.7,
+        top_p=0.9,
+        grammar_constrained=True,
+    )
+
+    assert len(hypotheses) == 3
+    for hyp in hypotheses:
+        assert isinstance(hyp, tuple)
+        assert hyp[0] == BOS_INDEX
+
