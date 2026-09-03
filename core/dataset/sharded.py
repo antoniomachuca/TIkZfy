@@ -173,7 +173,10 @@ class ShardedTikzDataset(Dataset[tuple[torch.Tensor, torch.Tensor, int]]):
 
         shard_meta = self._manifest.shards[shard_idx]
         shard_file = self._root_dir / shard_meta.file_name
-        raw_data = torch.load(shard_file, map_location="cpu", weights_only=True)
+        try:
+            raw_data = torch.load(shard_file, map_location="cpu", weights_only=True, mmap=True)
+        except (TypeError, RuntimeError):
+            raw_data = torch.load(shard_file, map_location="cpu", weights_only=True)
         data: dict[str, torch.Tensor] = cast(dict[str, torch.Tensor], raw_data)
 
         if len(self._loaded_shards) >= self._cache_size:
