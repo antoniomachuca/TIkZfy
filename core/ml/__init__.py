@@ -9,6 +9,10 @@ from .generation import (
     sample_search,
 )
 from .loss import (
+    CompositeMultiTaskLoss,
+    CompositeMultiTaskLossV4,
+    GaussianOrdinalCoordinateLoss,
+    LossComponents,
     SpatialAwareHybridLoss,
     TeacherForcingCrossEntropy,
     apply_word_dropout,
@@ -54,11 +58,15 @@ from .trainer import TrainingMetrics, fit, iter_batch_bounds, train_one_epoch
 
 __all__ = [
     "BeamHypothesis",
+    "CompositeMultiTaskLoss",
+    "CompositeMultiTaskLossV4",
     "ConvResidualBlock",
     "DEFAULT_COORDINATE_SCALE",
     "DirectPreferenceOptimizationLoss",
     "EvaluationMetrics",
+    "GaussianOrdinalCoordinateLoss",
     "GeometricPrimitive",
+    "LossComponents",
     "SpatialAwareHybridLoss",
     "TeacherForcingCrossEntropy",
     "VisionAutoregressiveModel",

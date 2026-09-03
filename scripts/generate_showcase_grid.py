@@ -22,6 +22,7 @@ import io
 import os
 import sys
 from pathlib import Path
+from typing import cast
 
 import matplotlib
 
@@ -119,8 +120,8 @@ def contrastive_visual_decode(
 ) -> tuple[int, ...]:
     """Execute Classifier-Free Guidance (CFG) decoding conditioned on visual features."""
     uncond_img: torch.Tensor = torch.ones_like(image_tensor)
-    v_cond: torch.Tensor = model.encoder.forward(image_tensor)
-    v_uncond: torch.Tensor = model.encoder.forward(uncond_img)
+    v_cond: torch.Tensor = cast(torch.Tensor, model.encoder.forward(image_tensor))
+    v_uncond: torch.Tensor = cast(torch.Tensor, model.encoder.forward(uncond_img))
 
     gen: torch.Tensor = torch.tensor([[1]], device=image_tensor.device, dtype=torch.long)  # BOS
     step: int = 0

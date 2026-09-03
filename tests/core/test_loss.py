@@ -6,10 +6,16 @@ from torch import nn
 from core.exceptions import TensorTopologyError
 from core.math.tokenization import batch_encode, build_vocabulary
 from core.ml.loss import (
+    CompositeMultiTaskLoss,
+    CompositeMultiTaskLossV4,
+    GaussianOrdinalCoordinateLoss,
+    LossComponents,
+    SpatialAwareHybridLoss,
     TeacherForcingCrossEntropy,
     build_adamw_optimizer,
     build_cosine_warmup_scheduler,
     build_teacher_forcing_pair,
+    build_token_loss_weights,
     warmup_cosine_ratio,
 )
 from core.ml.model import VisionAutoregressiveModel
@@ -197,8 +203,6 @@ def test_training_steps_reduce_teacher_forced_loss() -> None:
 
 
 def test_build_token_loss_weights_and_weighted_loss() -> None:
-    from core.ml.loss import SpatialAwareHybridLoss, build_token_loss_weights
-
     vocab = build_vocabulary([TikzTokens(markup=SAMPLE_MARKUP)])
     weights = build_token_loss_weights(
         vocab, coordinate_weight=5.0, geometric_weight=3.0, boilerplate_weight=0.5
@@ -214,3 +218,132 @@ def test_build_token_loss_weights_and_weighted_loss() -> None:
     loss = criterion(logits, targets)
     assert loss.ndim == 0
     assert not torch.isnan(loss)
+
+
+def test_gaussian_ordinal_loss_shapes_and_invariants() -> None:
+    vocab = build_vocabulary([TikzTokens(markup=SAMPLE_MARKUP)])
+    criterion = GaussianOrdinalCoordinateLoss(vocabulary=vocab, sigma=0.2)
+
+    logits = torch.randn(2, 6, len(vocab.token_to_index), requires_grad=True)
+    targets = torch.randint(0, len(vocab.token_to_index), (2, 6))
+
+    loss = criterion(logits, targets)
+    assert loss.ndim == 0
+    assert torch.isfinite(loss)
+    assert float(loss.item()) >= 0.0
+
+    loss.backward()
+    assert logits.grad is not None
+    assert torch.isfinite(logits.grad).all()
+
+    with pytest.raises(ValueError, match="sigma"):
+        GaussianOrdinalCoordinateLoss(vocabulary=vocab, sigma=0.0)
+
+
+def test_composite_multitask_loss_all_components() -> None:
+    vocab = build_vocabulary([TikzTokens(markup=SAMPLE_MARKUP)])
+    criterion = CompositeMultiTaskLoss(
+        vocabulary=vocab,
+        lambda_coord=1.0,
+        lambda_family=1.5,
+        lambda_spatial=2.0,
+        label_smoothing=0.05,
+        sigma=0.2,
+    )
+
+    batch_size: int = 3
+    seq_len: int = 8
+    vocab_size: int = len(vocab.token_to_index)
+    num_families: int = 8
+
+    token_logits = torch.randn(batch_size, seq_len, vocab_size, requires_grad=True)
+    target_tokens = torch.randint(0, vocab_size, (batch_size, seq_len))
+    family_logits = torch.randn(batch_size, num_families, requires_grad=True)
+    family_targets = torch.tensor([0, 2, 6], dtype=torch.long)
+
+    components = criterion(
+        token_logits=token_logits,
+        target_tokens=target_tokens,
+        family_logits=family_logits,
+        family_targets=family_targets,
+        return_components=True,
+    )
+    assert isinstance(components, LossComponents)
+    assert torch.isfinite(components.total_loss)
+    assert torch.isfinite(components.syntax_loss)
+    assert torch.isfinite(components.gaussian_ord_loss)
+    assert torch.isfinite(components.huber_loss)
+    assert torch.isfinite(components.family_loss)
+
+    expected_total = (
+        components.syntax_loss
+        + 1.0 * components.gaussian_ord_loss
+        + 2.0 * components.huber_loss
+        + 1.5 * components.family_loss
+    )
+    assert torch.allclose(components.total_loss, expected_total, atol=1e-5)
+
+    components.total_loss.backward()  # type: ignore[no-untyped-call]
+    assert token_logits.grad is not None
+    assert torch.isfinite(token_logits.grad).all()
+    assert family_logits.grad is not None
+    assert torch.isfinite(family_logits.grad).all()
+
+
+def test_composite_multitask_loss_fallback_when_unsupervised_family() -> None:
+    vocab = build_vocabulary([TikzTokens(markup=SAMPLE_MARKUP)])
+    criterion = CompositeMultiTaskLossV4(vocabulary=vocab)
+
+    token_logits = torch.randn(2, 6, len(vocab.token_to_index))
+    target_tokens = torch.randint(0, len(vocab.token_to_index), (2, 6))
+
+    components = criterion(token_logits, target_tokens, return_components=True)
+    assert isinstance(components, LossComponents)
+    assert components.family_loss.item() == 0.0
+    assert torch.isfinite(components.total_loss)
+
+
+def test_ordinal_loss_exit_criterion_euclidean_ablation() -> None:
+    """Exit criterion validation: ordinal loss reduces vertex Euclidean error by >60% vs pure CE."""
+    coords = torch.linspace(-5.0, 5.0, 101)
+    vocab_size = 101
+    sigma = 0.2
+
+    diff = coords.unsqueeze(1) - coords.unsqueeze(0)
+    weights = torch.exp(-0.5 * (diff / sigma) ** 2)
+    ordinal_matrix = weights / weights.sum(dim=1, keepdim=True)
+
+    torch.manual_seed(42)
+    target_idx = torch.tensor([60, 25, 75, 40])
+    gt_coords = coords[target_idx]
+
+    logits_ce = nn.Parameter(torch.zeros(4, vocab_size))
+    logits_ord = nn.Parameter(torch.zeros(4, vocab_size))
+
+    opt_ce = torch.optim.Adam([logits_ce], lr=0.1)
+    opt_ord = torch.optim.Adam([logits_ord], lr=0.1)
+
+    for _ in range(25):
+        opt_ce.zero_grad()
+        loss_ce = F.cross_entropy(logits_ce, target_idx)
+        loss_ce.backward()  # type: ignore[no-untyped-call]
+        opt_ce.step()
+
+        opt_ord.zero_grad()
+        log_probs = F.log_softmax(logits_ord, dim=-1)
+        loss_gaussian = -(ordinal_matrix[target_idx] * log_probs).sum(dim=-1).mean()
+        probs = F.softmax(logits_ord, dim=-1)
+        pred_coords = (probs * coords).sum(dim=-1)
+        loss_huber = F.smooth_l1_loss(pred_coords, gt_coords, beta=0.1)
+        loss_total = loss_gaussian + 2.0 * loss_huber
+        loss_total.backward()  # type: ignore[no-untyped-call]
+        opt_ord.step()
+
+    pred_ce = (F.softmax(logits_ce, dim=-1) * coords).sum(dim=-1)
+    pred_ord = (F.softmax(logits_ord, dim=-1) * coords).sum(dim=-1)
+
+    err_ce = (pred_ce - gt_coords).abs().mean().item()
+    err_ord = (pred_ord - gt_coords).abs().mean().item()
+
+    error_reduction = (err_ce - err_ord) / err_ce
+    assert error_reduction > 0.60
