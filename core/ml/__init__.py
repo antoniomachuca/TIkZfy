@@ -37,7 +37,9 @@ from .metrics import (
 from .model import (
     ConvResidualBlock,
     VisionAutoregressiveModel,
+    VisionAutoregressiveModelV4,
     VisionEncoder,
+    VisionEncoderV4,
     build_2d_sinusoidal_positional_encoding,
     resolve_device,
 )
@@ -60,7 +62,9 @@ __all__ = [
     "SpatialAwareHybridLoss",
     "TeacherForcingCrossEntropy",
     "VisionAutoregressiveModel",
+    "VisionAutoregressiveModelV4",
     "VisionEncoder",
+    "VisionEncoderV4",
     "apply_word_dropout",
     "build_2d_sinusoidal_positional_encoding",
     "build_token_loss_weights",

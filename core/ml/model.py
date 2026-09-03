@@ -1,6 +1,7 @@
 """Vision encoder and causal autoregressive TikZ decoder."""
 
-from typing import cast
+from collections.abc import Mapping
+from typing import Any, cast
 
 import torch
 import torch.nn.functional as F
@@ -10,6 +11,7 @@ from core.exceptions import TensorTopologyError, VocabularyInvariantError
 from core.models import (
     BOS_INDEX,
     EOS_INDEX,
+    FAMILY_NAMES,
     PAD_INDEX,
     UNK_INDEX,
     ImageTensor,
@@ -116,15 +118,17 @@ def build_2d_sinusoidal_positional_encoding(
 
 
 class VisionEncoder(nn.Module):
-    """Deep convolutional image encoder with CoordConv and 2D Positional Encoding.
+    """Deep convolutional image encoder with CoordConv and Multi-Task Family Head.
 
     Downsamples the input image through a configurable convolutional stem conditioned on
     spatial coordinate planes (X, Y in [-1, 1]) and processes the feature maps
     through a sequence of residual blocks.
 
     Input shape: ``(B, C_{in}, H, W)``
-    Output shape: ``(B, S, D)`` where ``S`` reflects the configured stride and
-    ``D = model_dimension``.
+    Output shape: ``(B, S, D)`` where ``S = (H / 2^K) * (W / 2^K)``,
+    ``K = num_downsampling_stages``, and ``D = model_dimension``.
+    For standard 256x256 inputs with K=3 stages:
+    Feature map shape: ``(B, D, 32, 32)``, yielding ``S = 1024`` visual tokens.
     """
 
     def __init__(
@@ -134,7 +138,8 @@ class VisionEncoder(nn.Module):
         num_blocks: int = 6,
         use_coord_conv: bool = True,
         use_2d_pos_encoding: bool = True,
-        num_downsampling_stages: int = 2,
+        num_downsampling_stages: int = 3,
+        num_families: int | None = len(FAMILY_NAMES),
     ) -> None:
         super().__init__()
         if input_channels <= 0 or model_dimension <= 0:
@@ -143,9 +148,14 @@ class VisionEncoder(nn.Module):
             raise VocabularyInvariantError("num_blocks must be non-negative.")
         if num_downsampling_stages < 1:
             raise VocabularyInvariantError("num_downsampling_stages must be positive.")
+        if num_families is not None and num_families <= 0:
+            raise VocabularyInvariantError("num_families must be positive when specified.")
 
         self.use_coord_conv: bool = use_coord_conv
         self.use_2d_pos_encoding: bool = use_2d_pos_encoding
+        self.num_downsampling_stages: int = num_downsampling_stages
+        self.model_dimension: int = model_dimension
+        self.num_families: int | None = num_families
         stem_in_channels: int = input_channels + 2 if use_coord_conv else input_channels
 
         stem_layers: list[nn.Module] = []
@@ -167,10 +177,15 @@ class VisionEncoder(nn.Module):
             *[ConvResidualBlock(channels=model_dimension) for _ in range(num_blocks)]
         )
         self.normalization: nn.LayerNorm = nn.LayerNorm(model_dimension)
+        if num_families is not None and num_families > 0:
+            self.family_head: nn.Linear | None = nn.Linear(model_dimension, num_families)
+        else:
+            self.family_head = None
 
     @staticmethod
     def _add_coordinate_channels(images: torch.Tensor) -> torch.Tensor:
         """Inject normalized [-1, 1] Cartesian coordinate planes (X, Y) into channels."""
+        # Shape: (B, C, H, W) -> (B, C + 2, H, W)
         batch_size, _, height, width = images.shape
         y_coords: torch.Tensor = torch.linspace(
             -1.0, 1.0, steps=height, device=images.device, dtype=images.dtype
@@ -187,15 +202,80 @@ class VisionEncoder(nn.Module):
         )
         return torch.cat((images, coord_x, coord_y), dim=1)
 
-    def forward(self, images: torch.Tensor) -> torch.Tensor:
-        """Encode images into visual tokens with shape ``(B, S, D)``."""
+    @staticmethod
+    def compute_summary_token(features: torch.Tensor) -> torch.Tensor:
+        """Compute global summary token via spatial average pooling in O(1) logical GPU algebra.
+
+        Args:
+            features (torch.Tensor): Feature map with shape ``(B, D, H', W')`` or
+                token sequence with shape ``(B, S, D)``.
+
+        Returns:
+            torch.Tensor: Global summary vector with shape ``(B, D)``.
+        """
+        if features.ndim == 4:
+            # Spatial global average pooling: Shape (B, D, H', W') -> (B, D)
+            return features.mean(dim=(-2, -1))
+        if features.ndim == 3:
+            # Token sequence global average pooling: Shape (B, S, D) -> (B, D)
+            return features.mean(dim=1)
+        raise TensorTopologyError("Features must be rank-3 (B, S, D) or rank-4 (B, D, H, W).")
+
+    def classify_family(self, images: torch.Tensor) -> torch.Tensor:
+        """Classify geometric family directly from input images.
+
+        Args:
+            images (torch.Tensor): Rank-4 image tensor with shape ``(B, C, H, W)``.
+
+        Returns:
+            torch.Tensor: Family logits with shape ``(B, num_families)``.
+        """
+        if self.family_head is None:
+            raise TensorTopologyError("Auxiliary family classification head is not configured.")
         x: torch.Tensor = self._add_coordinate_channels(images) if self.use_coord_conv else images
-        # Shape: (B, C_in + 2, H, W) -> (B, D, H/4, W/4)
+        # Shape: (B, D, H', W')
         features: torch.Tensor = cast(torch.Tensor, self.stem(x))
-        # Shape: (B, D, H/4, W/4) -> (B, D, H/4, W/4)
+        features = cast(torch.Tensor, self.residual_blocks(features))
+        # Shape: (B, D)
+        summary_token: torch.Tensor = self.compute_summary_token(features)
+        # Shape: (B, num_families)
+        return cast(torch.Tensor, self.family_head(summary_token))
+
+    def forward(
+        self,
+        images: torch.Tensor,
+        return_summary: bool = False,
+        return_family_logits: bool = False,
+    ) -> torch.Tensor | tuple[torch.Tensor, ...]:
+        """Encode images into visual tokens with optional multi-task family classification.
+
+        Args:
+            images (torch.Tensor): Rank-4 image tensor with shape ``(B, C, H, W)``.
+            return_summary (bool): Whether to return the global summary token (B, D).
+            return_family_logits (bool): Whether to return family logits (B, num_families).
+
+        Returns:
+            torch.Tensor | tuple[torch.Tensor, ...]: Visual tokens with shape ``(B, S, D)``,
+            optionally accompanied by summary token and/or family logits.
+        """
+        x: torch.Tensor = self._add_coordinate_channels(images) if self.use_coord_conv else images
+        # Shape: (B, C_in + 2, H, W) -> (B, D, H/2^K, W/2^K)
+        features: torch.Tensor = cast(torch.Tensor, self.stem(x))
+        # Shape: (B, D, H/2^K, W/2^K)
         features = cast(torch.Tensor, self.residual_blocks(features))
         batch_size, channels, height, width = features.shape
-        # Spatial flatten to token sequence: (B, D, H/4, W/4) -> (B, D, S) -> (B, S, D)
+
+        # Global average pooling on encoder convolutional features: Shape (B, D)
+        summary_token: torch.Tensor = self.compute_summary_token(features)
+
+        family_logits: torch.Tensor | None = None
+        if return_family_logits:
+            if self.family_head is None:
+                raise TensorTopologyError("Auxiliary family classification head is not configured.")
+            # Shape: (B, num_families)
+            family_logits = cast(torch.Tensor, self.family_head(summary_token))
+
+        # Spatial flatten to token sequence: (B, D, H', W') -> (B, D, S) -> (B, S, D)
         visual_tokens: torch.Tensor = features.reshape(
             batch_size, channels, height * width
         ).transpose(1, 2)
@@ -207,8 +287,18 @@ class VisionEncoder(nn.Module):
                 device=features.device,
                 dtype=features.dtype,
             )
+            # Shape: (B, S, D) + (1, S, D) -> (B, S, D)
             visual_tokens = visual_tokens + pos_encoding
-        return cast(torch.Tensor, self.normalization(visual_tokens))
+
+        normalized_tokens: torch.Tensor = cast(torch.Tensor, self.normalization(visual_tokens))
+
+        if return_family_logits and return_summary:
+            return normalized_tokens, summary_token, cast(torch.Tensor, family_logits)
+        if return_family_logits:
+            return normalized_tokens, cast(torch.Tensor, family_logits)
+        if return_summary:
+            return normalized_tokens, summary_token
+        return normalized_tokens
 
 
 def resolve_device(device: torch.device | str | None = None) -> torch.device:
@@ -314,11 +404,12 @@ class AutoregressiveDecoder(nn.Module):
 
 
 class VisionAutoregressiveModel(nn.Module):
-    """Multimodal image-to-TikZ Transformer model.
+    """Multimodal image-to-TikZ Transformer model with auxiliary family classification head.
 
     Image shape: ``(B, C, H, W)``.
     Target shape: ``(B, L)``.
     Logit shape: ``(B, L, V)``.
+    Auxiliary family head shape: ``(B, K)`` where ``K = len(FAMILY_NAMES) = 8``.
     """
 
     def __init__(
@@ -333,7 +424,8 @@ class VisionAutoregressiveModel(nn.Module):
         num_encoder_blocks: int = 6,
         use_coord_conv: bool = True,
         use_2d_pos_encoding: bool = True,
-        num_downsampling_stages: int = 2,
+        num_downsampling_stages: int = 3,
+        num_families: int | None = len(FAMILY_NAMES),
         dropout: float = 0.1,
         device: torch.device | str | None = None,
     ) -> None:
@@ -348,6 +440,8 @@ class VisionAutoregressiveModel(nn.Module):
             raise VocabularyInvariantError("num_encoder_blocks must be non-negative.")
         if num_downsampling_stages < 1:
             raise VocabularyInvariantError("num_downsampling_stages must be positive.")
+        if num_families is not None and num_families <= 0:
+            raise VocabularyInvariantError("num_families must be positive when specified.")
         if max_length < 2:
             raise VocabularyInvariantError("max_length must be at least 2.")
         if num_heads <= 0 or model_dimension % num_heads != 0:
@@ -364,6 +458,7 @@ class VisionAutoregressiveModel(nn.Module):
         self.use_coord_conv: bool = use_coord_conv
         self.use_2d_pos_encoding: bool = use_2d_pos_encoding
         self.num_downsampling_stages: int = num_downsampling_stages
+        self.num_families: int | None = num_families
         self.target_device: torch.device = resolve_device(device)
 
         self.encoder: VisionEncoder = VisionEncoder(
@@ -373,6 +468,7 @@ class VisionAutoregressiveModel(nn.Module):
             use_coord_conv=use_coord_conv,
             use_2d_pos_encoding=use_2d_pos_encoding,
             num_downsampling_stages=num_downsampling_stages,
+            num_families=num_families,
         )
         self.decoder: AutoregressiveDecoder = AutoregressiveDecoder(
             vocabulary_size=len(vocabulary.token_to_index),
@@ -386,9 +482,22 @@ class VisionAutoregressiveModel(nn.Module):
         if device is not None:
             self.to(self.target_device)
 
+    @property
+    def family_head(self) -> nn.Linear | None:
+        """Auxiliary geometric family classification head attached to encoder."""
+        return self.encoder.family_head
+
+    def predict_family(self, images: torch.Tensor | ImageTensor) -> torch.Tensor:
+        """Predict geometric family logits with shape ``(B, num_families)``."""
+        image_tensor: torch.Tensor = self._extract_images(images)
+        return self.encoder.classify_family(image_tensor)
+
     def forward(
-        self, images: torch.Tensor | ImageTensor, target_tokens: torch.Tensor
-    ) -> torch.Tensor:
+        self,
+        images: torch.Tensor | ImageTensor,
+        target_tokens: torch.Tensor,
+        return_family_logits: bool = False,
+    ) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
         """Run the encoder and causal decoder under teacher forcing."""
         image_tensor: torch.Tensor = self._extract_images(images)
         if target_tokens.ndim != 2 or target_tokens.dtype != torch.long:
@@ -396,12 +505,45 @@ class VisionAutoregressiveModel(nn.Module):
         if image_tensor.shape[0] != target_tokens.shape[0]:
             raise TensorTopologyError("Image and target batch dimensions must match.")
 
-        visual_tokens: torch.Tensor = self.encoder(image_tensor)
+        if return_family_logits:
+            visual_tokens, family_logits = cast(
+                tuple[torch.Tensor, torch.Tensor],
+                self.encoder(image_tensor, return_family_logits=True),
+            )
+            token_logits: torch.Tensor = cast(
+                torch.Tensor, self.decoder(visual_tokens, target_tokens)
+            )
+            return token_logits, family_logits
+
+        visual_tokens = cast(torch.Tensor, self.encoder(image_tensor))
         return cast(torch.Tensor, self.decoder(visual_tokens, target_tokens))
+
+    def load_state_dict(
+        self,
+        state_dict: Mapping[str, Any],
+        strict: bool = True,
+        assign: bool = False,
+    ) -> Any:
+        """Load state dict with backward compatibility for checkpoints lacking family_head."""
+        has_family_keys: bool = any("family_head" in k for k in state_dict.keys())
+        if not has_family_keys and self.encoder.family_head is not None:
+            incompatible_keys = super().load_state_dict(state_dict, strict=False, assign=assign)
+            unexpected = incompatible_keys.unexpected_keys
+            missing = [k for k in incompatible_keys.missing_keys if "family_head" not in k]
+            if missing or unexpected:
+                raise RuntimeError(
+                    f"Error(s) in loading state_dict for {self.__class__.__name__}: "
+                    f"Missing key(s): {missing}, Unexpected key(s): {unexpected}."
+                )
+            return incompatible_keys
+        return super().load_state_dict(state_dict, strict=strict, assign=assign)
 
     @torch.inference_mode()
     def generate_markup(
-        self, image: ImageTensor, device: torch.device | str | None = None
+        self,
+        image: ImageTensor,
+        device: torch.device | str | None = None,
+        inject_family_prefix: bool = False,
     ) -> TikzTokens:
         """Generate a bounded greedy TikZ sequence for one image."""
         image_tensor: torch.Tensor = self._extract_images(image)
@@ -412,11 +554,24 @@ class VisionAutoregressiveModel(nn.Module):
             resolve_device(device) if device is not None else image_tensor.device
         )
         image_tensor = image_tensor.to(target_device)
-        generated: torch.Tensor = torch.full(
-            (1, 1), BOS_INDEX, dtype=torch.long, device=target_device
-        )
-        visual_tokens: torch.Tensor = self.encoder(image_tensor)
-        step: int = 0
+
+        if inject_family_prefix and self.family_head is not None:
+            family_logits: torch.Tensor = self.encoder.classify_family(image_tensor)
+            pred_family_idx: int = int(family_logits.argmax(dim=-1).item())
+            family_name: str = FAMILY_NAMES[pred_family_idx]
+            family_token: str = f"<FAM:{family_name}>"
+            if family_token in self.vocabulary.token_to_index:
+                prefix_idx: int = self.vocabulary.token_to_index[family_token]
+                generated: torch.Tensor = torch.tensor(
+                    [[BOS_INDEX, prefix_idx]], dtype=torch.long, device=target_device
+                )
+            else:
+                generated = torch.full((1, 1), BOS_INDEX, dtype=torch.long, device=target_device)
+        else:
+            generated = torch.full((1, 1), BOS_INDEX, dtype=torch.long, device=target_device)
+
+        visual_tokens: torch.Tensor = cast(torch.Tensor, self.encoder(image_tensor))
+        step: int = generated.shape[1] - 1
         finished: torch.Tensor = torch.zeros(1, dtype=torch.bool, device=target_device)
         while step < self.max_length - 1 and not bool(finished.all().item()):
             logits: torch.Tensor = self.decoder(visual_tokens, generated)
@@ -449,3 +604,8 @@ class VisionAutoregressiveModel(nn.Module):
         if not isinstance(image_tensor, torch.Tensor) or image_tensor.ndim != 4:
             raise TensorTopologyError("Images must be a rank-4 tensor with shape (B, C, H, W).")
         return image_tensor
+
+
+# Canonical V4 architectural aliases
+VisionEncoderV4 = VisionEncoder
+VisionAutoregressiveModelV4 = VisionAutoregressiveModel

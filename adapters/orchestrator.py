@@ -21,7 +21,13 @@ from core.ml.generation import (
 )
 from core.ml.metrics import structural_similarity
 from core.ml.model import VisionAutoregressiveModel
-from core.models import ImageTensor, TikzTokens, TokenVocabulary, TrainingCheckpoint
+from core.models import (
+    FAMILY_NAMES,
+    ImageTensor,
+    TikzTokens,
+    TokenVocabulary,
+    TrainingCheckpoint,
+)
 from ports.inbound import ImageToTikzUseCase
 from ports.outbound import ImageRasterizerPort, TexCompilerPort
 
@@ -206,9 +212,7 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
             grammar_constrained=True,
         )
 
-        best_markup: TikzTokens = decode_indices_to_markup(
-            self._vocabulary, candidate_indices[0]
-        )
+        best_markup: TikzTokens = decode_indices_to_markup(self._vocabulary, candidate_indices[0])
         best_ssim: float = 0.0
         ref_image_tensor = image.raw_tensor[0]
         _, target_h, target_w = ref_image_tensor.shape
@@ -239,7 +243,6 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
             cand_idx += 1
 
         return best_markup, best_ssim
-
 
     @classmethod
     def from_checkpoint(
@@ -296,13 +299,18 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
             if block_keys:
                 inferred_encoder_blocks = max(int(k.split(".")[2]) for k in block_keys) + 1
 
-        inferred_downsampling = int(cfg.get("num_downsampling_stages", 2))
+        inferred_downsampling = int(cfg.get("num_downsampling_stages", 3))
         if "num_downsampling_stages" not in cfg:
             stem_conv_keys = [
                 k for k in state.keys() if k.startswith("encoder.stem.") and k.endswith(".weight")
             ]
             if stem_conv_keys:
                 inferred_downsampling = len(stem_conv_keys)
+
+        inferred_families = cfg.get("num_families")
+        if inferred_families is None:
+            family_keys = [k for k in state.keys() if "family_head" in k]
+            inferred_families = len(FAMILY_NAMES) if family_keys else None
 
         inferred_feedforward = cfg.get("dim_feedforward")
         if inferred_feedforward is None:
@@ -326,6 +334,7 @@ class ImageToTikzOrchestrator(ImageToTikzUseCase):
             dim_feedforward=inferred_feedforward,
             num_encoder_blocks=inferred_encoder_blocks,
             num_downsampling_stages=inferred_downsampling,
+            num_families=inferred_families,
             device=device,
         )
         model.load_state_dict(checkpoint.model_state)

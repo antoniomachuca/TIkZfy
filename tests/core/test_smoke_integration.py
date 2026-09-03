@@ -13,7 +13,7 @@ from core.ml.loss import (
     build_teacher_forcing_pair,
 )
 from core.ml.model import VisionAutoregressiveModel
-from core.models import ImageTensor, TikzTokens, TokenVocabulary
+from core.models import FAMILY_NAMES, ImageTensor, TikzTokens, TokenVocabulary
 
 
 def _create_sample_vocabulary() -> TokenVocabulary:
@@ -64,14 +64,15 @@ def test_smoke_mini_batch_forward_backward_cpu() -> None:
     tokens[:, 0] = 0
 
     decoder_input, targets = build_teacher_forcing_pair(tokens)
-    # Forward pass: Shape (B, L-1, V)
-    logits: torch.Tensor = model(images, decoder_input)
+    # Forward pass with auxiliary family head: Shape (B, L-1, V) and (B, K)
+    logits, family_logits = model(images, decoder_input, return_family_logits=True)
 
     assert logits.shape == (batch_size, seq_length - 1, vocab_size)
     assert logits.dtype == torch.float32
+    assert family_logits.shape == (batch_size, len(FAMILY_NAMES))
 
     criterion: TeacherForcingCrossEntropy = TeacherForcingCrossEntropy()
-    loss: torch.Tensor = criterion(logits, targets)
+    loss: torch.Tensor = criterion(logits, targets) + family_logits.sum()
 
     assert torch.isfinite(loss)
     assert float(loss.item()) > 0.0
@@ -114,10 +115,11 @@ def test_smoke_14_layer_deep_decoder_cpu() -> None:
     tokens: torch.Tensor = torch.randint(0, vocab_size, (2, 16), dtype=torch.long)
     decoder_input, targets = build_teacher_forcing_pair(tokens)
 
-    logits: torch.Tensor = model(images, decoder_input)
+    logits, family_logits = model(images, decoder_input, return_family_logits=True)
     assert logits.shape == (2, 15, vocab_size)
+    assert family_logits.shape == (2, len(FAMILY_NAMES))
 
-    loss: torch.Tensor = TeacherForcingCrossEntropy()(logits, targets)
+    loss: torch.Tensor = TeacherForcingCrossEntropy()(logits, targets) + family_logits.sum()
     assert torch.isfinite(loss)
     loss.backward()  # type: ignore[no-untyped-call]
 

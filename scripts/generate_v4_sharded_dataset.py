@@ -14,8 +14,12 @@ import asyncio
 import io
 import json
 import os
+import sys
 import time
 from pathlib import Path
+
+# Ensure project root is in sys.path for standalone script execution
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import numpy as np
 import torch
@@ -166,6 +170,24 @@ async def generate_split_shards(
                     buffer_family_counts[fam] += 1
                     collected += 1
 
+                    if collected % 500 == 0:
+                        progress_data = {
+                            "split": split_name,
+                            "family": fam,
+                            "family_collected": collected,
+                            "family_target": samples_per_family,
+                            "buffer_size": len(buffer_images),
+                            "shard_counter": shard_counter,
+                            "timestamp": time.time(),
+                        }
+                        with (output_dir / "progress.json").open("w", encoding="utf-8") as pf:
+                            json.dump(progress_data, pf, indent=2)
+                        print(
+                            f"  [>] Progress: {fam} -> {collected}/{samples_per_family} "
+                            f"(buffer: {len(buffer_images)}/{shard_size})",
+                            flush=True,
+                        )
+
                     # Check if active shard is full
                     if len(buffer_images) == shard_size:
                         shard_filename = f"{split_name}_shard_{shard_counter:04d}.pt"
@@ -183,7 +205,10 @@ async def generate_split_shards(
                             family_counts=dict(buffer_family_counts),
                         )
                         shards_metadata.append(meta)
-                        print(f"  [+] Persisted {shard_filename} ({len(buffer_images)} samples).")
+                        print(
+                            f"  [+] Persisted {shard_filename} ({len(buffer_images)} samples).",
+                            flush=True,
+                        )
                         shard_counter += 1
                         buffer_images.clear()
                         buffer_tokens.clear()
@@ -192,7 +217,10 @@ async def generate_split_shards(
 
                 res_idx += 1
 
-        print(f"  [+] Family '{fam}' completed: {collected}/{samples_per_family} valid samples.")
+        print(
+            f"  [+] Family '{fam}' completed: {collected}/{samples_per_family} valid samples.",
+            flush=True,
+        )
 
     # Flush any remaining buffer into a final shard
     if buffer_images:
