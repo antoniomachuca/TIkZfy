@@ -5,13 +5,13 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
 
 <Layout>
   <div class="fixed inset-0 pointer-events-none overflow-hidden z-10 text-white">
-    <h1 class="absolute top-5 left-4 md:top-8 md:left-6 text-[clamp(4rem,12vw,12rem)] font-black tracking-tighter-massive leading-none reveal-title">Tikzfy</h1>
+    <h1 class="absolute top-16 left-4 sm:top-20 md:top-8 md:left-6 text-[clamp(3.5rem,12vw,12rem)] font-black tracking-tighter-massive leading-none reveal-title">Tikzfy</h1>
   </div>
 
   <InteractiveGeometry />
 
   <main class="relative z-30 min-h-screen flex flex-col items-center justify-center p-4 pt-16 md:pt-24">
-    <section id="landing-view" class="flex flex-col items-center max-w-2xl w-full mt-8 md:mt-16">
+    <section id="landing-view" class="flex flex-col items-center max-w-2xl w-full mt-16 sm:mt-20 md:mt-16">
       <div id="compiler-card" class="w-full bg-white border-2 border-black p-4 sm:p-6 md:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative z-20">
         <div class="absolute top-3 right-3 sm:top-4 sm:right-5 flex items-center gap-2 text-black select-none pointer-events-none" aria-hidden="true">
           <svg class="w-3 h-3" viewBox="0 0 16 16" fill="none">
@@ -26,16 +26,16 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
         </div>
 
         <div class="text-center">
-          <p class="font-mono text-[10px] uppercase tracking-[0.3em] mb-3">Image -&gt; vector syntax</p>
-          <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tight mb-2">Image to LaTeX Compiler</h2>
-          <p class="text-sm font-mono text-black/70">Drop an image and inspect the generated geometry.</p>
+          <p class="font-mono text-[10px] uppercase tracking-[0.3em] mb-3">Upload an image</p>
+          <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tight mb-2">Convert an image to TikZ</h2>
+          <p class="text-sm font-mono text-black/70">Get editable TikZ code from your image.</p>
         </div>
 
         <div id="drop-zone" tabindex="0" role="button" aria-label="Drop an image here" class="w-full mt-5 border-2 border-dashed border-black p-7 sm:p-9 text-center cursor-pointer hover:bg-black hover:text-white focus:bg-black focus:text-white transition-colors duration-300 group">
           <svg class="mx-auto mb-3 w-10 h-10" viewBox="0 0 48 48" fill="none" aria-hidden="true">
             <path d="M24 34V8M24 8L14 18M24 8L34 18M8 30V40H40V30" stroke="currentColor" stroke-width="2" />
           </svg>
-          <span class="font-mono uppercase text-xs tracking-widest group-hover:text-white">Drop image</span>
+          <span class="font-mono uppercase text-xs tracking-widest group-hover:text-white">Drop an image</span>
           <span class="block mt-2 text-[10px] font-mono opacity-60">PNG, JPG or WEBP</span>
         </div>
 
@@ -46,7 +46,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
         </div>
 
         <label for="file-upload" class="w-full block text-center px-8 py-3 bg-white border-2 border-black hover:bg-black hover:text-white focus-within:bg-black focus-within:text-white font-bold uppercase tracking-wider transition-colors duration-300 cursor-pointer text-sm">
-          Select image
+          Choose an image
         </label>
         <input id="file-upload" type="file" class="sr-only" accept="image/png,image/jpeg,image/webp" />
       </div>
@@ -55,10 +55,10 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     <section id="processing-view" aria-live="polite" class="hidden flex-col items-center w-full max-w-3xl -mt-6 sm:-mt-10 md:-mt-14 bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 relative z-20">
       <div class="w-full flex justify-between items-start gap-4 mb-8">
         <div>
-          <p class="font-mono text-[10px] uppercase tracking-[0.3em] mb-2">Engine status</p>
-          <h2 class="text-2xl font-black uppercase">Extracting geometry</h2>
+        <p class="font-mono text-[10px] uppercase tracking-[0.3em] mb-2">Engine status</p>
+        <h2 class="text-2xl font-black uppercase">Extracting geometry</h2>
         </div>
-        <span id="progress-value" class="font-mono text-2xl font-bold">0%</span>
+      <span id="progress-value" class="font-mono text-2xl font-bold">0%</span>
       </div>
 
       <div class="w-full border-2 border-black p-2 mb-8">
@@ -85,7 +85,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     <section id="error-view" aria-live="assertive" class="hidden flex-col w-full max-w-3xl -mt-6 sm:-mt-10 md:-mt-14 bg-white border-2 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 sm:p-8 relative z-20">
       <p class="font-mono text-[10px] uppercase tracking-[0.3em] mb-3">Engine status / failed</p>
       <h2 class="text-2xl font-black uppercase mb-3">Generation interrupted</h2>
-      <p id="error-message" class="font-mono text-sm border-l-4 border-black pl-4 mb-8">The generation service is unavailable.</p>
+      <p id="error-message" class="font-mono text-sm border-l-4 border-black pl-4 mb-8">We could not process that image.</p>
       <div class="flex flex-col sm:flex-row gap-3">
         <button id="btn-retry" class="font-mono uppercase text-xs font-bold px-4 py-3 border-2 border-black bg-black text-white hover:bg-white hover:text-black transition-colors">Try again</button>
         <button id="btn-error-back" class="font-mono uppercase text-xs font-bold px-4 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors">Choose another image</button>
@@ -156,7 +156,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
         <!-- Collapsible TikZ Source Code Section -->
         <div id="code-drawer" class="hidden w-full border-2 border-black bg-black transition-all duration-300">
           <div class="flex justify-between items-center px-3 py-2 border-b border-white/20 text-white">
-            <span class="font-mono text-[9px] uppercase tracking-widest font-bold">LaTeX / TikZ Syntactic Tokens</span>
+            <span class="font-mono text-[9px] uppercase tracking-widest font-bold">TikZ source code</span>
             <span id="token-count" class="font-mono text-[9px] uppercase text-white/70"></span>
           </div>
           <pre id="code-output" class="max-h-48 sm:max-h-60 overflow-auto bg-black text-emerald-400 p-3 text-xs leading-relaxed font-mono whitespace-pre-wrap selection:bg-white selection:text-black"></pre>
@@ -307,7 +307,7 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
 
     const showError = (error) => {
       window.clearInterval(progressTimer);
-      if (errorMessage) errorMessage.textContent = error instanceof Error ? error.message : 'The generation service is unavailable.';
+      if (errorMessage) errorMessage.textContent = error instanceof Error ? error.message : 'We could not process that image.';
       setView(errorView);
     };
 
@@ -511,4 +511,3 @@ import InteractiveGeometry from '../components/InteractiveGeometry.astro';
     initApp();
   }
 </script>
-

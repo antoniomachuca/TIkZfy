@@ -21,6 +21,18 @@ body {
   font-family: 'Latin Modern Math', 'Computer Modern', serif;
 }
 
+.ui-label,
+.code-font {
+  font-family: var(--font-mono);
+}
+
+.ui-label {
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 /* Custom scrollbar for brutalist look */
 ::-webkit-scrollbar {
   width: 12px;
@@ -42,7 +54,6 @@ body {
   color: #fff;
 }
 
-/* Massive typography tracking */
 .tracking-tighter-massive {
   letter-spacing: -0.05em;
 }

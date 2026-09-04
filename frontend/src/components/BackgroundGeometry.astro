@@ -1,25 +1,32 @@
-<div id="geometry-background" class="fixed inset-0 z-0 overflow-hidden pointer-events-none select-none bg-[#f4f4f1]">
+<div id="geometry-background" class="fixed inset-0 z-0 overflow-hidden pointer-events-none select-none bg-white">
   <svg id="geometry-svg" class="w-full h-full" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
-      <pattern id="about-grid" width="48" height="48" patternUnits="userSpaceOnUse">
-        <path d="M48 0H0V48" fill="none" stroke="#000" stroke-width="1" opacity="0.09" />
+      <pattern id="about-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M40 0H0V40" fill="none" stroke="#000" stroke-width="1" opacity="0.08" />
       </pattern>
       <linearGradient id="about-fade" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#fff" stop-opacity="0.8" />
-        <stop offset="0.55" stop-color="#fff" stop-opacity="0" />
-        <stop offset="1" stop-color="#fff" stop-opacity="0.55" />
+        <stop offset="0" stop-color="#fff" stop-opacity="0.72" />
+        <stop offset="0.5" stop-color="#fff" stop-opacity="0.08" />
+        <stop offset="1" stop-color="#fff" stop-opacity="0.68" />
       </linearGradient>
     </defs>
+    <rect width="1200" height="900" fill="#fff" />
     <rect width="1200" height="900" fill="url(#about-grid)" />
-    <path d="M-80 720L420 120L1250 500" fill="none" stroke="#000" stroke-width="1" opacity="0.14" />
-    <path d="M-100 170L680 830L1260 180" fill="none" stroke="#000" stroke-width="1" opacity="0.1" />
-    <g id="geometry-shapes" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="180" cy="220" r="112" stroke-width="2" opacity="0.22" />
-      <path d="M80 690L270 390L430 690Z" stroke-width="2" opacity="0.2" />
-      <path d="M700 130L930 130L1040 330L810 430L700 130Z" stroke-width="2" opacity="0.18" />
-      <circle cx="1010" cy="700" r="155" stroke-width="2" opacity="0.16" />
-      <path d="M510 760C590 590 690 590 770 760" stroke-width="2" opacity="0.16" />
-      <path d="M550 250H650M600 200V300" stroke-width="2" opacity="0.22" />
+    <g id="geometry-drawing" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+      <path class="construction-line" d="M120 720H1080M120 720V110" stroke-width="1.5" opacity="0.2" />
+      <path class="construction-line" d="M120 610H1080M120 500H1080M120 390H1080M120 280H1080" stroke-width="1" opacity="0.12" />
+      <path class="construction-line" d="M300 110V720M480 110V720M660 110V720M840 110V720" stroke-width="1" opacity="0.12" />
+      <path class="vector-path" d="M160 610C300 570 330 260 510 310C675 356 690 590 1035 190" stroke-width="3" opacity="0.28" />
+      <path class="control-path" d="M160 610L300 570M510 310L330 260M510 310L675 356M1035 190L690 590" stroke-width="1" stroke-dasharray="5 8" opacity="0.18" />
+      <path class="measurement" d="M300 735H480M300 728V742M480 728V742M1085 190V310M1078 190H1092M1078 310H1092" stroke-width="1" opacity="0.22" />
+      <path class="corner-mark" d="M120 110H160M120 110V150M1080 720H1040M1080 720V680" stroke-width="2" opacity="0.26" />
+      <g class="anchor-points" fill="#f4f4f1" stroke-width="2">
+        <circle cx="160" cy="610" r="7" />
+        <circle cx="300" cy="570" r="7" />
+        <circle cx="510" cy="310" r="7" />
+        <circle cx="675" cy="356" r="7" />
+        <circle cx="1035" cy="190" r="7" />
+      </g>
     </g>
     <rect width="1200" height="900" fill="url(#about-fade)" />
   </svg>
@@ -27,16 +34,11 @@
 
 <style>
   #geometry-background { opacity: 0.9; }
-  #geometry-shapes > * { transform-box: fill-box; transform-origin: center; }
 
   @media (prefers-reduced-motion: no-preference) {
-    #geometry-svg > rect:first-of-type { animation: grid-drift 14s linear infinite; }
-    #geometry-shapes > * {
-      stroke-dasharray: 800;
-      animation: trace-shape 7s ease-in-out infinite alternate;
-    }
-    #geometry-shapes > *:nth-child(odd) { animation: trace-shape 7s ease-in-out infinite alternate, float-shape 10s ease-in-out infinite alternate; }
-    #geometry-shapes > *:nth-child(even) { animation: trace-shape 8s ease-in-out 0.8s infinite alternate, float-shape-reverse 12s ease-in-out infinite alternate; }
+    #geometry-svg > rect:first-of-type { animation: grid-drift 20s linear infinite; }
+    .vector-path { stroke-dasharray: 900; animation: trace-path 12s ease-in-out infinite alternate; }
+    .anchor-points { animation: point-pulse 5s ease-in-out infinite alternate; }
   }
 
   @keyframes grid-drift {
@@ -44,18 +46,13 @@
     to { transform: translate3d(24px, 16px, 0); }
   }
 
-  @keyframes trace-shape {
-    from { stroke-dashoffset: 800; opacity: 0.08; }
-    to { stroke-dashoffset: 0; opacity: 0.24; }
+  @keyframes trace-path {
+    from { stroke-dashoffset: 900; opacity: 0.12; }
+    to { stroke-dashoffset: 0; opacity: 0.28; }
   }
 
-  @keyframes float-shape {
-    from { transform: translate3d(0, 0, 0) rotate(0deg); }
-    to { transform: translate3d(12px, -10px, 0) rotate(2deg); }
-  }
-
-  @keyframes float-shape-reverse {
-    from { transform: translate3d(0, 0, 0) rotate(0deg); }
-    to { transform: translate3d(-10px, 12px, 0) rotate(-2deg); }
+  @keyframes point-pulse {
+    from { opacity: 0.45; }
+    to { opacity: 0.9; }
   }
 </style>
