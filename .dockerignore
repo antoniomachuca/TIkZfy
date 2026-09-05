@@ -44,13 +44,11 @@ image_to_tikz_engine.egg-info/
 # Experimental results and ablation checkpoints (7+ GB)
 /results/
 
-# Test suite
-/tests/
-
-# Retain only production V4 weights in checkpoints/
+# Retain only production V4 weights and placeholder in checkpoints/
 /checkpoints/*
 !/checkpoints/curriculum_v4_best.pt
 !/checkpoints/vocabulary_v4.json
+!/checkpoints/.gitkeep
 
 # Explicit safeguard: ensure core/dataset is always preserved
 !/core/dataset/**

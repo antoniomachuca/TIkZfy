@@ -68,7 +68,8 @@ env/
 *.ckpt
 *.safetensors
 /models/
-checkpoints/
+checkpoints/*
+!checkpoints/.gitkeep
 /data/
 /datasets/
 /dataset/raw/
