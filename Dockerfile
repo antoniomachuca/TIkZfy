@@ -31,6 +31,7 @@ COPY pyproject.toml ./
 COPY core/ ./core/
 COPY ports/ ./ports/
 COPY adapters/ ./adapters/
+COPY scripts/ ./scripts/
 COPY tests/ ./tests/
 COPY checkpoints/ ./checkpoints/
 
