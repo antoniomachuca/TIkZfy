@@ -418,8 +418,8 @@ image-to-tikz-engine/
 
 ## Live Demo
 
-[![TikZfy Live Demo](image.png)](https://antoniomachuca.github.io/tikzfy/)
+[![TikZfy Live Demo](image.png)](https://antoniomachuca.github.io/TIkZfy/)
 
-Interactive web interface: [https://antoniomachuca.github.io/tikzfy/](https://antoniomachuca.github.io/tikzfy/)
+Interactive web interface: [https://antoniomachuca.github.io/tikzfy/](https://antoniomachuca.github.io/TIkZfy/)
 
 
