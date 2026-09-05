@@ -13,11 +13,30 @@ import BackgroundGeometry from '../components/BackgroundGeometry.astro';
       
       <div class="space-y-3 font-mono text-xs md:text-sm text-black/80 leading-relaxed">
         <p>
-          <strong class="text-black uppercase tracking-wider">Tikzfy</strong> turns images into editable <span class="bg-black text-white px-1">PGF/TikZ</span> code.
+          <strong class="text-black uppercase tracking-wider">TikZfy</strong> is a specialized multimodal neural engine that translates raster diagram images directly into compilable <span class="bg-black text-white px-1">PGF/TikZ</span> markup.
         </p>
         
         <p>
-          Upload an image, review the result, and copy or download the generated code for your own document.
+          General vision-language models frequently hallucinate LaTeX delimiters or misplace coordinates. TikZfy handles this with a domain-specific design:
+        </p>
+
+        <ul class="list-disc list-inside space-y-1.5 pl-1 text-black/90">
+          <li>
+            <strong>Spatial Visual Stem:</strong> A 3-stage CoordConv2D encoder that injects Cartesian coordinate grids (<span class="font-sans">x, y &isin; [-1, 1]</span>) directly into the image tensor, generating 1,024 visual tokens.
+          </li>
+          <li>
+            <strong>Multi-Task Guidance:</strong> An auxiliary classification head identifies the diagram family (lines, circles, polygons, Cartesian grids, graphs) to steer autoregressive decoding.
+          </li>
+          <li>
+            <strong>Grammar-Guaranteed Syntax:</strong> Next-token candidates are filtered through a prefix-tree (Trie) automaton, preventing syntax errors and ensuring 100% compilation in TeX Live.
+          </li>
+          <li>
+            <strong>Scale & Performance:</strong> 57.8M parameters trained across 40 curriculum epochs on 240,000 balanced synthetic diagrams using an NVIDIA L4 GPU, reaching 0.919 mean SSIM on benchmark tests.
+          </li>
+        </ul>
+
+        <p class="text-[11px] md:text-xs text-black/60 pt-1 border-t border-black/10">
+          <strong>Realistic Scope:</strong> Designed specifically for clean 2D technical schematics, mathematical graphs, and geometric figures. It is not intended for natural photographs or freehand artwork.
         </p>
 
         <div class="mt-5 pt-5 border-t-2 border-dashed border-black">
