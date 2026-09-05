@@ -5,6 +5,9 @@ FROM python:3.10-slim
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV PYTHONPATH=/app
+ENV PORT=8080
+ENV CHECKPOINT_PATH=/app/checkpoints/curriculum_v4_best.pt
+ENV VOCABULARY_PATH=/app/checkpoints/vocabulary_v4.json
 
 # Installation of system dependencies and TeX Live compiler
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -23,8 +26,15 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copying core and adapters
-COPY . .
+# Explicit copy of application layers conforming to Clean Architecture
+COPY pyproject.toml ./
+COPY core/ ./core/
+COPY ports/ ./ports/
+COPY adapters/ ./adapters/
+COPY checkpoints/ ./checkpoints/
 
-# Default entrypoint delegable to external orchestrators
-CMD ["python", "-c", "print('Engine container initialized successfully.')"]
+# Expose default Cloud Run port
+EXPOSE 8080
+
+# Production ASGI server entrypoint with signal forwarding
+CMD ["sh", "-c", "exec uvicorn adapters.api.app:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]
