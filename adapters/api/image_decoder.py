@@ -16,15 +16,15 @@ from ports.outbound import ImageLoaderPort
 
 def decode_image_bytes_to_tensor(
     image_bytes: bytes,
-    target_height: int = 224,
-    target_width: int = 224,
+    target_height: int = 256,
+    target_width: int = 256,
 ) -> ImageTensor:
     """Decode binary image bytes into a normalized ImageTensor with shape (1, 3, H, W).
 
     Args:
         image_bytes (bytes): Binary payload of the uploaded image (PNG, JPEG, WebP).
-        target_height (int): Target height spatial dimension. Default is 224.
-        target_width (int): Target width spatial dimension. Default is 224.
+        target_height (int): Target height spatial dimension. Default is 256.
+        target_width (int): Target width spatial dimension. Default is 256.
 
     Returns:
         ImageTensor: Normalized float32 tensor of shape (1, 3, target_height, target_width)
@@ -99,7 +99,7 @@ class ByteImageLoader(ImageLoaderPort):
             source_path (str): Absolute file system path to the image file.
 
         Returns:
-            ImageTensor: Normalized tensor with shape (1, 3, 224, 224).
+            ImageTensor: Normalized tensor with shape (1, 3, 256, 256).
         """
         with open(source_path, "rb") as file_handle:
             payload: bytes = file_handle.read()

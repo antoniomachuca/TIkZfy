@@ -32,8 +32,8 @@ def create_app(
     orchestrator: ImageToTikzUseCase | None = None,
     compiler: TexCompilerPort | None = None,
     rasterizer: ImageRasterizerPort | None = None,
-    target_height: int = 224,
-    target_width: int = 224,
+    target_height: int = 256,
+    target_width: int = 256,
     enable_cors: bool = True,
 ) -> FastAPI:
     """Construct and configure the FastAPI application.

@@ -22,18 +22,83 @@ export function getApiBaseUrl(): string {
     if (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.PUBLIC_API_URL) {
         return import.meta.env.PUBLIC_API_URL.replace(/\/+$/, "");
     }
-    return "";
+}
+
+/**
+ * Downscales an input image file to 256x256 via an offscreen HTMLCanvasElement
+ * prior to transmission over HTTP, optimizing transfer payload and latency.
+ *
+ * @param imageFile The raw user-provided image file.
+ * @param targetDimension The target square spatial dimension in pixels (default 256).
+ * @returns A promise resolving to the resized Blob or original File if already <= 256x256.
+ */
+export async function resizeImageTo256(
+    imageFile: File,
+    targetDimension: number = 256
+): Promise<Blob | File> {
+    if (typeof window === "undefined" || typeof document === "undefined") {
+        return imageFile;
+    }
+
+    return new Promise((resolve) => {
+        const img = new Image();
+        const objectUrl = URL.createObjectURL(imageFile);
+
+        img.onload = () => {
+            URL.revokeObjectURL(objectUrl);
+
+            if (img.width <= targetDimension && img.height <= targetDimension) {
+                resolve(imageFile);
+                return;
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = targetDimension;
+            canvas.height = targetDimension;
+
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+                resolve(imageFile);
+                return;
+            }
+
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+            ctx.drawImage(img, 0, 0, targetDimension, targetDimension);
+
+            canvas.toBlob(
+                (blob) => {
+                    if (blob) {
+                        resolve(blob);
+                    } else {
+                        resolve(imageFile);
+                    }
+                },
+                "image/png",
+                0.95
+            );
+        };
+
+        img.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            resolve(imageFile);
+        };
+
+        img.src = objectUrl;
+    });
 }
 
 /**
  * Sends a multipart image payload to the generative neural inference endpoint.
+ * Downscales images exceeding 256x256 on the client before network upload.
  *
  * @param imageFile Uploaded image file (PNG, JPG, WebP).
  * @returns Parsed generation and preview result.
  */
 export async function generateTikzFromImage(imageFile: File): Promise<GenerationResult> {
+    const optimizedPayload = await resizeImageTo256(imageFile, 256);
     const formData = new FormData();
-    formData.append("image", imageFile);
+    formData.append("image", optimizedPayload, imageFile.name || "image.png");
 
     const baseUrl = getApiBaseUrl();
     const primaryUrl = baseUrl ? `${baseUrl}/api/v1/generate` : "/api/v1/generate";
