@@ -54,6 +54,7 @@ The codebase follows the **Ports and Adapters (Hexagonal)** pattern:
 - `adapters/`: Infrastructure implementations, including the TeX Live compiler, Ghostscript/pdftoppm rasterizer, FastAPI endpoints, and disk persistence.
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart TB
     subgraph DrivingAdapters["Driving Adapters (Clients & Ingress)"]
         FastAPI["FastAPI Web Router<br/>/api/v1/generate"]
@@ -107,6 +108,7 @@ flowchart TB
 ## Model Architecture
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 flowchart TB
     subgraph Input["1. Input Stage"]
         Img["Input Image<br/>(B, 3, 256, 256)"]
@@ -201,6 +203,7 @@ The complete V4 model contains **57,812,251 trainable parameters** ($220.5\text{
 ## Inference Workflow
 
 ```mermaid
+%%{init: {'theme': 'neutral'}}%%
 sequenceDiagram
     autonumber
     actor Client
@@ -271,7 +274,7 @@ Evaluation on a holdout test set compiled against TeX Live:
 - **Dataset Scale:** 240,000 synthetic diagram pairs (216,000 train / 12,000 val / 12,000 test) uniformly balanced across 8 canonical geometric categories ($30,000$ samples each).
 - **Storage & Paging:** 24 sharded binary files ($1.7\text{ GB}$ per shard, $41\text{ GB}$ total) storing raw `uint8` image tensors and token arrays, streamed via `mmap` with a 4-shard LRU cache to constrain physical RAM usage to $\le 6.8\text{ GB}$.
 - **Hardware & Throughput:** 1× NVIDIA L4 (24GB VRAM) on Google Cloud Platform (`g2-standard-8`, 8 vCPUs, 32 GB RAM). Mean throughput: $57.8\text{ samples/sec}$.
-- **Optimization:** Mixed precision (`bfloat16`) native AMP, AdamW ($\beta_1=0.9, \beta_2=0.98, \text{weight\_decay}=0.01$), Cosine Annealing schedule, and effective batch size 32 (batch size 16 with 2 gradient accumulation steps).
+- **Optimization:** Mixed precision (`bfloat16`) native AMP, AdamW ($\beta_1=0.9, \beta_2=0.98, \text{weight decay}=0.01$), Cosine Annealing schedule, and effective batch size 32 (batch size 16 with 2 gradient accumulation steps).
 
 ### 3-Stage Curriculum Strategy (40 Epochs)
 
@@ -283,9 +286,7 @@ The model was trained using a 3-stage curriculum to anchor coordinate regression
 | **Stage 2** | $11 \to 25$ | $2.0\times 10^{-4} \to 1.0\times 10^{-5}$ | 30% Simple, 30% Orthogonal, 40% Complex       |           **`5.4635`**           |    $99.18\%$     | **Best Checkpoint** (`curriculum_v4_best.pt`, Epoch 23)      |
 | **Stage 3** | $26 \to 40$ | $1.0\times 10^{-4} \to 5.0\times 10^{-6}$ | 12.5% Uniform (8 classes) + Photometric Noise |           **`5.4818`**           |   **`99.28%`**   | Huber spatial loss drops to **`0.350`** (-84% spatial error) |
 
-- **Training Duration:** 42h 24m on Google Cloud (NVIDIA L4).
-- **Automated Teardown:** Upon completing Epoch 40, the orchestrator saved weights, created a GCP persistent disk snapshot, and executed `sudo poweroff` to eliminate idle compute costs.
-
+The training was done using a NVIDIA L4 on Google Cloud Platform (`g2-standard-8`, 8 vCPUs, 32 GB RAM), the final training weights can be found in `results/curriculum_v4/checkpoints/curriculum_v4_best.pt` and the vocabulary can be found in `results/curriculum_v4/vocabulary_v4.json`. This training took 42 hours and 24 minutes. 
 
 ---
 
@@ -414,12 +415,6 @@ image-to-tikz-engine/
 ```
 
 ---
-
-## Technical Documentation & Research Dossier
-
-A comprehensive engineering report detailing gradient propagation dynamics, multi-task curriculum design, memory-mapped cache locality, and empirical resolution of the *Line Attractor Collapse* is documented in:
-
-- **Full Training Run & Mathematical Telemetry:** [`docs/training_dossier.md`](docs/training_dossier.md)
 
 ---
 
