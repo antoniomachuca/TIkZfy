@@ -10,6 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/antoniomachuca/TIkZfy"><img src="https://img.shields.io/badge/CI-Passing-brightgreen.svg" alt="CI" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.12%2B-blue.svg" alt="Python" /></a>
   <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-2.9.1%2Bcu129-EE4C2C.svg" alt="PyTorch" /></a>
   <a href="#layer-topology--parameter-breakdown"><img src="https://img.shields.io/badge/Parameters-57.8M-informational.svg" alt="Parameters" /></a>
@@ -19,7 +20,7 @@
 </p>
 
 
-TikZfy is an end-to-end deep learning system that translates raster geometric diagrams into native, compile-ready LaTeX/TikZ code.
+TIkZfy is an end-to-end deep learning system that translates raster geometric diagrams into native, compile-ready LaTeX/TikZ code.
 
 The architecture combines a coordinate-aware visual encoder (CoordConv) with an autoregressive transformer decoder. During generation, syntax validity is maintained through a prefix-tree (Trie) grammar constraint, while an isolated TeX Live sandbox compiles and verifies the generated code against the input image.
 

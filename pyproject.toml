@@ -8,8 +8,10 @@ where = ["."]
 [project]
 name = "tikzfy"
 version = "0.1.0"
-description = "TikZfy — Multimodal Image-to-TikZ Neural Engine & Geometric Compiler"
+description = "TIkZfy — Multimodal Image-to-TikZ Neural Engine & Geometric Compiler"
 readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Antonio Machuca" }]
 requires-python = ">=3.10"
 dependencies = [
     "torch>=2.0.0",
