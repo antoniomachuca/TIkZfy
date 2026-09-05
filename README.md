@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/antoniomachuca/tikzfy"><img src="https://img.shields.io/badge/CI-Passing-brightgreen.svg" alt="CI" /></a>
+  <a href="https://github.com/antoniomachuca/TIkZfy"><img src="https://img.shields.io/badge/CI-Passing-brightgreen.svg" alt="CI" /></a>
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.12%2B-blue.svg" alt="Python" /></a>
   <a href="https://pytorch.org/"><img src="https://img.shields.io/badge/PyTorch-2.9.1%2Bcu129-EE4C2C.svg" alt="PyTorch" /></a>
   <a href="#layer-topology--parameter-breakdown"><img src="https://img.shields.io/badge/Parameters-57.8M-informational.svg" alt="Parameters" /></a>
@@ -311,8 +311,8 @@ sudo apt-get update && sudo apt-get install -y \
 
 ```bash
 # Clone the repository
-git clone https://github.com/antoniomachuca/tikzfy.git
-cd tikzfy/image-to-tikz-engine
+git clone https://github.com/antoniomachuca/TIkZfy.git
+cd TIkZfy
 
 # Create virtual environment
 python3.12 -m venv venv
