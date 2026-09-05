@@ -1,3 +1,11 @@
+# Version control and editor
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# Python environments, bytecode and caches
 __pycache__
 *.pyc
 *.pyo
@@ -10,9 +18,36 @@ venv/
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
-.git
-.gitignore
+build/
+dist/
+*.egg-info/
+tikzfy.egg-info/
+image_to_tikz_engine.egg-info/
+
+# Frontend (hosted independently)
+frontend/
+
+# Raw datasets, archives and temporary images
+dataset/
+dataset.tar.gz
+*.tar.gz
+image.png
+logo.svg
+
+# Documentation and temporary TeX artifacts
+docs/
 *.log
 *.pdf
 *.aux
 *.out
+
+# Experimental results and ablation checkpoints (7+ GB)
+results/
+
+# Test suite
+tests/
+
+# Retain only production V4 weights in checkpoints/
+checkpoints/*
+!checkpoints/curriculum_v4_best.pt
+!checkpoints/vocabulary_v4.json

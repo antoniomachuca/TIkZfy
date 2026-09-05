@@ -72,8 +72,20 @@ def create_app(
     active_orchestrator: ImageToTikzUseCase | None = orchestrator
 
     if active_orchestrator is None:
-        checkpoint_env: str = os.getenv("CHECKPOINT_PATH", "checkpoints/best_model.pt")
-        vocab_env: str = os.getenv("VOCABULARY_PATH", "dataset/encoded/vocabulary.json")
+        checkpoint_candidate: str = "checkpoints/best_model.pt"
+        if Path("checkpoints/curriculum_v4_best.pt").exists():
+            checkpoint_candidate = "checkpoints/curriculum_v4_best.pt"
+        elif Path("results/curriculum_v4/checkpoints/curriculum_v4_best.pt").exists():
+            checkpoint_candidate = "results/curriculum_v4/checkpoints/curriculum_v4_best.pt"
+
+        vocab_candidate: str = "dataset/encoded/vocabulary.json"
+        if Path("checkpoints/vocabulary_v4.json").exists():
+            vocab_candidate = "checkpoints/vocabulary_v4.json"
+        elif Path("results/curriculum_v4/vocabulary_v4.json").exists():
+            vocab_candidate = "results/curriculum_v4/vocabulary_v4.json"
+
+        checkpoint_env: str = os.getenv("CHECKPOINT_PATH", checkpoint_candidate)
+        vocab_env: str = os.getenv("VOCABULARY_PATH", vocab_candidate)
         if Path(checkpoint_env).exists() and Path(vocab_env).exists():
             try:
                 active_orchestrator = ImageToTikzOrchestrator.from_checkpoint(
