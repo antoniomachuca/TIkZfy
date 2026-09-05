@@ -174,3 +174,54 @@ def test_orchestrator_from_checkpoint() -> None:
         image = ImageTensor(raw_tensor=torch.randn(1, 3, 32, 32))
         tokens = orchestrator.execute(image)
         assert isinstance(tokens, TikzTokens)
+
+
+def test_orchestrator_execute_grammar_greedy_and_best_of_n() -> None:
+    vocabulary = _build_test_vocabulary()
+    model = _build_test_model(vocabulary)
+    image = ImageTensor(raw_tensor=torch.randn(1, 3, 32, 32))
+
+    for strat in ("grammar_greedy", "grammar_beam", "sample", "best_of_n"):
+        orchestrator = ImageToTikzOrchestrator(
+            model=model,
+            vocabulary=vocabulary,
+            max_length=32,
+            search_strategy=strat,
+            beam_width=2,
+        )
+        tokens = orchestrator.execute(image)
+        assert isinstance(tokens, TikzTokens)
+        assert "\\begin{" in tokens.markup
+        assert "\\end{" in tokens.markup
+
+
+@pytest.mark.anyio
+async def test_orchestrator_execute_reranked() -> None:
+    from core.models import CompilationResult
+    from ports.outbound import ImageRasterizerPort, TexCompilerPort
+
+    class DummyCompiler(TexCompilerPort):
+        async def compile_tikz(self, tokens: TikzTokens) -> CompilationResult:
+            return CompilationResult(is_successful=False, pdf_data=b"")
+
+    class DummyRasterizer(ImageRasterizerPort):
+        async def rasterize_pdf(self, pdf_data: bytes, dpi: int = 150) -> bytes:
+            return b""
+
+    vocabulary = _build_test_vocabulary()
+    model = _build_test_model(vocabulary)
+    orchestrator = ImageToTikzOrchestrator(
+        model=model,
+        vocabulary=vocabulary,
+        max_length=32,
+    )
+    image = ImageTensor(raw_tensor=torch.randn(1, 3, 32, 32))
+    best_tokens, ssim_score = await orchestrator.execute_reranked(
+        image, DummyCompiler(), DummyRasterizer(), n_hypotheses=2
+    )
+
+    assert isinstance(best_tokens, TikzTokens)
+    assert "\\begin{" in best_tokens.markup
+    assert "\\end{" in best_tokens.markup
+    assert isinstance(ssim_score, float)
+

@@ -8,6 +8,7 @@ References:
 """
 
 import math
+from dataclasses import dataclass
 from functools import partial
 from typing import Any, cast
 
@@ -297,6 +298,278 @@ class SpatialAwareHybridLoss(nn.Module):
         )
 
         return ce_loss + self.spatial_weight * coord_loss
+
+
+@dataclass(frozen=True)
+class LossComponents:
+    """Decomposed scalar values of the multi-task composite loss."""
+
+    total_loss: torch.Tensor
+    syntax_loss: torch.Tensor
+    gaussian_ord_loss: torch.Tensor
+    family_loss: torch.Tensor
+    huber_loss: torch.Tensor
+
+
+class GaussianOrdinalCoordinateLoss(nn.Module):
+    """Gaussian Ordinal smoothing loss over numerical coordinate token distributions.
+
+    References:
+        Golub & Van Loan, Matrix Computations — Gram matrix construction.
+        Goodfellow et al., Deep Learning — Softmax cross-entropy (§6.2.2).
+
+    Constructs a normalized Gaussian distribution around continuous target coordinates:
+        q_j = exp(-(c_j - c*)^2 / (2 * sigma^2)) / sum_m exp(-(c_m - c*)^2 / (2 * sigma^2))
+    Penalizes deviations via cross-entropy:
+        L_GaussianOrd = -sum_{j in C} q_j * log(p_j)
+    Executed in O(1) logical GPU parallel algebra through precomputed transition matrices.
+    """
+
+    def __init__(
+        self,
+        vocabulary: TokenVocabulary,
+        sigma: float = 0.2,
+        ignore_index: int = PAD_INDEX,
+    ) -> None:
+        super().__init__()
+        if sigma <= 0.0:
+            raise ValueError(f"sigma must be strictly positive. Got {sigma}.")
+
+        self.sigma: float = sigma
+        self.ignore_index: int = ignore_index
+
+        vocab_size: int = len(vocabulary.token_to_index)
+        is_coord: list[bool] = [False] * vocab_size
+        coord_values: list[float] = [0.0] * vocab_size
+
+        for token, idx in vocabulary.token_to_index.items():
+            try:
+                val: float = float(token)
+                is_coord[idx] = True
+                coord_values[idx] = val
+            except ValueError:
+                pass
+
+        self.register_buffer("is_coord_mask", torch.tensor(is_coord, dtype=torch.bool))
+        self.register_buffer("coord_values", torch.tensor(coord_values, dtype=torch.float32))
+
+        # Build Gaussian transition matrix Q: Shape (V, V)
+        q_matrix: torch.Tensor = torch.zeros((vocab_size, vocab_size), dtype=torch.float32)
+        coord_indices: list[int] = [idx for idx, c in enumerate(is_coord) if c]
+        if coord_indices:
+            coords_tensor: torch.Tensor = torch.tensor(
+                [coord_values[i] for i in coord_indices], dtype=torch.float32
+            )
+            # Difference matrix: Shape (C, C)
+            diff: torch.Tensor = coords_tensor.unsqueeze(1) - coords_tensor.unsqueeze(0)
+            weights: torch.Tensor = torch.exp(-0.5 * (diff / sigma) ** 2)
+            row_sums: torch.Tensor = weights.sum(dim=1, keepdim=True).clamp(min=1e-8)
+            normalized_weights: torch.Tensor = weights / row_sums
+
+            coord_idx_tensor: torch.Tensor = torch.tensor(coord_indices, dtype=torch.long)
+            grid_i, grid_j = torch.meshgrid(coord_idx_tensor, coord_idx_tensor, indexing="ij")
+            q_matrix[grid_i, grid_j] = normalized_weights
+
+        self.register_buffer("ordinal_smoothing_matrix", q_matrix)
+
+    def forward(self, logits: torch.Tensor, target_tokens: torch.Tensor) -> torch.Tensor:
+        """Compute mean Gaussian ordinal cross-entropy over coordinate positions."""
+        if logits.ndim != 3:
+            raise TensorTopologyError("Logits must be a rank-3 tensor with shape (B, L, V).")
+        if target_tokens.ndim != 2 or target_tokens.dtype != torch.long:
+            raise TensorTopologyError("Target tokens must be a rank-2 torch.long tensor.")
+        if tuple(logits.shape[:2]) != tuple(target_tokens.shape):
+            raise TensorTopologyError("Logit and target batch/sequence dimensions must match.")
+
+        is_coord_mask: torch.Tensor = cast(torch.Tensor, self.is_coord_mask)
+        is_target_coord: torch.Tensor = is_coord_mask[target_tokens] & (
+            target_tokens != self.ignore_index
+        )
+        if not bool(is_target_coord.any().item()):
+            return torch.tensor(0.0, device=logits.device, dtype=logits.dtype)
+
+        ordinal_matrix: torch.Tensor = cast(torch.Tensor, self.ordinal_smoothing_matrix)
+        # Shape: (B, L, V)
+        target_dist: torch.Tensor = ordinal_matrix[target_tokens]
+        # Shape: (B, L, V)
+        log_probs: torch.Tensor = F.log_softmax(logits, dim=-1)
+        # Token-level cross-entropy: Shape (B, L)
+        per_token_loss: torch.Tensor = -(target_dist * log_probs).sum(dim=-1)
+
+        return per_token_loss[is_target_coord].mean()
+
+
+class CompositeMultiTaskLoss(nn.Module):
+    """Composite multi-task objective with Gaussian Ordinal, Huber, and Family classification.
+
+    Decouples four complementary objectives:
+        L_total = L_syntax + lambda_c * L_GaussianOrd + lambda_s * L_Huber + lambda_f * L_family
+
+    1. L_syntax: Cross-entropy with label smoothing (eps = 0.05) on non-coordinate tokens.
+    2. L_GaussianOrd: Ordinal cross-entropy with Gaussian smoothing over coordinate bins.
+    3. L_family: Supervised cross-entropy over visual encoder GAP summary representation.
+    4. L_Huber: Smooth L1 penalty between predicted expected coordinate and ground truth.
+    """
+
+    def __init__(
+        self,
+        vocabulary: TokenVocabulary,
+        lambda_coord: float = 1.0,
+        lambda_family: float = 1.5,
+        lambda_spatial: float = 2.0,
+        label_smoothing: float = 0.05,
+        sigma: float = 0.2,
+        huber_beta: float = 0.1,
+        ignore_index: int = PAD_INDEX,
+        token_weights: torch.Tensor | None = None,
+        use_automatic_reweighting: bool = False,
+    ) -> None:
+        super().__init__()
+        if lambda_coord < 0.0 or lambda_family < 0.0 or lambda_spatial < 0.0:
+            raise ValueError("Loss balance multipliers must be non-negative.")
+        if sigma <= 0.0:
+            raise ValueError(f"sigma must be strictly positive. Got {sigma}.")
+        if huber_beta <= 0.0:
+            raise ValueError(f"huber_beta must be strictly positive. Got {huber_beta}.")
+        if not 0.0 <= label_smoothing <= 1.0:
+            raise ValueError(f"label_smoothing must be in [0.0, 1.0]. Got {label_smoothing}.")
+
+        self.lambda_coord: float = lambda_coord
+        self.lambda_family: float = lambda_family
+        self.lambda_spatial: float = lambda_spatial
+        self.label_smoothing: float = label_smoothing
+        self.huber_beta: float = huber_beta
+        self.ignore_index: int = ignore_index
+
+        self.gaussian_ordinal_loss: GaussianOrdinalCoordinateLoss = GaussianOrdinalCoordinateLoss(
+            vocabulary=vocabulary,
+            sigma=sigma,
+            ignore_index=ignore_index,
+        )
+
+        vocab_size: int = len(vocabulary.token_to_index)
+        is_coord: list[bool] = [False] * vocab_size
+        coord_values: list[float] = [0.0] * vocab_size
+
+        for token, idx in vocabulary.token_to_index.items():
+            try:
+                val: float = float(token)
+                is_coord[idx] = True
+                coord_values[idx] = val
+            except ValueError:
+                pass
+
+        self.register_buffer("is_coord_mask", torch.tensor(is_coord, dtype=torch.bool))
+        self.register_buffer("coord_values", torch.tensor(coord_values, dtype=torch.float32))
+
+        resolved_weights: torch.Tensor | None = token_weights
+        if resolved_weights is None and use_automatic_reweighting:
+            resolved_weights = build_token_loss_weights(vocabulary)
+
+        if resolved_weights is not None:
+            self.register_buffer("token_weights", resolved_weights)
+        else:
+            self.token_weights = None
+
+    def forward(
+        self,
+        token_logits: torch.Tensor,
+        target_tokens: torch.Tensor,
+        family_logits: torch.Tensor | None = None,
+        family_targets: torch.Tensor | None = None,
+        return_components: bool = False,
+    ) -> torch.Tensor | LossComponents:
+        """Compute composite multi-task loss across syntax, coordinates, and family."""
+        if token_logits.ndim != 3:
+            raise TensorTopologyError("token_logits must be a rank-3 tensor with shape (B, L, V).")
+        if target_tokens.ndim != 2 or target_tokens.dtype != torch.long:
+            raise TensorTopologyError("target_tokens must be a rank-2 torch.long tensor.")
+        if tuple(token_logits.shape[:2]) != tuple(target_tokens.shape):
+            raise TensorTopologyError(
+                "token_logits and target_tokens batch/sequence shapes must match."
+            )
+
+        device: torch.device = token_logits.device
+        dtype: torch.dtype = token_logits.dtype
+
+        is_coord_mask: torch.Tensor = cast(torch.Tensor, self.is_coord_mask)
+        coord_values: torch.Tensor = cast(torch.Tensor, self.coord_values)
+        token_weights: torch.Tensor | None = (
+            cast(torch.Tensor, self.token_weights) if self.token_weights is not None else None
+        )
+
+        is_target_coord: torch.Tensor = is_coord_mask[target_tokens] & (
+            target_tokens != self.ignore_index
+        )
+        is_target_syntax: torch.Tensor = (~is_coord_mask[target_tokens]) & (
+            target_tokens != self.ignore_index
+        )
+
+        # 1. Syntax Cross-Entropy Loss
+        if bool(is_target_syntax.any().item()):
+            syntax_loss: torch.Tensor = F.cross_entropy(
+                token_logits[is_target_syntax],
+                target_tokens[is_target_syntax],
+                weight=token_weights,
+                label_smoothing=self.label_smoothing,
+            )
+        else:
+            syntax_loss = torch.tensor(0.0, device=device, dtype=dtype)
+
+        # 2. Gaussian Ordinal Coordinate Loss
+        if self.lambda_coord > 0.0 and bool(is_target_coord.any().item()):
+            gaussian_ord_loss: torch.Tensor = self.gaussian_ordinal_loss(
+                token_logits, target_tokens
+            )
+        else:
+            gaussian_ord_loss = torch.tensor(0.0, device=device, dtype=dtype)
+
+        # 3. Continuous Spatial Huber Loss
+        if self.lambda_spatial > 0.0 and bool(is_target_coord.any().item()):
+            probs: torch.Tensor = F.softmax(token_logits, dim=-1)
+            coord_probs: torch.Tensor = probs * is_coord_mask.unsqueeze(0).unsqueeze(0)
+            coord_sum: torch.Tensor = coord_probs.sum(dim=-1, keepdim=True).clamp(min=1e-6)
+            normalized_coord_probs: torch.Tensor = coord_probs / coord_sum
+
+            # Expected continuous coordinate: Shape (B, L)
+            pred_coords: torch.Tensor = (
+                normalized_coord_probs * coord_values.unsqueeze(0).unsqueeze(0)
+            ).sum(dim=-1)
+            gt_coords: torch.Tensor = coord_values[target_tokens]
+
+            huber_loss: torch.Tensor = F.smooth_l1_loss(
+                pred_coords[is_target_coord], gt_coords[is_target_coord], beta=self.huber_beta
+            )
+        else:
+            huber_loss = torch.tensor(0.0, device=device, dtype=dtype)
+
+        # 4. Multi-Task Geometric Family Loss
+        if self.lambda_family > 0.0 and family_logits is not None and family_targets is not None:
+            family_loss: torch.Tensor = F.cross_entropy(family_logits, family_targets)
+        else:
+            family_loss = torch.tensor(0.0, device=device, dtype=dtype)
+
+        # Total Composite Objective
+        total_loss: torch.Tensor = (
+            syntax_loss
+            + self.lambda_coord * gaussian_ord_loss
+            + self.lambda_spatial * huber_loss
+            + self.lambda_family * family_loss
+        )
+
+        if return_components:
+            return LossComponents(
+                total_loss=total_loss,
+                syntax_loss=syntax_loss,
+                gaussian_ord_loss=gaussian_ord_loss,
+                family_loss=family_loss,
+                huber_loss=huber_loss,
+            )
+        return total_loss
+
+
+# Canonical V4 architectural alias
+CompositeMultiTaskLossV4 = CompositeMultiTaskLoss
 
 
 def build_adamw_optimizer(

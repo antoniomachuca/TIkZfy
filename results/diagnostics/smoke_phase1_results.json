@@ -1,0 +1,205 @@
+{
+  "samples_evaluated": 10,
+  "mean_ssim": {
+    "greedy": 0.777605339884758,
+    "grammar_greedy": 0.777605339884758,
+    "best_of_4": 0.7932469427585602
+  },
+  "compilation_rate_percent": {
+    "greedy": 100.0,
+    "grammar_greedy": 100.0,
+    "best_of_4": 100.0
+  },
+  "detailed_results": [
+    {
+      "family": "line_segment",
+      "sample": "sample_00",
+      "greedy": {
+        "ssim": 0.7208322882652283,
+        "compilation_ok": true,
+        "time_sec": 1.8131892681121826
+      },
+      "grammar_greedy": {
+        "ssim": 0.7208322882652283,
+        "compilation_ok": true,
+        "time_sec": 1.0557467937469482
+      },
+      "best_of_4": {
+        "ssim": 0.7208322882652283,
+        "compilation_ok": true,
+        "time_sec": 6.257941007614136
+      }
+    },
+    {
+      "family": "line_segment",
+      "sample": "sample_01",
+      "greedy": {
+        "ssim": 0.7908871173858643,
+        "compilation_ok": true,
+        "time_sec": 1.145751953125
+      },
+      "grammar_greedy": {
+        "ssim": 0.7908871173858643,
+        "compilation_ok": true,
+        "time_sec": 1.0723609924316406
+      },
+      "best_of_4": {
+        "ssim": 0.8426125049591064,
+        "compilation_ok": true,
+        "time_sec": 4.33226203918457
+      }
+    },
+    {
+      "family": "circle_arc",
+      "sample": "sample_00",
+      "greedy": {
+        "ssim": 0.9330413937568665,
+        "compilation_ok": true,
+        "time_sec": 0.9947071075439453
+      },
+      "grammar_greedy": {
+        "ssim": 0.9330413937568665,
+        "compilation_ok": true,
+        "time_sec": 0.9800992012023926
+      },
+      "best_of_4": {
+        "ssim": 0.9330413937568665,
+        "compilation_ok": true,
+        "time_sec": 4.073329925537109
+      }
+    },
+    {
+      "family": "circle_arc",
+      "sample": "sample_01",
+      "greedy": {
+        "ssim": 0.9492738246917725,
+        "compilation_ok": true,
+        "time_sec": 1.0000560283660889
+      },
+      "grammar_greedy": {
+        "ssim": 0.9492738246917725,
+        "compilation_ok": true,
+        "time_sec": 1.0217468738555908
+      },
+      "best_of_4": {
+        "ssim": 0.9492738246917725,
+        "compilation_ok": true,
+        "time_sec": 4.014631986618042
+      }
+    },
+    {
+      "family": "grid_axes",
+      "sample": "sample_00",
+      "greedy": {
+        "ssim": 0.48271456360816956,
+        "compilation_ok": true,
+        "time_sec": 2.15352725982666
+      },
+      "grammar_greedy": {
+        "ssim": 0.48271456360816956,
+        "compilation_ok": true,
+        "time_sec": 2.2133727073669434
+      },
+      "best_of_4": {
+        "ssim": 0.49309438467025757,
+        "compilation_ok": true,
+        "time_sec": 20.717437982559204
+      }
+    },
+    {
+      "family": "grid_axes",
+      "sample": "sample_01",
+      "greedy": {
+        "ssim": 0.9991020560264587,
+        "compilation_ok": true,
+        "time_sec": 2.187541961669922
+      },
+      "grammar_greedy": {
+        "ssim": 0.9991020560264587,
+        "compilation_ok": true,
+        "time_sec": 2.4168848991394043
+      },
+      "best_of_4": {
+        "ssim": 0.9991020560264587,
+        "compilation_ok": true,
+        "time_sec": 8.946306943893433
+      }
+    },
+    {
+      "family": "node_arrow",
+      "sample": "sample_00",
+      "greedy": {
+        "ssim": 0.6145290732383728,
+        "compilation_ok": true,
+        "time_sec": 1.7653429508209229
+      },
+      "grammar_greedy": {
+        "ssim": 0.6145290732383728,
+        "compilation_ok": true,
+        "time_sec": 1.88873291015625
+      },
+      "best_of_4": {
+        "ssim": 0.705751895904541,
+        "compilation_ok": true,
+        "time_sec": 7.036238193511963
+      }
+    },
+    {
+      "family": "node_arrow",
+      "sample": "sample_01",
+      "greedy": {
+        "ssim": 0.5741631388664246,
+        "compilation_ok": true,
+        "time_sec": 1.6960058212280273
+      },
+      "grammar_greedy": {
+        "ssim": 0.5741631388664246,
+        "compilation_ok": true,
+        "time_sec": 1.7365491390228271
+      },
+      "best_of_4": {
+        "ssim": 0.5741631388664246,
+        "compilation_ok": true,
+        "time_sec": 6.913506031036377
+      }
+    },
+    {
+      "family": "composed",
+      "sample": "sample_00",
+      "greedy": {
+        "ssim": 0.8049659132957458,
+        "compilation_ok": true,
+        "time_sec": 1.7063841819763184
+      },
+      "grammar_greedy": {
+        "ssim": 0.8049659132957458,
+        "compilation_ok": true,
+        "time_sec": 1.748891830444336
+      },
+      "best_of_4": {
+        "ssim": 0.8080539107322693,
+        "compilation_ok": true,
+        "time_sec": 6.947734117507935
+      }
+    },
+    {
+      "family": "composed",
+      "sample": "sample_01",
+      "greedy": {
+        "ssim": 0.906544029712677,
+        "compilation_ok": true,
+        "time_sec": 1.7715249061584473
+      },
+      "grammar_greedy": {
+        "ssim": 0.906544029712677,
+        "compilation_ok": true,
+        "time_sec": 1.8055589199066162
+      },
+      "best_of_4": {
+        "ssim": 0.906544029712677,
+        "compilation_ok": true,
+        "time_sec": 8.245464086532593
+      }
+    }
+  ]
+}

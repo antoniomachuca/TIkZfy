@@ -12,6 +12,18 @@ BOS_INDEX: int = 1
 EOS_INDEX: int = 2
 UNK_INDEX: int = 3
 
+FAMILY_NAMES: tuple[str, ...] = (
+    "line_segment",
+    "polyline",
+    "polygon",
+    "circle_arc",
+    "grid_axes",
+    "function_plot",
+    "node_arrow",
+    "composed",
+)
+FAMILY_PREFIX_TOKENS: tuple[str, ...] = tuple(f"<FAM:{fam}>" for fam in FAMILY_NAMES)
+
 
 @dataclass(frozen=True)
 class TokenVocabulary:

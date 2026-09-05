@@ -22,6 +22,7 @@ from core.models.token_vocabulary import (
     BOS_TOKEN,
     EOS_INDEX,
     EOS_TOKEN,
+    FAMILY_PREFIX_TOKENS,
     PAD_INDEX,
     PAD_TOKEN,
     UNK_INDEX,
@@ -49,7 +50,8 @@ V3_COORDINATE_BINS: tuple[str, ...] = tuple(
 
 # Regex pattern matching discrete TikZ tokens, environments, operators, and identifiers
 TIKZ_TOKEN_PATTERN: re.Pattern[str] = re.compile(
-    r"\\begin\{[a-zA-Z*]+\}"
+    r"<FAM:[a-zA-Z0-9_]+>"
+    r"|\\begin\{[a-zA-Z*]+\}"
     r"|\\end\{[a-zA-Z*]+\}"
     r"|\\[a-zA-Z]+"
     r"|--|->|<-|<->|\|-|-\||\.\.|\+\+|->>|-stealth"
@@ -214,6 +216,8 @@ def build_vocabulary(
             f"{round(CANVAS_MIN + idx * coordinate_step, 4):g}"
             for idx in range(bin_count + 1)
         )
+
+    flat_tokens.update(FAMILY_PREFIX_TOKENS)
 
     reserved_set: set[str] = {PAD_TOKEN, BOS_TOKEN, EOS_TOKEN, UNK_TOKEN}
     unique_tokens: list[str] = sorted(flat_tokens - reserved_set)
