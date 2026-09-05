@@ -54,7 +54,6 @@ The codebase follows the **Ports and Adapters (Hexagonal)** pattern:
 - `adapters/`: Infrastructure implementations, including the TeX Live compiler, Ghostscript/pdftoppm rasterizer, FastAPI endpoints, and disk persistence.
 
 ```mermaid
-%%{init: {'theme': 'neutral'}}%%
 flowchart TB
     subgraph DrivingAdapters["Driving Adapters (Clients & Ingress)"]
         FastAPI["FastAPI Web Router<br/>/api/v1/generate"]
@@ -108,7 +107,6 @@ flowchart TB
 ## Model Architecture
 
 ```mermaid
-%%{init: {'theme': 'neutral'}}%%
 flowchart TB
     subgraph Input["1. Input Stage"]
         Img["Input Image<br/>(B, 3, 256, 256)"]
@@ -203,7 +201,6 @@ The complete V4 model contains **57,812,251 trainable parameters** ($220.5\text{
 ## Inference Workflow
 
 ```mermaid
-%%{init: {'theme': 'neutral'}}%%
 sequenceDiagram
     autonumber
     actor Client
